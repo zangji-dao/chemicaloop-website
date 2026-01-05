@@ -1,0 +1,25 @@
+{
+  "name": "chemicaloop-website",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "deepl-node": "^1.24.0",
+    "vue": "^3.4.0",
+    "vue-i18n": "^9.14.5",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "esbuild": "^0.25.12",
+    "eslint": "^8.56.0",
+    "eslint-plugin-vue": "^9.19.0",
+    "prettier": "^3.2.5",
+    "sass": "^1.69.7",
+    "vite": "^6.0.0"
+  }
+}

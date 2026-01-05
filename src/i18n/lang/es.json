@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "about": "Sobre Nosotros",
+    "products": "Centro de Productos",
+    "news": "Noticias",
+    "contact": "Contáctenos"
+  },
+  "search": {
+    "placeholder": "Buscar productos (ej: Resina Epoxi, Informe MSDS)",
+    "btnText": "Buscar",
+    "emptyTip": "No se encontraron productos relacionados, cambie las palabras clave"
+  },
+  "product": {
+    "title": "Detalles del Producto",
+    "spec": "Parámetros Técnicos",
+    "msds": "Descargar Informe MSDS",
+    "inquiry": "Consulta en Línea",
+    "stock": "Estado del Stock",
+    "price": "Precio de Referencia",
+    "count": "{count} producto | {count} productos",
+    "stockStatus": {
+      "inStock": "En Stock",
+      "outOfStock": "Sin Stock (Reabastecimiento en 3-5 días)",
+      "preOrder": "Prepedido (Entrega en 7-10 días)"
+    }
+  },
+  "empty": {
+    "productList": "No hay productos disponibles actualmente",
+    "newsList": "No hay noticias recientes disponibles",
+    "contactForm": "Complete todos los campos obligatorios (marcados con *)",
+    "fileNotFound": "El archivo solicitado no fue encontrado",
+    "networkError": "Fallo en la conexión de red, verifique su internet y vuelva a intentarlo"
+  },
+  "common": {
+    "tel": "+86.15585606688",
+    "email": "support@chemicaloop.com",
+    "address": "N° 1288 Avenida Binhai, Distrito Huangdao, Ciudad de Qingdao, Provincia de Shandong, China",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "loading": "Cargando...",
+    "success": "Operación Exitosa",
+    "error": "Operación Fallida, Inténtelo de Nuevo",
+    "langChanged": "Idioma cambiado exitosamente a español",
+    "langChangeFail": "Fallo al cambiar el idioma, intente nuevamente",
+    "back": "Volver",
+    "viewMore": "Ver Más"
+  },
+  "footer": {
+    "copyright": "© 2026 Chemicaloop Todos los Derechos Reservados",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Uso",
+    "contactTitle": "Contáctenos",
+    "workingHours": "Horario de Atención: Sábado a Jueves, 9:00 AM a 6:00 PM (GMT+8)"
+  }
+}

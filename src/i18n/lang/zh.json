@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "home": "首页",
+    "about": "关于我们",
+    "products": "产品中心",
+    "news": "新闻动态",
+    "contact": "联系我们"
+  },
+  "search": {
+    "placeholder": "搜索产品（如：环氧树脂、MSDS报告）",
+    "btnText": "搜索",
+    "emptyTip": "未找到相关产品，请更换关键词"
+  },
+  "product": {
+    "title": "产品详情",
+    "spec": "技术参数",
+    "msds": "下载MSDS报告",
+    "inquiry": "在线询盘",
+    "stock": "库存状态",
+    "price": "参考价格",
+    "count": "{count}件产品",
+    "stockStatus": {
+      "inStock": "现货充足",
+      "outOfStock": "暂时缺货（3-5天补货）",
+      "preOrder": "预售（7-10天发货）",
+      "lowStock": "库存紧张（仅剩{num}件）"
+    }
+  },
+  "empty": {
+    "productList": "暂无产品可展示",
+    "newsList": "暂无最新新闻",
+    "contactForm": "请填写所有必填项（标*为必填）",
+    "fileNotFound": "未找到请求的文件（如MSDS报告）",
+    "networkError": "网络连接失败，请检查网络后重试",
+    "inquiryEmpty": "询盘内容不能为空，请补充需求"
+  },
+  "common": {
+    "tel": "+86.15585606688",
+    "email": "support@chemicaloop.com",
+    "address": "中国山东省青岛市黄岛区滨海大道1288号",
+    "submit": "提交",
+    "cancel": "取消",
+    "confirm": "确认",
+    "loading": "加载中...",
+    "success": "操作成功",
+    "error": "操作失败，请重试",
+    "langChanged": "已切换为中文",
+    "langChangeFail": "语言切换失败，请重试",
+    "back": "返回",
+    "viewMore": "查看更多",
+    "requiredTip": "* 为必填项"
+  },
+  "footer": {
+    "copyright": "© 2026 化工圈 All Rights Reserved",
+    "privacy": "隐私政策",
+    "terms": "使用条款",
+    "contactTitle": "联系我们",
+    "workingHours": "工作时间：周一至周五 9:00-18:00（法定节假日除外）",
+    "serviceTip": "服务热线：+86.15585606688（工作日9:00-18:00）"
+  }
+}

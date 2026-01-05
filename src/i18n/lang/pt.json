@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "home": "Início",
+    "about": "Sobre Nós",
+    "products": "Centro de Produtos",
+    "news": "Notícias",
+    "contact": "Entre em Contato"
+  },
+  "search": {
+    "placeholder": "Pesquisar produtos (ex: Resina Epóxi, Relatório MSDS)",
+    "btnText": "Pesquisar",
+    "emptyTip": "Nenhum produto relacionado encontrado, altere as palavras-chave"
+  },
+  "product": {
+    "title": "Detalhes do Produto",
+    "spec": "Parâmetros Técnicos",
+    "msds": "Baixar Relatório MSDS",
+    "inquiry": "Inquérito Online",
+    "stock": "Status do Estoque",
+    "price": "Preço de Referência",
+    "count": "{count} produto | {count} produtos",
+    "stockStatus": {
+      "inStock": "Em Estoque",
+      "outOfStock": "Esgotado (Reabastecimento em 3-5 Dias)",
+      "preOrder": "Pré-Reserva (Entrega em 7-10 Dias)"
+    }
+  },
+  "empty": {
+    "productList": "Nenhum produto disponível no momento",
+    "newsList": "Nenhuma notícia recente disponível",
+    "contactForm": "Preencha todos os campos obrigatórios (marcados com *)",
+    "fileNotFound": "O arquivo solicitado não foi encontrado",
+    "networkError": "Falha na conexão de rede, verifique sua internet e tente novamente"
+  },
+  "common": {
+    "tel": "+86.15585606688",
+    "email": "support@chemicaloop.com",
+    "address": "N° 1288 Avenida Binhai, Distrito Huangdao, Cidade de Qingdao, Província de Shandong, China",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "loading": "Carregando...",
+    "success": "Operação Bem-Sucedida",
+    "error": "Operação Falhou, Tente Novamente",
+    "langChanged": "Idioma alterado com sucesso para português",
+    "langChangeFail": "Falha ao alterar o idioma, tente novamente",
+    "back": "Voltar",
+    "viewMore": "Ver Mais"
+  },
+  "footer": {
+    "copyright": "© 2026 Chemicaloop Todos os Direitos Reservados",
+    "privacy": "Política de Privacidade",
+    "terms": "Termos de Uso",
+    "contactTitle": "Entre em Contato",
+    "workingHours": "Horário de Atendimento: Sábado a Quinta-feira, 09:00 às 18:00 (GMT+8)"
+  }
+}

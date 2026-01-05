@@ -1,0 +1,55 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "about": "Über Uns",
+    "products": "Produktzentrum",
+    "news": "Nachrichten",
+    "contact": "Kontaktieren Sie Uns"
+  },
+  "search": {
+    "placeholder": "Produkte suchen (z. B.: Epoxidharz, MSDS-Bericht)",
+    "btnText": "Suchen",
+    "emptyTip": "Keine passenden Produkte gefunden, bitte ändern Sie die Suchbegriffe"
+  },
+  "product": {
+    "title": "Produktdetails",
+    "spec": "Technische Parameter",
+    "msds": "MSDS-Bericht herunterladen",
+    "inquiry": "Online-Anfrage",
+    "stock": "Bestandsstatus",
+    "price": "Referenzpreis",
+    "count": "{count} Produkt | {count} Produkte"
+  },
+  "empty": {
+    "productList": "Keine Produkte derzeit verfügbar",
+    "newsList": "Keine neuesten Nachrichten verfügbar",
+    "contactForm": "Bitte füllen Sie alle erforderlichen Felder aus (markiert mit *)",
+    "fileNotFound": "Die angeforderte Datei wurde nicht gefunden",
+    "networkError": "Netzwerkverbindung fehlgeschlagen, bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut"
+  },
+  "common": {
+    "tel": "+86.15585606688",
+    "email": "support@chemicaloop.com",
+    "address": {
+      "de": "Nr. 1288 Binhai Avenue, Bezirk Huangdao, Qingdao, Provinz Shandong, China",
+      "en": "No. 1288 Binhai Avenue, Huangdao District, Qingdao, Shandong Province, China"
+    },
+    "submit": "Einreichen",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "loading": "Wird geladen...",
+    "success": "Vorgang erfolgreich",
+    "error": "Vorgang fehlgeschlagen, bitte versuchen Sie es erneut",
+    "langChanged": "Sprache erfolgreich auf Deutsch geändert",
+    "langChangeFail": "Sprachwechsel fehlgeschlagen, bitte versuchen Sie es erneut",
+    "back": "Zurück",
+    "viewMore": "Mehr anzeigen"
+  },
+  "footer": {
+    "copyright": "© 2026 Chemicaloop Alle Rechte vorbehalten",
+    "privacy": "Datenschutzrichtlinie",
+    "terms": "Nutzungsbedingungen",
+    "contactTitle": "Kontaktieren Sie Uns",
+    "workingHours": "Arbeitszeiten: Samstag bis Donnerstag, 09:00 Uhr bis 18:00 Uhr (GMT+8)"
+  }
+}

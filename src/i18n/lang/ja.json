@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "about": "会社概要",
+    "products": "製品センター",
+    "news": "ニュース",
+    "contact": "お問い合わせ"
+  },
+  "search": {
+    "placeholder": "製品を検索（例：エポキシ樹脂、MSDSレポート）",
+    "btnText": "検索",
+    "emptyTip": "関連製品が見つかりませんでした。キーワードを変更してください"
+  },
+  "product": {
+    "title": "製品詳細",
+    "spec": "技術パラメータ",
+    "msds": "MSDSレポートをダウンロード",
+    "inquiry": "オンライン問い合わせ",
+    "stock": "在庫状況",
+    "price": "参考価格",
+    "count": "{count}点の製品",
+    "stockStatus": {
+      "inStock": "在庫あり",
+      "outOfStock": "在庫切れ（3～5日で補充予定）",
+      "preOrder": "事前予約（発送まで7～10日）"
+    }
+  },
+  "empty": {
+    "productList": "現在、利用可能な製品はありません",
+    "newsList": "最新のニュースはありません",
+    "contactForm": "必須項目（※印）をすべて記入してください",
+    "fileNotFound": "要求されたファイルが見つかりません",
+    "networkError": "ネットワーク接続に失敗しました。インターネット環境を確認してから再試行してください"
+  },
+  "common": {
+    "tel": "+86.15585606688",
+    "email": "support@chemicaloop.com",
+    "address": "中国山東省青島市黄島区浜海大通1288号",
+    "submit": "提出",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "loading": "読み込み中...",
+    "success": "操作が成功しました",
+    "error": "操作に失敗しました。再試行してください",
+    "langChanged": "言語が正常に日本語に切り替わりました",
+    "langChangeFail": "言語切り替えに失敗しました。再試行してください",
+    "back": "戻る",
+    "viewMore": "もっと見る"
+  },
+  "footer": {
+    "copyright": "© 2026 ケミカループ All Rights Reserved",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "contactTitle": "お問い合わせ",
+    "workingHours": "営業時間：土曜日～木曜日、午前9時～午後6時（GMT+8）"
+  }
+}

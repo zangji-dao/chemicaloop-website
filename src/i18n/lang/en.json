@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About Us",
+    "products": "Products",
+    "news": "News",
+    "contact": "Contact Us"
+  },
+  "search": {
+    "placeholder": "Search Products (e.g.: Epoxy Resin, MSDS Report)",
+    "btnText": "Search",
+    "emptyTip": "No products found, please change keywords"
+  },
+  "product": {
+    "title": "Product Details",
+    "spec": "Technical Parameters",
+    "msds": "Download MSDS Report",
+    "inquiry": "Online Inquiry",
+    "stock": "Stock Status",
+    "price": "Reference Price",
+    "count": "{count} Product | {count} Products",
+    "stockStatus": {
+      "inStock": "In Stock",
+      "outOfStock": "Out of Stock (Restock in 3-5 Days)",
+      "preOrder": "Pre-Order (Delivery in 7-10 Days)"
+    }
+  },
+  "empty": {
+    "productList": "No products available currently",
+    "newsList": "No latest news available",
+    "contactForm": "Please fill in all required fields (marked with *)",
+    "fileNotFound": "The requested file was not found",
+    "networkError": "Network connection failed, please check your internet and try again"
+  },
+  "common": {
+    "tel": "+86.15585606688",
+    "email": "support@chemicaloop.com",
+    "address": "No.1288 Binhai Avenue, Huangdao District, Qingdao City, Shandong Province, China",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "success": "Operation Successful",
+    "error": "Operation Failed, Please Retry",
+    "langChanged": "Language successfully switched to English",
+    "langChangeFail": "Language switch failed, please try again",
+    "back": "Back",
+    "viewMore": "View More"
+  },
+  "footer": {
+    "copyright": "© 2026 Chemicaloop All Rights Reserved",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "contactTitle": "Contact Us",
+    "workingHours": "Business Hours: Saturday to Thursday, 9:00 AM to 6:00 PM (GMT+8)"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "home": "Beranda",
+    "about": "Tentang Kami",
+    "products": "Pusat Produk",
+    "news": "Berita",
+    "contact": "Hubungi Kami"
+  },
+  "search": {
+    "placeholder": "Cari Produk (contoh: Resin Epoksi, Laporan MSDS)",
+    "btnText": "Cari",
+    "emptyTip": "Tidak ada produk terkait yang ditemukan, silakan ganti kata kunci"
+  },
+  "product": {
+    "title": "Detail Produk",
+    "spec": "Parameter Teknis",
+    "msds": "Unduh Laporan MSDS",
+    "inquiry": "Pertanyaan Online",
+    "stock": "Status Stok",
+    "price": "Harga Referensi",
+    "count": "{count} produk",
+    "stockStatus": {
+      "inStock": "Tersedia di Stok",
+      "outOfStock": "Stok Habis (Restok dalam 3-5 Hari)",
+      "preOrder": "Pemesanan Awal (Pengiriman dalam 7-10 Hari)"
+    }
+  },
+  "empty": {
+    "productList": "Tidak ada produk tersedia saat ini",
+    "newsList": "Tidak ada berita terbaru tersedia",
+    "contactForm": "Silakan isi semua kolom wajib (ditandai dengan *)",
+    "fileNotFound": "File yang diminta tidak ditemukan",
+    "networkError": "Koneksi jaringan gagal, silakan periksa internet Anda dan coba lagi"
+  },
+  "common": {
+    "tel": "+86.15585606688",
+    "email": "support@chemicaloop.com",
+    "address": "No.1288 Avenue Binhai, Distrik Huangdao, Kota Qingdao, Provinsi Shandong, Tiongkok",
+    "submit": "Kirim",
+    "cancel": "Batal",
+    "confirm": "Konfirmasi",
+    "loading": "Memuat...",
+    "success": "Operasi Berhasil",
+    "error": "Operasi Gagal, Silakan Coba Lagi",
+    "langChanged": "Bahasa berhasil diubah menjadi Bahasa Indonesia",
+    "langChangeFail": "Gagal mengubah bahasa, silakan coba lagi",
+    "back": "Kembali",
+    "viewMore": "Lihat Lebih Banyak"
+  },
+  "footer": {
+    "copyright": "© 2026 Chemicaloop Semua Hak Dilindungi",
+    "privacy": "Kebijakan Privasi",
+    "terms": "Syarat Penggunaan",
+    "contactTitle": "Hubungi Kami",
+    "workingHours": "Jam Kerja: Sabtu hingga Kamis, 09:00 WIB hingga 18:00 WIB (GMT+8)"
+  }
+}
