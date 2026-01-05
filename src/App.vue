@@ -3,7 +3,7 @@
     <!-- 路由加载状态提示 -->
     <div
       v-if="isRouteLoading"
-      style="display: flex; justify-content: center; align-items: center; min-height: 100vh"
+      style="display: flex; justify-content: center; align-items: center; min-height: 100vh"np
     >
       <div style="font-size: 1.2rem; color: var(--primary-color)">Loading...</div>
     </div>

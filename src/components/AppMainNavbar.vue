@@ -1,163 +1,149 @@
 <template>
   <div class="app-main-navbar">
-    <!-- 1. PC端Logo（固定定位，不随导航滚动偏移） -->
-    <div class="pc-logo-standalone" ref="logoRef" v-show="!isMobileLayout">
-      <img :src="isScrolled ? blueLogo : whiteLogo" alt="Chemicaloop Logo" class="pc-logo-img" />
+    <!-- 1. PC端Logo（固定定位） -->
+    <div class="pc-logo-standalone" ref="logoRef">
+      <img
+        :src="isScrolled ? blueLogo : whiteLogo"
+        alt="Chemicaloop Logo"
+        class="pc-logo-img"
+        @error="handleLogoError"
+      />
     </div>
 
-    <!-- 2. 移动端顶部栏（适配320px~767px屏幕，国旗在搜索框右侧） -->
-    <div class="mobile-top-bar" v-show="isMobileLayout">
+    <!-- 2. 移动端顶部栏 -->
+    <div class="mobile-top-bar">
       <div class="mobile-top-bar-inner">
-        <!-- 左侧：Logo（固定宽度，不挤压其他元素） -->
+        <!-- 左侧：Logo -->
         <div class="mobile-logo-container">
-          <img :src="whiteLogo" alt="Chemicaloop Logo" class="mobile-logo-img" />
+          <img
+            :src="whiteLogo"
+            alt="Chemicaloop Logo"
+            class="mobile-logo-img"
+            @error="handleLogoError"
+          />
         </div>
 
-        <!-- 中间：搜索框 + 国旗（flex布局确保同行，搜索框占满剩余空间） -->
-        <div class="mobile-search-lang-wrap">
-          <!-- 搜索框（flex:1 占满空间，不被国旗挤压） -->
-          <div class="mobile-search-wrapper">
-            <div class="mobile-search-input-wrap" @click="focusSearchInput">
-              <input
-                ref="searchInputRef"
-                class="mobile-search-input"
-                type="text"
-                placeholder="搜索..."
-                @click.stop
-              />
-              <button class="mobile-search-btn" @click.stop="handleSearchClick">
-                <img src="@/assets/icons/search-dark.png" alt="Search" class="mobile-search-icon" />
-              </button>
-            </div>
+        <!-- 中间：搜索框 -->
+        <div class="mobile-search-wrap">
+          <div class="mobile-search-input-wrap" @click="focusSearchInput">
+            <input
+              ref="searchInputRef"
+              class="mobile-search-input"
+              type="text"
+              placeholder="搜索..."
+              @click.stop
+            />
+            <button class="mobile-search-btn" @click.stop="handleSearchClick">
+              <img src="@/assets/icons/search-dark.png" alt="Search" class="mobile-search-icon" @error="handleIconError" />
+            </button>
           </div>
-
-          <!-- 移动端国旗（固定尺寸，在搜索框右侧，不换行） -->
-          <LangSelector class="mobile-lang-selector" />
         </div>
 
-        <!-- 右侧：Menu按钮（固定尺寸，与国旗间距固定） -->
-        <button class="mobile-menu-btn" @click.stop="handleMenuClick">
-          <img src="@/assets/icons/menu-icon.png" alt="Mobile Menu" class="mobile-menu-icon-img" />
-        </button>
+        <!-- 右侧：语言选择器 + Menu按钮（移动端仅这一个LangSelector） -->
+        <div class="mobile-right-actions">
+          <LangSelector class="mobile-lang-selector" />
+          <button class="mobile-menu-btn" @click.stop="handleMenuClick">
+            <img src="@/assets/icons/menu-icon.png" alt="Mobile Menu" class="mobile-menu-icon-img" @error="handleIconError" />
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 3. 移动端菜单（仅作导航，移除重复的语言选择器，避免冗余） -->
-    <div class="mobile-nav-menu" v-show="isMobileLayout && isMobileMenuOpen">
+    <!-- 3. 移动端菜单 -->
+    <div class="mobile-nav-menu" v-show="isMobileMenuOpen">
       <ul class="mobile-nav-list">
         <li @click="closeMobileMenu">
           <router-link to="/home" class="mobile-nav-link" active-class="active">HOME</router-link>
         </li>
         <li @click="closeMobileMenu">
-          <router-link to="/about" class="mobile-nav-link" active-class="active"
-            >ABOUT US</router-link
-          >
+          <router-link to="/about" class="mobile-nav-link" active-class="active">ABOUT US</router-link>
         </li>
         <li @click="closeMobileMenu">
-          <router-link to="/products" class="mobile-nav-link" active-class="active"
-            >PRODUCTS</router-link
-          >
+          <router-link to="/products" class="mobile-nav-link" active-class="active">PRODUCTS</router-link>
         </li>
         <li @click="closeMobileMenu">
           <router-link to="/news" class="mobile-nav-link" active-class="active">NEWS</router-link>
         </li>
         <li @click="closeMobileMenu">
-          <router-link to="/contact" class="mobile-nav-link" active-class="active"
-            >CONTACT US</router-link
-          >
+          <router-link to="/contact" class="mobile-nav-link" active-class="active">CONTACT US</router-link>
         </li>
       </ul>
     </div>
 
-    <!-- 4. 移动端菜单遮罩（防止滚动穿透） -->
-    <div
-      class="mobile-mask"
-      v-show="isMobileLayout && isMobileMenuOpen"
-      @click="closeMobileMenu"
-    ></div>
+    <!-- 4. 移动端菜单遮罩 -->
+    <div class="mobile-mask" v-show="isMobileMenuOpen" @click="closeMobileMenu"></div>
 
-    <!-- 5. PC端导航栏（适配768px~1920px+屏幕，国旗在搜索框右侧） -->
-    <div class="pc-nav-wrapper" v-show="!isMobileLayout">
-      <!-- PC端顶部栏（社交链接 + 搜索框 + 国旗） -->
+    <!-- 5. PC端导航栏 -->
+    <div class="pc-nav-wrapper">
       <div class="pc-top-header">
         <div class="pc-top-header-inner">
-          <!-- 左侧：社交链接（自适应宽度，不挤压右侧） -->
-          <div class="pc-social-links">
-            <a href="#" class="pc-social-icon" target="_blank" rel="noopener">
-              <img src="@/assets/icons/x.png" alt="X" class="pc-icon-img" />
-            </a>
-            <span>|</span>
-            <a href="#" class="pc-social-icon" target="_blank" rel="noopener">
-              <img src="@/assets/icons/linkedin.png" alt="LinkedIn" class="pc-icon-img" />
-            </a>
-            <span>|</span>
-            <a href="#" class="pc-social-icon" target="_blank" rel="noopener">
-              <img src="@/assets/icons/facebook.png" alt="Facebook" class="pc-icon-img" />
-            </a>
-            <span>|</span>
-            <a href="#" class="pc-social-icon" target="_blank" rel="noopener">
-              <img src="@/assets/icons/instagram.png" alt="Instagram" class="pc-icon-img" />
-            </a>
-            <span>|</span>
-            <a href="#" class="pc-social-icon" target="_blank" rel="noopener">
-              <img src="@/assets/icons/youtube.png" alt="YouTube" class="pc-icon-img" />
-            </a>
-            <span>|</span>
-            <a href="tel:+86.15585606688" class="pc-contact-text">+86.15585606688</a>
-            <span>|</span>
-            <a href="mailto:support@chemicaloop.com" class="pc-contact-text"
-              >support@chemicaloop.com</a
-            >
-          </div>
-
-          <!-- 右侧：搜索框 + 国旗（flex布局，确保国旗在搜索框右侧，不换行） -->
-          <div class="pc-search-lang-wrap">
-            <!-- PC端搜索框（固定宽度范围，适配不同屏幕） -->
-            <div class="pc-product-search">
-              <input type="text" placeholder="Product Search" class="pc-search-input" />
-              <button class="pc-search-btn" @click="handlePcSearchClick">
-                <img
-                  src="@/assets/icons/search-white.png"
-                  alt="Search Icon"
-                  class="global-search-icon"
-                />
-              </button>
+          <!-- 右侧：联系方式（社交+电话/邮箱） + 搜索框 + 语言选择器（核心修改） -->
+          <div class="pc-right-area">
+            <!-- 整合：社交图标 + 电话/邮箱 作为完整的联系方式区域 -->
+            <div class="pc-contact-social-wrap">
+              <!-- 社交图标 -->
+              <div class="pc-social-links">
+                <a href="#" class="pc-social-icon" target="_blank" rel="noopener">
+                  <img src="@/assets/icons/x.png" alt="X" class="pc-icon-img" @error="handleIconError" />
+                </a>
+                <span>|</span>
+                <a href="#" class="pc-social-icon" target="_blank" rel="noopener">
+                  <img src="@/assets/icons/linkedin.png" alt="LinkedIn" class="pc-icon-img" @error="handleIconError" />
+                </a>
+                <span>|</span>
+                <a href="#" class="pc-social-icon" target="_blank" rel="noopener">
+                  <img src="@/assets/icons/facebook.png" alt="Facebook" class="pc-icon-img" @error="handleIconError" />
+                </a>
+                <span>|</span>
+                <a href="#" class="pc-social-icon" target="_blank" rel="noopener">
+                  <img src="@/assets/icons/instagram.png" alt="Instagram" class="pc-icon-img" @error="handleIconError" />
+                </a>
+                <span>|</span>
+                <a href="#" class="pc-social-icon" target="_blank" rel="noopener">
+                  <img src="@/assets/icons/youtube.png" alt="YouTube" class="pc-icon-img" @error="handleIconError" />
+                </a>
+                <span>|</span>
+              </div>
+              <!-- 电话/邮箱 -->
+              <div class="pc-contact-info">
+                <a href="tel:+86.15585606688" class="pc-contact-text">+86.15585606688</a>
+                <span>|</span>
+                <a href="mailto:support@chemicaloop.com" class="pc-contact-text">support@chemicaloop.com</a>
+              </div>
             </div>
 
-            <!-- PC端国旗（与搜索框间距固定，随滚动同步样式） -->
-            <LangSelector class="pc-lang-selector" />
+            <!-- 搜索框 + 语言选择器 -->
+            <div class="pc-search-lang-wrap">
+              <div class="pc-product-search">
+                <input type="text" placeholder="Product Search" class="pc-search-input" />
+                <button class="pc-search-btn" @click="handlePcSearchClick">
+                  <img src="@/assets/icons/search-white.png" alt="Search Icon" class="global-search-icon" @error="handleIconError" />
+                </button>
+              </div>
+              <LangSelector class="pc-lang-selector" />
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- PC端主导航（滚动时样式切换，与国旗样式同步） -->
+      <!-- PC端主导航 -->
       <div class="pc-main-nav" :class="{ 'is-scrolled': isScrolled }">
         <div class="pc-main-nav-inner">
           <ul class="pc-nav-menu">
             <li class="nav-item" :class="{ 'nav-active': $route.path === '/home' }">
-              <router-link to="/home" class="pc-nav-link" active-class="link-active"
-                >HOME</router-link
-              >
+              <router-link to="/home" class="pc-nav-link" active-class="link-active">HOME</router-link>
             </li>
             <li class="nav-item" :class="{ 'nav-active': $route.path === '/about' }">
-              <router-link to="/about" class="pc-nav-link" active-class="link-active"
-                >ABOUT US</router-link
-              >
+              <router-link to="/about" class="pc-nav-link" active-class="link-active">ABOUT US</router-link>
             </li>
             <li class="nav-item" :class="{ 'nav-active': $route.path === '/products' }">
-              <router-link to="/products" class="pc-nav-link" active-class="link-active"
-                >PRODUCTS</router-link
-              >
+              <router-link to="/products" class="pc-nav-link" active-class="link-active">PRODUCTS</router-link>
             </li>
             <li class="nav-item" :class="{ 'nav-active': $route.path === '/news' }">
-              <router-link to="/news" class="pc-nav-link" active-class="link-active"
-                >NEWS</router-link
-              >
+              <router-link to="/news" class="pc-nav-link" active-class="link-active">NEWS</router-link>
             </li>
             <li class="nav-item" :class="{ 'nav-active': $route.path === '/contact' }">
-              <router-link to="/contact" class="pc-nav-link" active-class="link-active"
-                >CONTACT US</router-link
-              >
+              <router-link to="/contact" class="pc-nav-link" active-class="link-active">CONTACT US</router-link>
             </li>
           </ul>
         </div>
@@ -169,175 +155,167 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-// 导入仅显国旗样式的LangSelector组件（确保组件内已隐藏文字）
+// 仅在Navbar中导入一次LangSelector
 import LangSelector from '@/components/LangSelector.vue'
-// 导入Logo资源
-import whiteLogoImg from '@/assets/logo-white-bg.png'
-import blueLogoImg from '@/assets/logo-blue-bg.png'
 
-// 核心状态管理（确保多端适配逻辑正确）
+// 资源路径适配Vite
+const whiteLogo = ref(new URL('@/assets/logo-white-bg.png', import.meta.url).href)
+const blueLogo = ref(new URL('@/assets/logo-blue-bg.png', import.meta.url).href)
+
+// 核心状态
 const route = useRoute()
-const isScrolled = ref(false) // 导航滚动状态（控制样式切换）
-const whiteLogo = ref(whiteLogoImg)
-const blueLogo = ref(blueLogoImg)
-const isMobileMenuOpen = ref(false) // 移动端菜单显隐
-const isMobileLayout = ref(false) // 移动端/PC端布局标记
+const isScrolled = ref(false)
+const isMobileMenuOpen = ref(false)
 const logoRef = ref(null)
 const searchInputRef = ref(null)
 
-// 适配常量（统一多端尺寸标准）
-const PC_MIN_WIDTH_THRESHOLD = 768 // PC端最小宽度（低于此值为移动端）
+// 常量
+const PC_MIN_WIDTH_THRESHOLD = 768
 let scrollTimer = null
-let resizeObserver = null
 
-// 1. 移动端搜索框聚焦（适配软键盘弹出）
+// 图片加载失败兜底
+const handleLogoError = (e) => {
+  e.target.src = 'https://via.placeholder.com/120x60/004a99/ffffff?text=CHEMICALOOP'
+}
+const handleIconError = (e) => {
+  e.target.src = 'https://via.placeholder.com/16x16/ffffff/004a99?text=icon'
+}
+
+// 搜索框聚焦
 const focusSearchInput = () => {
   searchInputRef.value?.focus()
 }
 
-// 2. 布局切换逻辑（窗口 resize 时实时更新）
-const checkLayoutBreakpoint = () => {
-  nextTick(() => {
-    const screenWidth = typeof window !== 'undefined' ? window.innerWidth : PC_MIN_WIDTH_THRESHOLD
-    isMobileLayout.value = screenWidth < PC_MIN_WIDTH_THRESHOLD
-    if (isMobileMenuOpen.value) closeMobileMenu() // 布局切换时关闭菜单，避免错位
-  })
-}
-
-// 3. 滚动事件（防抖处理，避免频繁触发样式切换）
+// 滚动防抖
 const handleScroll = () => {
-  isScrolled.value = window.scrollY > 50
+  if (typeof window !== 'undefined') {
+    isScrolled.value = window.scrollY > 50
+  }
 }
 const debouncedScroll = () => {
   clearTimeout(scrollTimer)
   scrollTimer = setTimeout(handleScroll, 30)
 }
 
-// 4. 移动端菜单控制（防止滚动穿透）
+// 移动端菜单控制
 const handleMenuClick = () => {
-  if (!isMobileLayout.value) return
   isMobileMenuOpen.value = !isMobileMenuOpen.value
-  document.body.style.overflow = isMobileMenuOpen.value ? 'hidden' : 'auto'
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = isMobileMenuOpen.value ? 'hidden' : 'auto'
+  }
 }
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
-  document.body.style.overflow = 'auto'
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = 'auto'
+  }
 }
 
-// 5. 搜索功能（多端统一逻辑）
+// 搜索功能
 const handleSearchClick = () => {
   const value = searchInputRef.value?.value || ''
   console.log('移动端搜索内容：', value)
-  // 可扩展：$router.push(`/search?keyword=${value}`)
 }
 const handlePcSearchClick = () => {
   const input = document.querySelector('.pc-search-input')
   const value = input?.value || ''
   console.log('PC端搜索内容：', value)
-  // 可扩展：$router.push(`/search?keyword=${value}`)
 }
 
-// 6. 路由监听（切换页面时重置状态）
-watch(
-  () => route.path,
-  () => {
-    closeMobileMenu()
-    handleScroll()
-    nextTick(checkLayoutBreakpoint)
-  },
-  { immediate: true },
-)
+// 路由监听
+watch(() => route.path, () => {
+  closeMobileMenu()
+  handleScroll()
+}, { immediate: true })
 
-// 7. 生命周期（确保多端适配初始化正确）
+// 生命周期
 onMounted(() => {
-  nextTick(() => {
-    checkLayoutBreakpoint()
-    closeMobileMenu()
-  })
-  window.addEventListener('scroll', debouncedScroll)
-  window.addEventListener('resize', checkLayoutBreakpoint)
-  // 监听Logo尺寸变化（适配特殊布局）
-  if (logoRef.value) {
-    resizeObserver = new ResizeObserver(() => checkLayoutBreakpoint())
-    resizeObserver.observe(logoRef.value)
+  nextTick(handleScroll)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('scroll', debouncedScroll)
   }
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', debouncedScroll)
-  window.removeEventListener('resize', checkLayoutBreakpoint)
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('scroll', debouncedScroll)
+  }
   clearTimeout(scrollTimer)
-  resizeObserver?.disconnect()
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = 'auto'
+  }
 })
 </script>
 
 <style lang="scss" scoped>
-/* 引入全局字体（确保多端字体统一） */
+/* 全局字体 */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap');
 
-// 全局变量（统一多端样式标准，避免混乱）
+// 全局变量
 $main-sans-font: 'Inter', sans-serif;
-$primary-color: #004a99; // 主题蓝（多端统一）
+$primary-color: #004a99;
 $white: #ffffff;
 $light-gray: #f5f5f5;
 $dark-gray: #333;
-// 尺寸变量（多端适配核心，按比例定义）
-$nav-height: 80px; // 移动端顶部栏高度
-$pc-nav-top-height: 60px; // PC端顶部栏高度
-$pc-nav-main-height: 50px; // PC端主导航高度
-$search-wrap-height: 40px; // 移动端搜索框高度
-// 间距变量（统一多端间距，避免拥挤/松散）
-$gap-sm: 0.5rem; // 小间距（国旗与搜索框）
-$gap-md: 1rem; // 中等间距（元素间）
-// 动画变量（多端过渡效果统一）
+$secondary-color: #2c3e50;
+$nav-height: 80px;
+$pc-nav-top-height: 60px;
+$pc-nav-main-height: 50px;
+$search-wrap-height: 40px;
+$gap-sm: 0.5rem;
+$gap-md: 1rem;
 $transition-duration: 0.3s;
 $transition-timing: ease;
 
-/* 全局重置（确保多端默认样式一致） */
+/* 全局重置 */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* 外层容器（固定z-index，避免被其他元素遮挡） */
+/* 外层容器 */
 .app-main-navbar {
   width: 100%;
-  z-index: 9999;
+  z-index: 99999 !important;
   font-family: $main-sans-font;
   line-height: 1;
+  position: relative;
 }
 
-/* ———— 1. PC端Logo适配（固定定位，不随滚动偏移） ———— */
+/* 1. PC端Logo */
 .pc-logo-standalone {
   position: fixed;
   top: 0;
   left: 20px;
-  z-index: 99999; // 高于导航，避免被遮挡
+  z-index: 99999;
   padding: 10px 0;
   height: fit-content;
   line-height: 0;
+  display: block;
 
   .pc-logo-img {
-    width: clamp(80px, 8vw, 160px); // 自适应宽度（最小80px，最大160px）
+    width: clamp(80px, 8vw, 160px);
     height: auto;
-    display: block;
+    display: block !important;
     object-fit: contain;
     transition: all $transition-duration $transition-timing;
   }
 
-  // 小屏PC端（768px~1078px）适配：缩小Logo
   @media (max-width: 1078px) and (min-width: 768px) {
     left: 10px;
     .pc-logo-img {
       width: clamp(60px, 6vw, 120px);
     }
   }
+  @media (max-width: 767px) {
+    display: none !important;
+  }
 }
 
-/* ———— 2. 移动端顶部栏适配（320px~767px） ———— */
+/* 2. 移动端顶部栏 */
 .mobile-top-bar {
-  display: flex;
+  display: none !important;
   align-items: center;
   background-color: $white;
   height: $nav-height;
@@ -346,41 +324,31 @@ $transition-timing: ease;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 9999;
+  z-index: 99999;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  padding: 0 15px; // 左右内边距，避免元素贴边
+  padding: 0 15px;
 
   .mobile-top-bar-inner {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: $gap-sm; // 元素间最小间距，避免挤压
+    gap: $gap-sm;
   }
 
-  // 左侧Logo：固定宽度，不挤压其他元素
   .mobile-logo-container {
-    flex-shrink: 0; // 禁止缩小
-    width: 80px; // 固定宽度
+    flex-shrink: 0;
+    width: 80px;
 
     .mobile-logo-img {
       height: 50px;
-      display: block;
+      display: block !important;
       object-fit: contain;
     }
   }
 
-  // 中间：搜索框 + 国旗容器（flex布局，确保同行）
-  .mobile-search-lang-wrap {
-    display: flex;
-    align-items: center;
-    gap: $gap-sm; // 搜索框与国旗间距
-    flex: 1; // 占满剩余空间，确保右侧Menu按钮不挤压
-  }
-
-  // 移动端搜索框：占满容器空间，不被国旗挤压
-  .mobile-search-wrapper {
-    flex: 1; // 搜索框占满剩余空间
+  .mobile-search-wrap {
+    flex: 1;
     display: flex;
     align-items: center;
 
@@ -402,7 +370,7 @@ $transition-timing: ease;
       left: 12px;
       top: 0;
       height: 100%;
-      width: calc(100% - 40px); // 预留搜索按钮空间
+      width: calc(100% - 40px);
       border: none;
       background: transparent;
       outline: none;
@@ -434,20 +402,20 @@ $transition-timing: ease;
     }
   }
 
-  // 移动端国旗：仅显国旗，固定尺寸，不换行
-  .mobile-lang-selector {
-    flex-shrink: 0; // 禁止缩小，避免变形
-    :deep(.lang-selector-container) {
-      // 隐藏语言文字，仅显国旗+箭头
-      .lang-text,
-      .lang-option-text {
-        display: none !important;
-      }
+  /* 移动端右侧操作区：语言选择器 + 菜单按钮 */
+  .mobile-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-shrink: 0;
+  }
 
-      // 触发器：紧凑布局，适配移动端
+  /* 移动端语言选择器（仅一个） */
+  .mobile-lang-selector {
+    :deep(.lang-selector-container) {
       .lang-trigger {
-        padding: 0.3rem 0.4rem; // 缩小内边距
-        gap: 0.2rem; // 国旗与箭头间距
+        padding: 0.3rem 0.4rem;
+        gap: 0.2rem;
         background-color: rgba(0, 74, 153, 0.1);
         border: 1px solid transparent;
         border-radius: 4px;
@@ -457,6 +425,7 @@ $transition-timing: ease;
           height: 14px;
           object-fit: cover;
           border-radius: 2px;
+          border: 1px solid #e0e0e0;
         }
 
         .lang-arrow {
@@ -465,24 +434,33 @@ $transition-timing: ease;
         }
       }
 
-      // 下拉菜单：右对齐，避免超出屏幕
       .lang-dropdown {
-        width: 56px; // 固定宽度，匹配触发器
+        width: 56px;
         left: auto;
-        right: 0; // 右对齐，防止小屏左侧溢出
+        right: 0;
         top: calc(100% + 2px);
+        background-color: $white;
+        border: 1px solid $primary-color;
 
         .lang-option {
-          justify-content: center; // 国旗居中
-          padding: 0.4rem 0; // 上下内边距，节省空间
+          justify-content: center;
+          padding: 0.4rem 0;
+
+          &:hover, &.selected {
+            background-color: rgba(0, 74, 153, 0.1);
+          }
+
+          .lang-flag {
+            width: 20px;
+            height: 14px;
+            border: 1px solid #e0e0e0;
+          }
         }
       }
     }
   }
 
-  // 右侧Menu按钮：固定尺寸，不挤压
   .mobile-menu-btn {
-    flex-shrink: 0;
     width: 40px;
     height: 40px;
     border: none;
@@ -500,32 +478,27 @@ $transition-timing: ease;
     }
   }
 
-  // 超小屏移动端（320px~375px）适配：进一步缩小间距
-  @media (max-width: 375px) {
-    .mobile-search-lang-wrap {
-      gap: 0.3rem;
-    }
-    .mobile-lang-selector :deep(.lang-trigger) {
-      padding: 0.2rem 0.3rem;
-    }
-    .mobile-lang-selector :deep(.lang-flag) {
-      width: 18px;
-      height: 12px;
-    }
+  @media (max-width: 767px) {
+    display: flex !important;
   }
 }
 
-/* ———— 3. 移动端菜单适配 ———— */
+/* 3. 移动端菜单 */
 .mobile-nav-menu {
   position: fixed;
   top: $nav-height;
   right: 0;
-  width: 260px; // 固定宽度，不随屏幕变化
+  width: 260px;
   height: calc(100vh - $nav-height);
   background: $white;
-  z-index: 999;
+  z-index: 9999;
   box-shadow: -2px 0 15px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
+  display: none;
+
+  &[v-show="true"] {
+    display: block;
+  }
 
   .mobile-nav-list {
     list-style: none;
@@ -543,8 +516,7 @@ $transition-timing: ease;
       font-size: 16px;
       transition: color $transition-duration $transition-timing;
 
-      &:hover,
-      &.active {
+      &:hover, &.active {
         color: $primary-color;
         background-color: rgba(0, 74, 153, 0.05);
       }
@@ -559,10 +531,15 @@ $transition-timing: ease;
   width: 100%;
   height: calc(100vh - $nav-height);
   background: rgba(0, 0, 0, 0.5);
-  z-index: 998;
+  z-index: 9998;
+  display: none;
+
+  &[v-show="true"] {
+    display: block;
+  }
 }
 
-/* ———— 4. PC端导航适配（768px+） ———— */
+/* 4. PC端导航栏 */
 .pc-nav-wrapper {
   width: 100%;
   position: fixed;
@@ -570,9 +547,13 @@ $transition-timing: ease;
   left: 0;
   z-index: 9999;
   font-family: $main-sans-font;
+  display: block !important;
+
+  @media (max-width: 767px) {
+    display: none !important;
+  }
 }
 
-// PC端顶部栏（社交链接 + 搜索框 + 国旗）
 .pc-top-header {
   background-color: $primary-color;
   height: $pc-nav-top-height;
@@ -581,25 +562,35 @@ $transition-timing: ease;
   color: $white;
   padding: 0 20px;
   transition: all $transition-duration $transition-timing;
-  overflow: hidden;
+  overflow: visible;
 
   .pc-top-header-inner {
     width: 100%;
-    max-width: 1920px; // 大屏最大宽度，避免元素过宽
+    max-width: 1920px;
     margin: 0 auto;
     display: flex;
     align-items: center;
-    justify-content: space-between; // 左右布局，右侧搜索框+国旗靠右
+    justify-content: flex-end; /* 整体右对齐（Logo已固定左侧） */
     gap: $gap-md;
+    flex-wrap: wrap;
   }
 
-  // 左侧社交链接：自适应宽度，超出时省略
+  /* 核心：社交+联系方式 整合容器 */
+  .pc-contact-social-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-shrink: 1;
+    flex-wrap: wrap;
+  }
+
+  /* 社交图标样式（整合后） */
   .pc-social-links {
     display: flex;
     align-items: center;
     gap: 0.8rem;
-    flex-shrink: 1; // 允许缩小，避免挤压右侧
-    overflow: hidden; // 隐藏超出部分
+    flex-shrink: 1;
+    overflow: visible;
 
     .pc-social-icon {
       transition: transform 0.2s $transition-timing;
@@ -610,10 +601,10 @@ $transition-timing: ease;
       }
 
       .pc-icon-img {
-        height: clamp(12px, 1.2vw, 16px); // 自适应图标大小
+        height: clamp(12px, 1.2vw, 16px);
         width: auto;
-        display: block;
-        filter: brightness(0) invert(1); // 白色图标
+        display: block !important;
+        filter: brightness(0) invert(1);
       }
     }
 
@@ -624,33 +615,53 @@ $transition-timing: ease;
       font-size: clamp(9px, 0.7vw, 12px);
     }
 
-    .pc-contact-text {
-      color: $white;
-      text-decoration: none;
-      margin: 0 2px;
-      font-size: clamp(9px, 0.7vw, 12px);
-      white-space: nowrap; // 不换行，避免错乱
-      overflow: hidden;
-      text-overflow: ellipsis; // 超出部分省略号
-    }
-
-    // 小屏PC端适配：缩小间距
     @media (max-width: 1078px) and (min-width: 768px) {
       gap: 0.5rem;
     }
   }
 
-  // 右侧：搜索框 + 国旗容器（flex布局，确保同行）
+  /* 电话/邮箱样式（整合后） */
+  .pc-contact-info {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-shrink: 1;
+
+    .pc-contact-text {
+      color: $white;
+      text-decoration: none;
+      margin: 0 2px;
+      font-size: clamp(9px, 0.7vw, 12px);
+      white-space: nowrap;
+      overflow: visible;
+    }
+
+    span {
+      color: $white;
+      opacity: 0.9;
+      margin: 0 2px;
+      font-size: clamp(9px, 0.7vw, 12px);
+    }
+  }
+
+  /* 右侧整体容器（联系方式+搜索+语言） */
+  .pc-right-area {
+    display: flex;
+    align-items: center;
+    gap: $gap-md;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
   .pc-search-lang-wrap {
     display: flex;
     align-items: center;
-    gap: $gap-sm; // 搜索框与国旗间距
-    flex-shrink: 0; // 禁止缩小，避免变形
+    gap: $gap-sm;
+    flex-shrink: 0;
   }
 
-  // PC端搜索框：固定宽度范围，适配不同屏幕
   .pc-product-search {
-    width: clamp(180px, 14vw, 280px); // 最小180px，最大280px
+    width: clamp(180px, 14vw, 280px);
     height: clamp(32px, 2.5vw, 38px);
     display: flex;
     align-items: center;
@@ -690,35 +701,28 @@ $transition-timing: ease;
       .global-search-icon {
         height: clamp(14px, 1.2vw, 16px);
         width: auto;
-        display: block;
+        display: block !important;
         object-fit: contain;
       }
     }
   }
 
-  // PC端国旗：仅显国旗，随滚动同步样式
+  /* PC端语言选择器（仅一个） */
   .pc-lang-selector {
     :deep(.lang-selector-container) {
-      // 隐藏语言文字，仅显国旗+箭头
-      .lang-text,
-      .lang-option-text {
-        display: none !important;
-      }
-
-      // 触发器：紧凑布局，适配PC端顶部栏
       .lang-trigger {
         padding: 0.3rem 0.5rem;
         gap: 0.2rem;
         background-color: rgba(255, 255, 255, 0.2);
         border: 1px solid rgba(255, 255, 255, 0.3);
         border-radius: 4px;
-        transition: all $transition-duration $transition-timing;
 
         .lang-flag {
           width: 20px;
           height: 14px;
           object-fit: cover;
           border-radius: 2px;
+          border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
         .lang-arrow {
@@ -727,48 +731,44 @@ $transition-timing: ease;
         }
       }
 
-      // 下拉菜单：对齐触发器，避免错位
       .lang-dropdown {
         width: 56px;
         top: calc(100% + 2px);
         left: 0;
-        background-color: #2c3e50;
+        background-color: $secondary-color;
         border: 1px solid $primary-color;
-        border-top: none;
-        border-radius: 0 0 4px 4px;
 
         .lang-option {
           justify-content: center;
           padding: 0.4rem 0;
-          transition: background-color $transition-duration $transition-timing;
 
-          &:hover,
-          &.selected {
+          &:hover, &.selected {
             background-color: $primary-color;
           }
 
           .lang-flag {
             width: 20px;
             height: 14px;
-            object-fit: cover;
+            border: 1px solid $white;
           }
         }
       }
-    }
 
-    // 滚动后（is-scrolled）样式同步：与导航栏背景色匹配
-    .pc-main-nav.is-scrolled & :deep(.lang-trigger) {
-      background-color: rgba(0, 74, 153, 0.1);
-      border-color: rgba(0, 74, 153, 0.2);
+      .pc-main-nav.is-scrolled & :deep(.lang-trigger) {
+        background-color: rgba(0, 74, 153, 0.1);
+        border-color: rgba(0, 74, 153, 0.2);
 
-      .lang-arrow {
-        color: $primary-color;
+        .lang-arrow {
+          color: $primary-color;
+        }
+        .lang-flag {
+          border-color: rgba(0, 74, 153, 0.2);
+        }
       }
     }
   }
 }
 
-// PC端主导航（滚动样式切换）
 .pc-main-nav {
   background-color: transparent;
   height: $pc-nav-main-height;
@@ -787,14 +787,14 @@ $transition-timing: ease;
     max-width: 1920px;
     margin: 0 auto;
     display: flex;
-    justify-content: flex-end; // 导航项靠右
+    justify-content: flex-end;
     align-items: center;
   }
 
   .pc-nav-menu {
     list-style: none;
     display: flex;
-    gap: clamp(20px, 2vw, 60px); // 自适应间距（最小20px，最大60px）
+    gap: clamp(20px, 2vw, 60px);
     align-items: center;
 
     .nav-item {
@@ -808,39 +808,17 @@ $transition-timing: ease;
         transition: color $transition-duration $transition-timing;
       }
 
-      // 滚动前（透明背景）样式
-      &:not(.pc-main-nav.is-scrolled) {
-        .pc-nav-link {
-          color: $white;
-          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-        }
-
-        &:hover::before,
-        &:hover::after,
-        &.nav-active::before,
-        &.nav-active::after {
-          background-color: $white;
-        }
+      &:not(.pc-main-nav.is-scrolled) .pc-nav-link {
+        color: $white;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
       }
 
-      // 滚动后（白色背景）样式
-      &.pc-main-nav.is-scrolled {
-        .pc-nav-link {
-          color: $primary-color;
-          text-shadow: 0 1px 2px rgba(0, 74, 153, 0.2);
-        }
-
-        &:hover::before,
-        &:hover::after,
-        &.nav-active::before,
-        &.nav-active::after {
-          background-color: $primary-color;
-        }
+      &.pc-main-nav.is-scrolled .pc-nav-link {
+        color: $primary-color;
+        text-shadow: 0 1px 2px rgba(0, 74, 153, 0.2);
       }
 
-      // 导航项上下边框动画
-      &::before,
-      &::after {
+      &::before, &::after {
         content: '';
         position: absolute;
         left: 0;
@@ -851,44 +829,31 @@ $transition-timing: ease;
         opacity: 0;
       }
 
-      &::before {
-        top: 10px;
-      }
+      &::before { top: 10px; }
+      &::after { bottom: 10px; }
 
-      &::after {
-        bottom: 10px;
-      }
-
-      &:hover::before,
-      &:hover::after,
-      &.nav-active::before,
-      &.nav-active::after {
+      &:hover::before, &:hover::after, &.nav-active::before, &.nav-active::after {
         opacity: 1;
+      }
+
+      &:not(.pc-main-nav.is-scrolled):hover::before,
+      &:not(.pc-main-nav.is-scrolled):hover::after,
+      &:not(.pc-main-nav.is-scrolled).nav-active::before,
+      &:not(.pc-main-nav.is-scrolled).nav-active::after {
+        background-color: $white;
+      }
+
+      &.pc-main-nav.is-scrolled:hover::before,
+      &.pc-main-nav.is-scrolled:hover::after,
+      &.pc-main-nav.is-scrolled.nav-active::before,
+      &.pc-main-nav.is-scrolled.nav-active::after {
+        background-color: $primary-color;
       }
     }
 
-    // 小屏PC端适配：缩小导航项间距
     @media (max-width: 1078px) and (min-width: 768px) {
       gap: clamp(15px, 1.5vw, 30px);
     }
-  }
-}
-
-/* ———— 5. 多端隐藏逻辑（避免样式冲突） ———— */
-// 移动端隐藏PC端元素
-@media (max-width: 767px) {
-  .pc-logo-standalone,
-  .pc-nav-wrapper {
-    display: none !important;
-  }
-}
-
-// PC端隐藏移动端元素
-@media (min-width: 768px) {
-  .mobile-top-bar,
-  .mobile-nav-menu,
-  .mobile-mask {
-    display: none !important;
   }
 }
 </style>
