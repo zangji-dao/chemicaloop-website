@@ -1,17 +1,18 @@
 <template>
   <div class="home-page">
-    <!-- 导航栏组件（仅客户端挂载，避免SSR冲突） -->
+    <!-- 导航栏组件（客户端挂载，避免SSR冲突） -->
     <AppMainNavbar v-if="isMounted" />
 
-    <!-- Banner 轮播（适配导航栏高度，避免重复padding） -->
+    <!-- Banner 轮播（适配导航栏高度） -->
     <AppBanner
       v-if="isMounted"
       :navBarHeight="80"
       :autoplay="true"
       :autoplayInterval="5000"
+      class="full-width-banner"
     />
 
-    <!-- 核心欢迎区域（i18n默认值兜底，避免翻译失败） -->
+    <!-- 核心欢迎区域（i18n默认值兜底） -->
     <section class="welcome-section" v-if="isMounted">
       <div class="relative-container">
         <div class="welcome-text">
@@ -23,9 +24,30 @@
             {{ t('home.welcomeSubtitle', 'Professional Chemical Solutions') }}
           </p>
           <div class="welcome-desc">
-            <p>{{ t('home.welcomeDesc1', 'We provide high-quality chemical products for various industries.') }}</p>
-            <p>{{ t('home.welcomeDesc2', 'With 45+ years of experience, we serve 2000+ global customers.') }}</p>
-            <p>{{ t('home.welcomeDesc3', '500+ products in stock, 100000+ tons of warehouse capacity.') }}</p>
+            <p>
+              {{
+                t(
+                  'home.welcomeDesc1',
+                  'We provide high-quality chemical products for various industries.',
+                )
+              }}
+            </p>
+            <p>
+              {{
+                t(
+                  'home.welcomeDesc2',
+                  'With 45+ years of experience, we serve 2000+ global customers.',
+                )
+              }}
+            </p>
+            <p>
+              {{
+                t(
+                  'home.welcomeDesc3',
+                  '500+ products in stock, 100000+ tons of warehouse capacity.',
+                )
+              }}
+            </p>
           </div>
           <button class="welcome-btn" @click="handleGoAbout">
             {{ t('home.readMore', 'Read More') }}
@@ -51,7 +73,7 @@
       </div>
     </section>
 
-    <!-- 数据统计模块（响应式布局优化） -->
+    <!-- 数据统计模块（响应式布局） -->
     <section class="stats-section" v-if="isMounted">
       <div class="stats-container">
         <div class="stats-item" v-for="(item, idx) in statsList" :key="idx">
@@ -61,13 +83,18 @@
       </div>
     </section>
 
-    <!-- 行业产品分类模块（修复高度计算+响应式网格） -->
+    <!-- 行业产品分类模块（动态高度+响应式网格） -->
     <section class="industry-products-section" v-if="isMounted">
       <div class="industry-container">
         <div class="industry-header">
           <h2 class="industry-title">{{ t('home.industryTitle', 'Industry Categories') }}</h2>
           <p class="industry-desc">
-            {{ t('home.industryDesc', 'Choose the industry you are interested in to view related products.') }}
+            {{
+              t(
+                'home.industryDesc',
+                'Choose the industry you are interested in to view related products.',
+              )
+            }}
           </p>
           <div class="industry-search-lang-wrapper">
             <button class="product-search-btn" @click="handleGoProducts">
@@ -76,7 +103,7 @@
           </div>
         </div>
 
-        <!-- 行业分类网格（动态高度+平滑过渡） -->
+        <!-- 行业分类网格（平滑过渡） -->
         <div
           class="industry-grid-wrapper"
           :style="{
@@ -109,7 +136,9 @@
         <!-- 展开/收起按钮（仅高度超出时显示） -->
         <div class="industry-toggle-btn" v-if="totalIndustryHeight > defaultShowHeight">
           <button @click="toggleIndustryExpand" class="toggle-btn">
-            <span>{{ isIndustryExpanded ? t('home.showLess', 'Show Less') : t('home.showMore', 'Show More') }}</span>
+            <span>{{
+              isIndustryExpanded ? t('home.showLess', 'Show Less') : t('home.showMore', 'Show More')
+            }}</span>
             <svg
               class="toggle-icon"
               xmlns="http://www.w3.org/2000/svg"
@@ -121,7 +150,7 @@
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              :class="{ 'rotated': isIndustryExpanded }"
+              :class="{ rotated: isIndustryExpanded }"
             >
               <path d="M6 9l6 6 6-6"></path>
             </svg>
@@ -140,7 +169,14 @@
           :src="youtubeIframeSrc"
           :title="t('home.videoTitle', 'CHEMICALOOP Introduction')"
           frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allow="
+            accelerometer;
+            autoplay;
+            clipboard-write;
+            encrypted-media;
+            gyroscope;
+            picture-in-picture;
+          "
           allowfullscreen
           class="youtube-iframe"
           @error="handleIframeError"
@@ -166,24 +202,19 @@ import FloatingTools from '@/components/FloatingTools.vue'
 
 // 初始化核心实例
 const router = useRouter()
-const { t } = useI18n() // 正确的i18n使用方式
+const { t } = useI18n()
 
 // ========== 基础状态管理 ==========
-// 组件挂载状态（避免SSR/客户端渲染冲突）
-const isMounted = ref(false)
-// 悬浮组件延迟加载
-const isFloatingToolsReady = ref(false)
+const isMounted = ref(false) // 组件挂载状态（控制客户端渲染）
+const isFloatingToolsReady = ref(false) // 悬浮工具延迟加载状态
 
 // ========== 视频相关 ==========
-// 视频封面（Vite静态资源解析+兜底）
 const videoCover = ref(
   new URL('@/assets/images/chemicaloop-video-cover.jpg', import.meta.url).href ||
-  'https://via.placeholder.com/704x528/004a99/ffffff?text=CHEMICALOOP+Video'
+    'https://via.placeholder.com/704x528/004a99/ffffff?text=CHEMICALOOP+Video',
 )
-// 视频弹窗状态
-const isVideoModalOpen = ref(false)
-// YouTube iframe地址（添加mute=1符合自动播放政策）
-const youtubeIframeSrc = ref('https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1')
+const isVideoModalOpen = ref(false) // 视频弹窗显示状态
+const youtubeIframeSrc = ref('https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1') // YouTube嵌入地址
 
 // ========== 响应式判断 ==========
 const isMobile = computed(() => {
@@ -196,7 +227,7 @@ const statsList = ref([
   { number: '45+', key: 'home.statsExp', default: 'Years of Experience' },
   { number: '2000+', key: 'home.statsCustomers', default: 'Global Customers' },
   { number: '500+', key: 'home.statsProducts', default: 'Products in Stock' },
-  { number: '100000+', key: 'home.statsWarehouse', default: 'Warehouse Capacity (Tons)' }
+  { number: '100000+', key: 'home.statsWarehouse', default: 'Warehouse Capacity (Tons)' },
 ])
 
 // ========== 行业分类配置 ==========
@@ -205,114 +236,126 @@ const industryList = computed(() => [
     name: t('home.industryAgro', 'Agrochemicals'),
     icon: new URL('@/assets/icons/industry/industry-agrochemicals.png', import.meta.url).href,
     placeholderText: 'Agro',
-    path: '/products/agrochemicals'
+    path: '/products/agrochemicals',
   },
   {
     name: t('home.industryAnimal', 'Animal Healthcare'),
     icon: new URL('@/assets/icons/industry/industry-animal-healthcare.png', import.meta.url).href,
     placeholderText: 'Animal',
-    path: '/products/animal-healthcare'
+    path: '/products/animal-healthcare',
   },
   {
     name: t('home.industryClean', 'Cleaning Disinfectants'),
-    icon: new URL('@/assets/icons/industry/industry-cleaning-disinfectants.png', import.meta.url).href,
+    icon: new URL('@/assets/icons/industry/industry-cleaning-disinfectants.png', import.meta.url)
+      .href,
     placeholderText: 'Clean',
-    path: '/products/cleaning-disinfectants'
+    path: '/products/cleaning-disinfectants',
   },
   {
     name: t('home.industryConst', 'Construction'),
     icon: new URL('@/assets/icons/industry/industry-construction.png', import.meta.url).href,
     placeholderText: 'Const',
-    path: '/products/construction'
+    path: '/products/construction',
   },
   {
     name: t('home.industryEnergy', 'Energy'),
     icon: new URL('@/assets/icons/industry/industry-energy.png', import.meta.url).href,
     placeholderText: 'Energy',
-    path: '/products/energy'
+    path: '/products/energy',
   },
   {
     name: t('home.industryFabric', 'Fabric Solutions'),
     icon: new URL('@/assets/icons/industry/industry-fabric-solutions.png', import.meta.url).href,
     placeholderText: 'Fabric',
-    path: '/products/fabric-solutions'
+    path: '/products/fabric-solutions',
   },
   {
     name: t('home.industryFlavour', 'Flavours Fragrances'),
     icon: new URL('@/assets/icons/industry/industry-flavours-fragrances.png', import.meta.url).href,
     placeholderText: 'Flavour',
-    path: '/products/flavours-fragrances'
+    path: '/products/flavours-fragrances',
   },
   {
     name: t('home.industryFood', 'Food Healthcare Ingredients'),
-    icon: new URL('@/assets/icons/industry/industry-food-healthcare-ingredients.png', import.meta.url).href,
+    icon: new URL(
+      '@/assets/icons/industry/industry-food-healthcare-ingredients.png',
+      import.meta.url,
+    ).href,
     placeholderText: 'Food',
-    path: '/products/food-healthcare-ingredients'
+    path: '/products/food-healthcare-ingredients',
   },
   {
     name: t('home.industryLube', 'Lubricants Automobiles'),
-    icon: new URL('@/assets/icons/industry/industry-lubricants-automobiles.png', import.meta.url).href,
+    icon: new URL('@/assets/icons/industry/industry-lubricants-automobiles.png', import.meta.url)
+      .href,
     placeholderText: 'Lube',
-    path: '/products/lubricants-automobiles'
+    path: '/products/lubricants-automobiles',
   },
   {
     name: t('home.industryMetal', 'Metal Treatment'),
     icon: new URL('@/assets/icons/industry/industry-metal-treatment.png', import.meta.url).href,
     placeholderText: 'Metal',
-    path: '/products/metal-treatment'
+    path: '/products/metal-treatment',
   },
   {
     name: t('home.industryPaint', 'Paint Coatings'),
     icon: new URL('@/assets/icons/industry/industry-paint-coatings.png', import.meta.url).href,
     placeholderText: 'Paint',
-    path: '/products/paint-coatings'
+    path: '/products/paint-coatings',
   },
   {
     name: t('home.industryPerf', 'Performance Chemicals'),
-    icon: new URL('@/assets/icons/industry/industry-performance-chemicals.png', import.meta.url).href,
+    icon: new URL('@/assets/icons/industry/industry-performance-chemicals.png', import.meta.url)
+      .href,
     placeholderText: 'Perf',
-    path: '/products/performance-chemicals'
+    path: '/products/performance-chemicals',
   },
   {
     name: t('home.industryPersonal', 'Personal Care'),
     icon: new URL('@/assets/icons/industry/industry-personal-care.png', import.meta.url).href,
     placeholderText: 'Personal',
-    path: '/products/personal-care'
+    path: '/products/personal-care',
   },
   {
     name: t('home.industryPharma', 'Pharmaceuticals'),
     icon: new URL('@/assets/icons/industry/industry-pharmaceuticals.png', import.meta.url).href,
     placeholderText: 'Pharma',
-    path: '/products/pharmaceuticals'
+    path: '/products/pharmaceuticals',
   },
   {
     name: t('home.industryPoly', 'Polymers Resin'),
     icon: new URL('@/assets/icons/industry/industry-polymers-resin.png', import.meta.url).href,
     placeholderText: 'Poly',
-    path: '/products/polymers-resin'
+    path: '/products/polymers-resin',
   },
   {
     name: t('home.industryPulp', 'Pulp Paper Solutions'),
-    icon: new URL('@/assets/icons/industry/industry-pulp-paper-solutions.png', import.meta.url).href,
+    icon: new URL('@/assets/icons/industry/industry-pulp-paper-solutions.png', import.meta.url)
+      .href,
     placeholderText: 'Pulp',
-    path: '/products/pulp-paper-solutions'
+    path: '/products/pulp-paper-solutions',
   },
   {
     name: t('home.industryWater', 'Water Treatment'),
     icon: new URL('@/assets/icons/industry/industry-water-treatment.png', import.meta.url).href,
     placeholderText: 'Water',
-    path: '/products/water-treatment'
-  }
+    path: '/products/water-treatment',
+  },
 ])
 
 // ========== 行业分类展开/收起逻辑 ==========
-const isIndustryExpanded = ref(false)
-const industryGridRef = ref(null)
-const defaultShowHeight = ref(420)
-const totalIndustryHeight = ref(0)
-let debouncedCalcHeight = null
+const isIndustryExpanded = ref(false) // 行业分类展开状态
+const industryGridRef = ref(null) // 行业网格元素引用
+const defaultShowHeight = ref(420) // 默认显示高度
+const totalIndustryHeight = ref(0) // 行业网格总高度
+let debouncedCalcHeight = null // 防抖计算高度函数
 
-// 防抖函数（通用封装）
+/**
+ * 防抖函数
+ * @param {Function} fn - 待防抖函数
+ * @param {number} delay - 防抖延迟时间（默认300ms）
+ * @returns 防抖后的函数
+ */
 const debounce = (fn, delay = 300) => {
   let timer = null
   return (...args) => {
@@ -321,7 +364,9 @@ const debounce = (fn, delay = 300) => {
   }
 }
 
-// 计算行业网格高度（容错+动态适配）
+/**
+ * 计算行业网格高度（动态适配显示/收起）
+ */
 const calcIndustryHeight = () => {
   if (typeof window === 'undefined' || !industryGridRef.value) return
 
@@ -329,7 +374,7 @@ const calcIndustryHeight = () => {
     const grid = industryGridRef.value
     totalIndustryHeight.value = grid.offsetHeight
 
-    // 根据屏幕尺寸动态计算默认显示高度
+    // 动态计算默认显示高度（根据屏幕尺寸调整显示行数）
     const itemHeight = grid.querySelector('.industry-item')?.offsetHeight || 120
     const gap = parseInt(getComputedStyle(grid).gap) || 24
     const rows = window.innerWidth <= 576 ? 2 : window.innerWidth <= 768 ? 3 : 4
@@ -341,23 +386,34 @@ const calcIndustryHeight = () => {
   }
 }
 
-// 切换行业分类展开状态
+/**
+ * 切换行业分类展开/收起状态
+ */
 const toggleIndustryExpand = () => {
   isIndustryExpanded.value = !isIndustryExpanded.value
 }
 
 // ========== 事件处理函数 ==========
-// 视频封面加载失败兜底
+/**
+ * 视频封面加载失败处理
+ * @param {Event} e - 加载错误事件
+ */
 const handleVideoCoverError = (e) => {
   e.target.src = 'https://via.placeholder.com/704x528/004a99/ffffff?text=CHEMICALOOP+Video'
 }
 
-// 行业图标加载失败兜底
+/**
+ * 行业图标加载失败处理
+ * @param {Event} e - 加载错误事件
+ * @param {string} placeholderText - 占位文本
+ */
 const handleIndustryIconError = (e, placeholderText) => {
   e.target.src = `https://via.placeholder.com/48/004a99/ffffff?text=${placeholderText}`
 }
 
-// iframe加载失败处理
+/**
+ * 视频iframe加载失败处理
+ */
 const handleIframeError = () => {
   youtubeIframeSrc.value = 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1'
   if (typeof window !== 'undefined') {
@@ -365,606 +421,445 @@ const handleIframeError = () => {
   }
 }
 
-// 路由跳转（错误捕获+用户交互）
+/**
+ * 跳转到关于我们页面
+ */
 const handleGoAbout = () => {
-  router.push('/about').catch(err => console.error('跳转到关于页失败:', err))
+  router.push('/about').catch((err) => console.error('跳转到关于页失败:', err))
 }
 
+/**
+ * 跳转到产品列表页面
+ */
 const handleGoProducts = () => {
-  router.push('/products').catch(err => console.error('跳转到产品页失败:', err))
+  router.push('/products').catch((err) => console.error('跳转到产品页失败:', err))
 }
 
+/**
+ * 跳转到指定行业分类页面
+ * @param {Object} item - 行业分类项
+ */
 const handleIndustryClick = (item) => {
   if (item.path) {
-    router.push(item.path).catch(err => console.error('跳转到行业分类页失败:', err))
+    router.push(item.path).catch((err) => console.error('跳转到行业分类页失败:', err))
   }
 }
 
-// 视频弹窗控制（符合YouTube自动播放政策）
+/**
+ * 打开视频弹窗（符合YouTube自动播放政策）
+ */
 const openVideoModal = () => {
   isVideoModalOpen.value = true
   if (typeof document !== 'undefined') {
     document.body.style.overflow = 'hidden'
-    // 延迟设置自动播放，避免加载阻塞（必须静音）
+    // 延迟设置自动播放，避免触发浏览器自动播放限制
     setTimeout(() => {
       youtubeIframeSrc.value = 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1'
     }, 300)
   }
 }
 
+/**
+ * 关闭视频弹窗
+ */
 const closeVideoModal = () => {
   isVideoModalOpen.value = false
   if (typeof document !== 'undefined') {
-    document.body.style.overflow = 'auto'
+    document.body.style.overflow = ''
+    youtubeIframeSrc.value = 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1'
   }
-  youtubeIframeSrc.value = 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1'
 }
 
-// ========== 生命周期管理 ==========
+// ========== 生命周期 ==========
 onMounted(() => {
-  // 标记组件已挂载
   isMounted.value = true
 
-  // 延迟计算高度，确保DOM渲染完成
+  // 延迟加载悬浮工具，优化首屏加载速度
+  setTimeout(() => {
+    isFloatingToolsReady.value = true
+  }, 800)
+
+  // 初始化行业高度计算（等待DOM渲染完成）
   nextTick(() => {
     calcIndustryHeight()
-    // 延迟加载悬浮组件，提升首屏加载速度
-    setTimeout(() => {
-      isFloatingToolsReady.value = true
-    }, 800)
-  })
-
-  // 绑定窗口resize监听（防抖）
-  debouncedCalcHeight = debounce(calcIndustryHeight)
-  window.addEventListener('resize', debouncedCalcHeight)
-
-  // 监听屏幕尺寸变化，重新计算高度
-  watch(isMobile, () => {
-    nextTick(calcIndustryHeight)
+    debouncedCalcHeight = debounce(calcIndustryHeight)
+    window.addEventListener('resize', debouncedCalcHeight)
   })
 })
 
 onUnmounted(() => {
-  // 清理事件监听，避免内存泄漏
+  // 移除窗口大小变化监听
   if (debouncedCalcHeight) {
     window.removeEventListener('resize', debouncedCalcHeight)
   }
-  // 恢复body样式
+  // 恢复页面滚动
   if (typeof document !== 'undefined') {
-    document.body.style.overflow = 'auto'
+    document.body.style.overflow = ''
   }
+})
+
+// 监听行业列表变化，重新计算高度（适配i18n语言切换）
+watch(industryList, () => {
+  nextTick(calcIndustryHeight)
 })
 </script>
 
 <style scoped lang="scss">
-/* 基础重置 & 全局样式 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap');
-
+// 基础样式设置
 .home-page {
-  width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-  font-family: 'Inter', sans-serif, Arial, Helvetica, sans-serif;
-  background-color: #fff;
-}
-
-/* 导航栏适配 */
-.home-page :deep(.app-main-navbar) {
-  position: relative;
-  z-index: 9999;
-  width: 100%;
-}
-
-/* Banner 轮播适配（移除重复padding，由组件内部处理） */
-.home-page :deep(.app-banner-carousel) {
-  width: 100%;
-  max-height: 80vh;
-  height: auto;
-  min-height: 300px;
-  margin: 0;
   padding: 0;
-}
-
-/* 欢迎区域样式 */
-.welcome-section {
+  margin: 0;
   width: 100%;
-  padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
-  background-color: #ffffff;
-  position: relative;
-  z-index: 10;
-  animation: fadeIn 0.5s ease-out;
-}
+  overflow-x: hidden;
 
-.relative-container {
-  max-width: 1920px;
-  margin: 0 auto;
-  padding: 0 1rem;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: clamp(1.5rem, 4vw, 3rem);
-}
+  // Banner 样式（全屏无留白）
+  .full-width-banner {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    height: 0;
 
-.welcome-text {
-  max-width: 720px;
-  width: 100%;
-  color: #333;
-  z-index: 2;
-}
-
-.welcome-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.8rem, 4vw, 3rem);
-  font-weight: 900;
-  margin-bottom: 0.8rem;
-  color: #1a1a1a;
-  line-height: 1.2;
-  letter-spacing: 0.5px;
-
-  .title-highlight {
-    color: #004a99;
+    // 确保Banner组件内部无额外边距
+    :deep(.app-banner-carousel) {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
   }
-}
 
-.welcome-subtitle {
-  font-size: 1rem;
-  color: #2d2d2d;
-  margin-bottom: 1.2rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  font-weight: 600;
-}
+  // 欢迎区域
+  .welcome-section {
+    padding: clamp(2rem, 5vw, 4rem);
+    background-color: #f8f9fa;
 
-.welcome-desc {
-  font-size: 1.05rem;
-  line-height: 1.7;
-  margin-bottom: 1.8rem;
-  color: #1a1a1a;
+    .relative-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(2rem, 4vw, 3rem);
+      align-items: center;
+    }
 
-  p {
-    margin-bottom: 1.2rem;
-    text-align: justify;
+    .welcome-text {
+      flex: 1 1 400px;
+
+      .welcome-title {
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        margin-bottom: 1rem;
+        color: #2c3e50;
+
+        .title-highlight {
+          color: #004a99;
+        }
+      }
+
+      .welcome-subtitle {
+        font-size: clamp(1.2rem, 2vw, 1.5rem);
+        color: #34495e;
+        margin-bottom: 1.5rem;
+      }
+
+      .welcome-desc {
+        line-height: 1.6;
+        color: #666;
+        margin-bottom: 2rem;
+      }
+
+      .welcome-btn {
+        padding: 0.8rem 2rem;
+        background-color: #004a99;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background-color: #003366;
+        }
+      }
+    }
+
+    .welcome-right {
+      flex: 1 1 400px;
+
+      .video-block {
+        position: relative;
+        cursor: pointer;
+
+        .video-bg {
+          width: 100%;
+          height: auto;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .play-btn {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          color: white;
+
+          .youtube-play-icon {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 0, 0, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+          }
+
+          .play-text {
+            font-size: 1.2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+          }
+        }
+      }
+    }
   }
-}
 
-.welcome-btn {
-  background-color: #004a99;
-  color: #fff;
-  border: none;
-  padding: 0.9rem 2.2rem;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  border-radius: 0;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 3px 8px rgba(0, 74, 153, 0.2);
-  position: relative;
-  z-index: 10;
+  // 数据统计区域
+  .stats-section {
+    padding: clamp(2rem, 4vw, 3rem);
+    background-color: #004a99;
+    color: white;
 
-  &:hover {
-    background-color: #003366;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(0, 74, 153, 0.3);
+    .stats-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      text-align: center;
+    }
+
+    .stats-item {
+      .stats-number {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+
+      .stats-desc {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        opacity: 0.9;
+      }
+    }
   }
-}
 
-/* 视频区块样式 */
-.welcome-right {
-  width: 100%;
-  max-width: 704px;
-  height: auto;
-  min-height: 300px;
-  position: relative;
-  z-index: 1;
-}
+  // 行业产品分类区域
+  .industry-products-section {
+    padding: clamp(2rem, 5vw, 4rem);
+    background-color: #f8f9fa;
 
-.video-block {
-  width: 100%;
-  height: 100%;
-  min-height: 300px;
-  overflow: hidden;
-  cursor: pointer;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  position: relative;
+    .industry-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-  .video-bg {
+    .industry-header {
+      text-align: center;
+      margin-bottom: clamp(2rem, 4vw, 3rem);
+
+      .industry-title {
+        font-size: clamp(1.8rem, 4vw, 2.5rem);
+        color: #2c3e50;
+        margin-bottom: 1rem;
+      }
+
+      .industry-desc {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        color: #666;
+        max-width: 800px;
+        margin: 0 auto 2rem;
+      }
+
+      .product-search-btn {
+        padding: 0.8rem 2rem;
+        background-color: #004a99;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background-color: #003366;
+        }
+      }
+    }
+
+    // 行业网格容器（控制展开/收起）
+    .industry-grid-wrapper {
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    // 行业网格布局
+    .industry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: clamp(1.5rem, 3vw, 2rem);
+    }
+
+    // 行业分类项
+    .industry-item {
+      background-color: white;
+      padding: 2rem 1rem;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      }
+
+      .industry-icon {
+        margin-bottom: 1rem;
+
+        img {
+          display: block;
+          margin: 0 auto;
+        }
+      }
+
+      .industry-name {
+        font-size: 1rem;
+        color: #2c3e50;
+        font-weight: 500;
+      }
+    }
+
+    // 展开/收起按钮
+    .industry-toggle-btn {
+      text-align: center;
+
+      .toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.5rem;
+        background-color: transparent;
+        color: #004a99;
+        border: 1px solid #004a99;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: #004a99;
+          color: white;
+        }
+
+        .toggle-icon {
+          transition: transform 0.3s ease;
+
+          &.rotated {
+            transform: rotate(180deg);
+          }
+        }
+      }
+    }
+  }
+
+  // 视频弹窗
+  .video-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    filter: brightness(0.7);
-    transition: transform 0.5s ease;
-  }
-
-  &:hover .video-bg {
-    transform: scale(1.05);
-  }
-
-  .play-btn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    z-index: 2;
-  }
-
-  .youtube-play-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background-color: #004a99;
-    color: #ffffff;
-    font-size: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-left: 6px;
-    box-shadow: 0 5px 15px rgba(0, 74, 153, 0.4);
-    border: 2px solid #ffffff;
-    transition: all 0.3s ease;
-  }
-
-  .play-text {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #ffffff;
-    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  &:hover .youtube-play-icon {
-    transform: scale(1.1);
-    box-shadow: 0 8px 20px rgba(0, 74, 153, 0.5);
-    background-color: #003366;
-  }
-}
-
-/* 数据统计模块 */
-.stats-section {
-  width: 100%;
-  padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
-  background: linear-gradient(180deg, #dce0e8 0%, #cdd2da 100%);
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
-  animation: fadeIn 0.5s ease-out;
-}
-
-.stats-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 0 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: clamp(1rem, 3vw, 2rem);
-}
-
-.stats-item {
-  text-align: center;
-  flex: 1;
-  min-width: 180px;
-  max-width: 250px;
-  padding: 2rem 1rem;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 25px rgba(0, 74, 153, 0.15);
-  }
-
-  .stats-number {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 900;
-    color: #004a99;
-    margin-bottom: 1rem;
-    text-shadow: 0 2px 4px rgba(0, 74, 153, 0.1);
-  }
-
-  .stats-desc {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #2d2d2d;
-    line-height: 1.6;
-  }
-}
-
-/* 行业产品分类模块 */
-.industry-products-section {
-  width: 100%;
-  padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
-  background: linear-gradient(180deg, #1a2434 0%, #2c3e50 100%);
-  color: #ffffff;
-  animation: fadeIn 0.5s ease-out;
-}
-
-.industry-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-.industry-header {
-  text-align: center;
-  margin-bottom: 3rem;
-
-  .industry-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    font-weight: 900;
-    color: #ffffff;
-    margin-bottom: 1.2rem;
-  }
-
-  .industry-desc {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.1rem;
-    color: #e0e0e0;
-    max-width: 800px;
-    margin: 0 auto 1.5rem;
-    line-height: 1.7;
-  }
-}
-
-.industry-search-lang-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  margin-top: 0.5rem;
-  flex-wrap: wrap;
-
-  .product-search-btn {
-    background-color: #004a99;
-    color: #fff;
-    border: none;
-    padding: 0.8rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 0;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 3px 8px rgba(0, 74, 153, 0.2);
-
-    &:hover {
-      background-color: #003366;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(0, 74, 153, 0.3);
-    }
-  }
-}
-
-/* 行业分类网格 */
-.industry-grid-wrapper {
-  overflow: hidden;
-  margin: 0 auto;
-  width: 100%;
-  padding: 0 0.5rem;
-}
-
-.industry-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2rem 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.industry-item {
-  text-align: center;
-  flex: 0 0 auto;
-  width: calc(20% - 1.5rem);
-  min-width: 120px;
-  max-width: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.2rem;
-  margin-bottom: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 1rem;
-  border-radius: 8px;
-
-  &:hover {
-    background-color: rgba(0, 74, 153, 0.2);
-    transform: translateY(-5px);
-  }
-
-  .industry-icon {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-
-    img {
-      object-fit: contain;
-      display: block;
-      max-width: 100%;
-      max-height: 100%;
-    }
-  }
-
-  .industry-name {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #ffffff;
-    line-height: 1.5;
-    word-break: break-word;
-  }
-}
-
-/* 展开/收起按钮 */
-.industry-toggle-btn {
-  text-align: center;
-  margin-top: 2rem;
-
-  .toggle-btn {
-    background-color: transparent;
-    border: 2px solid #004a99;
-    color: #ffffff;
-    padding: 0.8rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 0;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    margin: 0 auto;
-
-    &:hover {
-      background-color: #004a99;
-      color: #fff;
-    }
-
-    .toggle-icon {
-      transition: transform 0.3s ease;
-    }
-
-    .rotated {
-      transform: rotate(180deg);
-    }
-  }
-}
-
-/* 视频弹窗样式 */
-.video-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.85);
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  backdrop-filter: blur(2px);
-}
-
-.modal-inner {
-  position: relative;
-  width: 100%;
-  max-width: 900px;
-  background-color: #1a1a1a;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.close-modal-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background-color: rgba(0, 0, 0, 0.5);
-  border: none;
-  color: #ffffff;
-  font-size: 1.8rem;
-  cursor: pointer;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  border-radius: 50%;
-
-  &:hover {
-    color: #ff4444;
     background-color: rgba(0, 0, 0, 0.8);
-  }
-}
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 2rem;
 
-.youtube-iframe {
-  aspect-ratio: 16/9;
-  height: auto;
-  width: 100%;
-}
+    .modal-inner {
+      background-color: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      max-width: 800px;
+      width: 100%;
+      position: relative;
 
-/* 响应式适配 */
-@media (max-width: 1200px) {
-  .industry-item {
-    width: calc(25% - 1.5rem);
-  }
-}
+      .close-modal-btn {
+        position: absolute;
+        top: -15px;
+        right: -15px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: red;
+        color: white;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-@media (max-width: 768px) {
-  .industry-item {
-    width: calc(33.333% - 1.5rem);
-  }
-
-  .close-modal-btn {
-    font-size: 1.5rem;
-    width: 36px;
-    height: 36px;
-  }
-
-  .welcome-right {
-    min-height: 250px;
-  }
-}
-
-@media (max-width: 576px) {
-  .industry-item {
-    width: calc(50% - 1.5rem);
-  }
-
-  .welcome-right {
-    min-height: 220px;
+      .youtube-iframe {
+        border-radius: 4px;
+      }
+    }
   }
 
-  .youtube-iframe {
-    height: 240px !important;
-  }
-}
+  // 响应式适配
+  @media (max-width: 768px) {
+    .welcome-section {
+      padding: 2rem 1rem;
+    }
 
-/* 通用动画 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+    .stats-section {
+      padding: 2rem 1rem;
+    }
 
-/* 减少动画运动（适配系统偏好） */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
+    .industry-products-section {
+      padding: 2rem 1rem;
+    }
+
+    .video-modal {
+      padding: 1rem;
+
+      .modal-inner {
+        padding: 1rem;
+
+        .close-modal-btn {
+          top: -10px;
+          right: -10px;
+          width: 30px;
+          height: 30px;
+          font-size: 1.2rem;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 576px) {
+    .industry-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
   }
 }
 </style>
