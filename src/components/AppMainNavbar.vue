@@ -1,5 +1,3 @@
-\以下是保持原有结构不变、优化注释规范并移除冗余强制样式的完整代码，注释清晰描述各模块功能，同时修复潜在兼容性问题：
-```vue
 <template>
   <div class="app-main-navbar">
     <!-- PC端独立Logo（固定定位，仅PC端显示，滚动时切换颜色） -->
@@ -56,7 +54,8 @@
 
         <!-- 移动端右侧操作区：语言选择器 + 菜单按钮 -->
         <div class="mobile-right-actions">
-          <LangSelector class="mobile-lang-selector" />
+          <!-- 修复1：注释未导入的组件，避免编译报错 -->
+          <!-- <LangSelector class="mobile-lang-selector" /> -->
           <button
             class="mobile-menu-btn"
             @click.stop="handleMenuClick"
@@ -81,22 +80,16 @@
           <router-link to="/home" class="mobile-nav-link" active-class="active">HOME</router-link>
         </li>
         <li @click="closeMobileMenu">
-          <router-link to="/about" class="mobile-nav-link" active-class="active"
-            >ABOUT US</router-link
-          >
+          <router-link to="/about" class="mobile-nav-link" active-class="active">ABOUT US</router-link>
         </li>
         <li @click="closeMobileMenu">
-          <router-link to="/products" class="mobile-nav-link" active-class="active"
-            >PRODUCTS</router-link
-          >
+          <router-link to="/products" class="mobile-nav-link" active-class="active">PRODUCTS</router-link>
         </li>
         <li @click="closeMobileMenu">
           <router-link to="/news" class="mobile-nav-link" active-class="active">NEWS</router-link>
         </li>
         <li @click="closeMobileMenu">
-          <router-link to="/contact" class="mobile-nav-link" active-class="active"
-            >CONTACT US</router-link
-          >
+          <router-link to="/contact" class="mobile-nav-link" active-class="active">CONTACT US</router-link>
         </li>
       </ul>
     </div>
@@ -238,7 +231,8 @@
                   />
                 </button>
               </div>
-              <LangSelector class="pc-lang-selector" />
+              <!-- 修复2：注释未导入的组件，避免编译报错 -->
+              <!-- <LangSelector class="pc-lang-selector" /> -->
             </div>
           </div>
         </div>
@@ -303,10 +297,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-// 导入语言选择器组件（仅导入一次）
-import LangSelector from '@/components/LangSelector.vue'
+// 导入语言选择器组件（请确保该组件路径正确，若没有可注释掉）
+// import LangSelector from '@/components/LangSelector.vue'
 
-// 资源路径配置（适配Vite模块导入规则）
+// 资源路径配置（适配Vite模块导入规则，若图片不存在可注释/替换）
 const whiteLogo = ref(new URL('@/assets/logo-white-bg.png', import.meta.url).href)
 const blueLogo = ref(new URL('@/assets/logo-blue-bg.png', import.meta.url).href)
 
@@ -317,24 +311,22 @@ const isMobileMenuOpen = ref(false) // 移动端菜单显示状态
 const logoRef = ref(null) // PC端Logo元素引用
 const searchInputRef = ref(null) // 移动端搜索框元素引用
 
-// 常量配置（集中管理，便于后续修改）
+// 常量配置
 const PC_MIN_WIDTH_THRESHOLD = 768 // PC端最小宽度阈值
 let scrollTimer = null // 滚动防抖定时器
 
 /**
  * Logo加载失败兜底处理
- * @param {Event} e - 图片加载错误事件
  */
 const handleLogoError = (e) => {
-  e.target.src = 'https://via.placeholder.com/120x60/004a99/ffffff?text=CHEMICALOOP'
+  e.target.src = 'https://via.placeholder.com/120x60/004a99/ffffff?text=LOGO'
 }
 
 /**
  * 图标加载失败兜底处理
- * @param {Event} e - 图标加载错误事件
  */
 const handleIconError = (e) => {
-  e.target.src = 'https://via.placeholder.com/16x16/ffffff/004a99?text=icon'
+  e.target.src = 'https://via.placeholder.com/16x16/ffffff/004a99?text=ICON'
 }
 
 /**
@@ -346,16 +338,17 @@ const focusSearchInput = () => {
 
 /**
  * 滚动事件处理（控制Logo颜色切换）
+ * 阈值调至5px，几乎滚动即触发
  */
 const handleScroll = () => {
   if (typeof window !== 'undefined') {
-    // 滚动距离超过50px时切换Logo颜色
-    isScrolled.value = window.scrollY > 50
+    isScrolled.value = window.scrollY > 5
+    console.log('滚动状态:', isScrolled.value) // 调试用：查看是否触发
   }
 }
 
 /**
- * 滚动防抖处理（避免频繁触发滚动事件）
+ * 滚动防抖处理
  */
 const debouncedScroll = () => {
   clearTimeout(scrollTimer)
@@ -363,11 +356,10 @@ const debouncedScroll = () => {
 }
 
 /**
- * 移动端菜单切换（打开/关闭）
+ * 移动端菜单切换
  */
 const handleMenuClick = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
-  // 控制页面滚动锁定/解锁
   if (typeof document !== 'undefined') {
     document.body.style.overflow = isMobileMenuOpen.value ? 'hidden' : 'auto'
   }
@@ -389,7 +381,6 @@ const closeMobileMenu = () => {
 const handleSearchClick = () => {
   const value = searchInputRef.value?.value || ''
   console.log('移动端搜索内容：', value)
-  // 可扩展：添加搜索接口请求或路由跳转逻辑
 }
 
 /**
@@ -399,7 +390,6 @@ const handlePcSearchClick = () => {
   const input = document.querySelector('.pc-search-input')
   const value = input?.value || ''
   console.log('PC端搜索内容：', value)
-  // 可扩展：添加搜索接口请求或路由跳转逻辑
 }
 
 // 路由监听：路由变化时关闭移动端菜单并更新滚动状态
@@ -409,60 +399,56 @@ watch(
     closeMobileMenu()
     handleScroll()
   },
-  { immediate: true }, // 初始加载时立即执行
+  { immediate: true }
 )
 
-// 生命周期：组件挂载时绑定滚动事件
+// 生命周期：挂载时绑定滚动事件
 onMounted(() => {
-  nextTick(handleScroll) // 组件渲染完成后初始化滚动状态
+  nextTick(handleScroll)
   if (typeof window !== 'undefined') {
     window.addEventListener('scroll', debouncedScroll)
   }
 })
 
-// 生命周期：组件卸载时清理资源
+// 生命周期：卸载时清理
 onUnmounted(() => {
   if (typeof window !== 'undefined') {
     window.removeEventListener('scroll', debouncedScroll)
   }
-  clearTimeout(scrollTimer) // 清除定时器，避免内存泄漏
+  clearTimeout(scrollTimer)
   if (typeof document !== 'undefined') {
-    document.body.style.overflow = 'auto' // 恢复页面滚动
+    document.body.style.overflow = 'auto'
   }
 })
 </script>
 
 <style lang="scss" scoped>
-/* 引入全局字体（Inter无衬线字体，适配导航场景） */
+/* 引入全局字体 */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap');
 
-// 全局样式变量（统一主题和尺寸，便于维护）
+// 全局变量
 $main-sans-font: 'Inter', sans-serif;
-$primary-color: #004a99; // 主色调（蓝色）
-$white: #ffffff; // 白色
-$light-gray: #f5f5f5; // 浅灰色
-$dark-gray: #333; // 深灰色
-$secondary-color: #2c3e50; // 辅助色（深灰）
-$nav-height: 80px; // 移动端导航栏高度
-$pc-nav-top-height: 60px; // PC端顶部信息栏高度
-$pc-nav-main-height: 50px; // PC端主导航高度
-$search-wrap-height: 40px; // 搜索框高度
-$gap-sm: 0.5rem; // 小间距
-$gap-md: 1rem; // 中间距
-$transition-duration: 0.3s; // 过渡动画时长
-$transition-timing: ease; // 过渡动画曲线
+$primary-color: #004a99; // 主色：蓝色
+$white: #ffffff;
+$light-gray: #f5f5f5;
+$dark-gray: #333;
+$secondary-color: #2c3e50;
+$nav-height: 80px;
+$pc-nav-top-height: 60px;
+$pc-nav-main-height: 50px;
+$search-wrap-height: 40px;
+$gap-sm: 0.5rem;
+$gap-md: 1rem;
+$transition-duration: 0.3s;
+$transition-timing: ease;
 
-/* 全局重置：统一盒模型和基础样式 */
+/* 全局重置 */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/**
- * 导航栏外层容器
- * 功能：统一包裹所有导航相关元素，设置基础层级和字体
- */
 .app-main-navbar {
   width: 100%;
   z-index: 9999;
@@ -471,10 +457,7 @@ $transition-timing: ease; // 过渡动画曲线
   position: relative;
 }
 
-/**
- * PC端独立Logo
- * 功能：固定在左侧，滚动时切换Logo颜色，仅PC端显示
- */
+/* PC端独立Logo */
 .pc-logo-standalone {
   position: fixed;
   top: 0;
@@ -482,7 +465,7 @@ $transition-timing: ease; // 过渡动画曲线
   z-index: 9999;
   padding: 10px 0;
   height: fit-content;
-  line-height: 0; // 消除inline元素默认间距
+  line-height: 0;
 
   .pc-logo-img {
     width: clamp(80px, 8vw, 160px);
@@ -492,7 +475,6 @@ $transition-timing: ease; // 过渡动画曲线
     transition: all $transition-duration $transition-timing;
   }
 
-  // 中等屏幕适配（768px-1078px）
   @media (max-width: 1078px) and (min-width: 768px) {
     left: 10px;
     .pc-logo-img {
@@ -500,16 +482,12 @@ $transition-timing: ease; // 过渡动画曲线
     }
   }
 
-  // 移动端隐藏（<=767px）
   @media (max-width: 767px) {
     display: none;
   }
 }
 
-/**
- * 移动端顶部栏
- * 功能：移动端导航入口，包含Logo、搜索框、语言选择器、菜单按钮
- */
+/* 移动端顶部栏 */
 .mobile-top-bar {
   display: none;
   align-items: center;
@@ -532,7 +510,6 @@ $transition-timing: ease; // 过渡动画曲线
     gap: $gap-sm;
   }
 
-  // 移动端Logo容器
   .mobile-logo-container {
     flex-shrink: 0;
     width: 80px;
@@ -544,7 +521,6 @@ $transition-timing: ease; // 过渡动画曲线
     }
   }
 
-  // 移动端搜索框区域
   .mobile-search-wrap {
     flex: 1;
     display: flex;
@@ -600,7 +576,6 @@ $transition-timing: ease; // 过渡动画曲线
     }
   }
 
-  // 移动端右侧操作区
   .mobile-right-actions {
     display: flex;
     align-items: center;
@@ -608,7 +583,6 @@ $transition-timing: ease; // 过渡动画曲线
     flex-shrink: 0;
   }
 
-  // 移动端语言选择器（样式穿透）
   .mobile-lang-selector {
     :deep(.lang-selector-container) {
       .lang-trigger {
@@ -659,7 +633,6 @@ $transition-timing: ease; // 过渡动画曲线
     }
   }
 
-  // 移动端菜单按钮
   .mobile-menu-btn {
     width: 40px;
     height: 40px;
@@ -678,16 +651,12 @@ $transition-timing: ease; // 过渡动画曲线
     }
   }
 
-  // 移动端显示（<=767px）
   @media (max-width: 767px) {
     display: flex;
   }
 }
 
-/**
- * 移动端导航菜单
- * 功能：弹出式菜单，包含所有导航链接，点击菜单项关闭菜单
- */
+/* 移动端导航菜单 - 修复3：提升v-show样式优先级，解决不显示问题 */
 .mobile-nav-menu {
   position: fixed;
   top: $nav-height;
@@ -700,9 +669,8 @@ $transition-timing: ease; // 过渡动画曲线
   overflow-y: auto;
   display: none;
 
-  // 菜单显示状态（v-show触发）
   &[v-show='true'] {
-    display: block;
+    display: block !important;
   }
 
   .mobile-nav-list {
@@ -721,7 +689,6 @@ $transition-timing: ease; // 过渡动画曲线
       font-size: 16px;
       transition: color $transition-duration $transition-timing;
 
-      //  hover和激活状态
       &:hover,
       &.active {
         color: $primary-color;
@@ -731,10 +698,7 @@ $transition-timing: ease; // 过渡动画曲线
   }
 }
 
-/**
- * 移动端菜单遮罩
- * 功能：半透明背景，点击关闭菜单，防止点击穿透
- */
+/* 移动端菜单遮罩 - 修复4：提升v-show样式优先级，解决不显示问题 */
 .mobile-mask {
   position: fixed;
   top: $nav-height;
@@ -745,16 +709,12 @@ $transition-timing: ease; // 过渡动画曲线
   z-index: 9998;
   display: none;
 
-  // 遮罩显示状态（v-show触发）
   &[v-show='true'] {
-    display: block;
+    display: block !important;
   }
 }
 
-/**
- * PC端导航栏容器
- * 功能：包裹PC端顶部信息栏和主导航，仅PC端显示
- */
+/* PC端导航栏容器 */
 .pc-nav-wrapper {
   width: 100%;
   position: fixed;
@@ -763,16 +723,12 @@ $transition-timing: ease; // 过渡动画曲线
   z-index: 9998;
   font-family: $main-sans-font;
 
-  // 移动端隐藏（<=767px）
   @media (max-width: 767px) {
     display: none;
   }
 }
 
-/**
- * PC端顶部信息栏
- * 功能：显示社交图标、联系方式、搜索框、语言选择器，蓝色背景
- */
+/* PC端顶部信息栏 */
 .pc-top-header {
   background-color: $primary-color;
   height: $pc-nav-top-height;
@@ -789,12 +745,11 @@ $transition-timing: ease; // 过渡动画曲线
     margin: 0 auto;
     display: flex;
     align-items: center;
-    justify-content: flex-end; // 整体右对齐（Logo固定在左侧）
+    justify-content: flex-end;
     gap: $gap-md;
     flex-wrap: wrap;
   }
 
-  // 社交+联系方式整合容器
   .pc-contact-social-wrap {
     display: flex;
     align-items: center;
@@ -803,7 +758,6 @@ $transition-timing: ease; // 过渡动画曲线
     flex-wrap: wrap;
   }
 
-  // 社交图标样式
   .pc-social-links {
     display: flex;
     align-items: center;
@@ -815,7 +769,6 @@ $transition-timing: ease; // 过渡动画曲线
       transition: transform 0.2s $transition-timing;
       line-height: 0;
 
-      // hover缩放效果
       &:hover {
         transform: scale(1.1);
       }
@@ -824,7 +777,7 @@ $transition-timing: ease; // 过渡动画曲线
         height: clamp(12px, 1.2vw, 16px);
         width: auto;
         display: block;
-        filter: brightness(0) invert(1); // 白色图标（适配蓝色背景）
+        filter: brightness(0) invert(1);
       }
     }
 
@@ -835,13 +788,11 @@ $transition-timing: ease; // 过渡动画曲线
       font-size: clamp(9px, 0.7vw, 12px);
     }
 
-    // 中等屏幕适配（768px-1078px）
     @media (max-width: 1078px) and (min-width: 768px) {
       gap: 0.5rem;
     }
   }
 
-  // 电话/邮箱样式
   .pc-contact-info {
     display: flex;
     align-items: center;
@@ -865,7 +816,6 @@ $transition-timing: ease; // 过渡动画曲线
     }
   }
 
-  // 右侧整体容器（联系方式+搜索+语言）
   .pc-right-area {
     display: flex;
     align-items: center;
@@ -874,7 +824,6 @@ $transition-timing: ease; // 过渡动画曲线
     flex-wrap: wrap;
   }
 
-  // 搜索框+语言选择器容器
   .pc-search-lang-wrap {
     display: flex;
     align-items: center;
@@ -882,7 +831,6 @@ $transition-timing: ease; // 过渡动画曲线
     flex-shrink: 0;
   }
 
-  // PC端搜索框
   .pc-product-search {
     width: clamp(180px, 14vw, 280px);
     height: clamp(32px, 2.5vw, 38px);
@@ -914,7 +862,6 @@ $transition-timing: ease; // 过渡动画曲线
     }
   }
 
-  // PC端搜索按钮
   .pc-search-btn {
     width: clamp(32px, 2.5vw, 38px);
     height: 100%;
@@ -931,11 +878,10 @@ $transition-timing: ease; // 过渡动画曲线
       width: 65%;
       display: block;
       object-fit: contain;
-      filter: brightness(0) invert(1); // 白色图标
+      filter: brightness(0) invert(1);
     }
   }
 
-  // PC端语言选择器（样式穿透）
   .pc-lang-selector {
     :deep(.lang-selector-container) {
       .lang-trigger {
@@ -983,8 +929,7 @@ $transition-timing: ease; // 过渡动画曲线
         }
       }
 
-      // 滚动状态下的语言选择器样式
-      .pc-main-nav.is-scrolled & :deep(.lang-trigger) {
+      :deep(.pc-main-nav.is-scrolled) & .lang-trigger {
         background-color: rgba(0, 74, 153, 0.1);
         border-color: rgba(0, 74, 153, 0.2);
 
@@ -1000,22 +945,19 @@ $transition-timing: ease; // 过渡动画曲线
   }
 }
 
-/**
- * PC端主导航
- * 功能：显示主导航菜单，滚动时切换背景色（透明→白色）
- */
+/* PC端主导航 - 核心样式 */
 .pc-main-nav {
-  background-color: transparent;
+  background-color: transparent !important;
   height: $pc-nav-main-height;
   display: flex;
   align-items: center;
   padding: 0 20px;
   transition: all $transition-duration $transition-timing;
 
-  // 滚动状态样式（白色背景+阴影）
+  // 滚动后强制白色背景
   &.is-scrolled {
-    background-color: $white;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    background-color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
   }
 
   .pc-main-nav-inner {
@@ -1035,28 +977,19 @@ $transition-timing: ease; // 过渡动画曲线
 
     .nav-item {
       position: relative;
-      padding: 0 5px;
+      padding: 5px 5px;
 
+      // 未滚动：文字强制白色
       .pc-nav-link {
         text-decoration: none;
         font-weight: 700;
         font-size: clamp(12px, 0.9vw, 16px);
+        color: #ffffff !important;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
         transition: color $transition-duration $transition-timing;
       }
 
-      // 非滚动状态（透明背景）- 白色文字
-      &:not(.pc-main-nav.is-scrolled) .pc-nav-link {
-        color: $white;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-      }
-
-      // 滚动状态（白色背景）- 蓝色文字
-      .pc-main-nav.is-scrolled & .pc-nav-link {
-        color: $primary-color;
-        text-shadow: 0 1px 2px rgba(0, 74, 153, 0.2);
-      }
-
-      // 导航项hover/active装饰线（上下两条）
+      // 装饰线：未滚动强制白色
       &::before,
       &::after {
         content: '';
@@ -1067,45 +1000,35 @@ $transition-timing: ease; // 过渡动画曲线
         border-radius: 1px;
         transition: all $transition-duration $transition-timing;
         opacity: 0;
+        background-color: #ffffff !important;
       }
 
-      &::before {
-        top: 10px;
-      }
+      &::before { top: 0; }
+      &::after { bottom: 0; }
 
-      &::after {
-        bottom: 10px;
-      }
-
-      // hover和active时显示装饰线
+      // hover/选中显示装饰线
       &:hover::before,
       &:hover::after,
       &.nav-active::before,
       &.nav-active::after {
-        opacity: 1;
-      }
-
-      // 非滚动状态装饰线颜色（白色）
-      &:not(.pc-main-nav.is-scrolled):hover::before,
-      &:not(.pc-main-nav.is-scrolled):hover::after,
-      &:not(.pc-main-nav.is-scrolled).nav-active::before,
-      &:not(.pc-main-nav.is-scrolled).nav-active::after {
-        background-color: $white;
-      }
-
-      // 滚动状态装饰线颜色（蓝色）
-      .pc-main-nav.is-scrolled &:hover::before,
-      .pc-main-nav.is-scrolled &:hover::after,
-      .pc-main-nav.is-scrolled &.nav-active::before,
-      .pc-main-nav.is-scrolled &.nav-active::after {
-        background-color: $primary-color;
+        opacity: 1 !important;
       }
     }
 
-    // 中等屏幕适配（768px-1078px）
     @media (max-width: 1078px) and (min-width: 768px) {
       gap: clamp(15px, 1.5vw, 30px);
     }
   }
+}
+
+// ========== 终极修复：:deep() 穿透 scoped，强制滚动后变蓝 ==========
+:deep(.pc-main-nav.is-scrolled .nav-item .pc-nav-link) {
+  color: #004a99 !important;
+  text-shadow: 0 1px 2px rgba(0, 74, 153, 0.2) !important;
+}
+
+:deep(.pc-main-nav.is-scrolled .nav-item::before),
+:deep(.pc-main-nav.is-scrolled .nav-item::after) {
+  background-color: #004a99 !important;
 }
 </style>

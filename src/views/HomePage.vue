@@ -1,16 +1,14 @@
 <template>
   <div class="home-page">
-    <!-- 导航栏组件（客户端挂载，避免SSR冲突） -->
-    <AppMainNavbar v-if="isMounted" />
-
-    <!-- Banner 轮播（适配导航栏高度） -->
+    <!-- Banner 轮播（核心：向上偏移60px，对齐pc-main-nav上端） -->
     <AppBanner
       v-if="isMounted"
-      :navBarHeight="80"
+      :navBarHeight="isMobile ? 80 : 110"
       :autoplay="true"
       :autoplayInterval="5000"
       class="full-width-banner"
-    />
+    >
+    </AppBanner>
 
     <!-- 核心欢迎区域（i18n默认值兜底） -->
     <section class="welcome-section" v-if="isMounted">
@@ -184,9 +182,6 @@
         ></iframe>
       </div>
     </div>
-
-    <!-- 悬浮工具组件（延迟加载，不阻塞首屏） -->
-    <FloatingTools v-if="isMounted && isFloatingToolsReady" />
   </div>
 </template>
 
@@ -195,10 +190,8 @@ import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
-// 组件引入
-import AppMainNavbar from '@/components/AppMainNavbar.vue'
+// 组件引入：只保留HomePage专属的AppBanner
 import AppBanner from '@/components/AppBanner.vue'
-import FloatingTools from '@/components/FloatingTools.vue'
 
 // 初始化核心实例
 const router = useRouter()
@@ -206,7 +199,6 @@ const { t } = useI18n()
 
 // ========== 基础状态管理 ==========
 const isMounted = ref(false) // 组件挂载状态（控制客户端渲染）
-const isFloatingToolsReady = ref(false) // 悬浮工具延迟加载状态
 
 // ========== 视频相关 ==========
 const videoCover = ref(
@@ -216,10 +208,10 @@ const videoCover = ref(
 const isVideoModalOpen = ref(false) // 视频弹窗显示状态
 const youtubeIframeSrc = ref('https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1') // YouTube嵌入地址
 
-// ========== 响应式判断 ==========
+// ========== 响应式判断（核心：区分PC/移动端导航栏高度） ==========
 const isMobile = computed(() => {
   if (typeof window === 'undefined') return false
-  return window.innerWidth <= 768
+  return window.innerWidth <= 768 // 和导航栏的响应式阈值保持一致
 })
 
 // ========== 数据统计配置 ==========
@@ -474,11 +466,6 @@ const closeVideoModal = () => {
 onMounted(() => {
   isMounted.value = true
 
-  // 延迟加载悬浮工具，优化首屏加载速度
-  setTimeout(() => {
-    isFloatingToolsReady.value = true
-  }, 800)
-
   // 初始化行业高度计算（等待DOM渲染完成）
   nextTick(() => {
     calcIndustryHeight()
@@ -511,26 +498,41 @@ watch(industryList, () => {
   margin: 0;
   width: 100%;
   overflow-x: hidden;
+  min-height: 100vh;
+  // 核心：给页面加60px顶部内边距，防止Banner向上偏移后内容被截断
+  @media (min-width: 769px) {
+    padding-top: 60px;
+  }
 
-  // Banner 样式（全屏无留白）
+  // ========== 核心修改：Banner向上偏移60px，对齐pc-main-nav上端 ==========
   .full-width-banner {
     width: 100%;
     margin: 0;
     padding: 0;
     position: relative;
-    height: 0;
+    height: auto;
+    z-index: 1;
 
-    // 确保Banner组件内部无额外边距
-    :deep(.app-banner-carousel) {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
+    // PC端：关键！top: -60px 让Banner整体向上移动60px
+    @media (min-width: 769px) {
+      top: -110px;
+      // Banner高度 = 视口高度 - pc-main-nav高度(50px)
+      :deep(.app-banner-carousel) {
+        height: calc(100vh - 50px) !important;
+      }
+    }
+
+    // 移动端：保持原有逻辑
+    @media (max-width: 768px) {
+      :deep(.app-banner-carousel) {
+        height: calc(100vh - 80px) !important;
+      }
     }
   }
 
-  // 欢迎区域
+  // 欢迎区域：紧贴Banner下方，无间距
   .welcome-section {
+    margin-top: 0 !important;
     padding: clamp(2rem, 5vw, 4rem);
     background-color: #f8f9fa;
 
@@ -825,7 +827,7 @@ watch(industryList, () => {
     }
   }
 
-  // 响应式适配
+  // 响应式适配兜底
   @media (max-width: 768px) {
     .welcome-section {
       padding: 2rem 1rem;
