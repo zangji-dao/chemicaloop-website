@@ -1,16 +1,95 @@
-// src/assets/styles/global.scss
-/* 全局样式重置 */
+/* ========== 1. 字体声明（核心：Inter + Space Grotesk） ========== */
+@font-face {
+  font-family: 'Inter';
+  src: url('~@/assets/fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('~@/assets/fonts/SpaceGrotesk-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ========== 2. 全局样式重置 + 基础规则 ========== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  // 正文默认字体：Inter
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 400;
 }
 
 body {
-  font-family: 'Arial', sans-serif;
   color: #333;
+  font-family: 'Inter', sans-serif;
 }
 
+// 标题专属字体
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.title,
+.page-title,
+.section-title,
+.nav-title {
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-weight: 700;
+}
+
+// 数字/强调文本
+.num-text,
+.price,
+.count,
+.date {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 500;
+}
+
+/* ========== 3. 保留 main.css 原有样式 ========== */
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-weight: normal;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    display: flex;
+    place-items: center;
+  }
+
+  #app {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0 2rem;
+  }
+}
+
+/* ========== 4. 保留原有重置规则 ========== */
 a {
   text-decoration: none;
   color: inherit;
