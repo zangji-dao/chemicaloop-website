@@ -40,7 +40,7 @@
 
 <script setup>
 // 核心依赖导入
-import { ref, watch, onMounted, onUnmounted, defineEmits } from 'vue'
+import { ref, watch, onMounted, onUnmounted, defineEmits, defineExpose } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 // 自定义事件：保留你的原有事件 + 新增select事件（兼容父组件关闭菜单）
@@ -97,6 +97,11 @@ const toggleDropdown = () => {
   if (isDropdownOpen.value) emit('langClick') // 原有逻辑：展开时派发langClick
 }
 
+// 新增：关闭下拉菜单的方法（供父组件调用）
+const closeDropdown = () => {
+  isDropdownOpen.value = false
+}
+
 // 点击外部关闭下拉框
 const handleClickOutside = (e) => {
   if (selectorRef.value && !selectorRef.value.contains(e.target) && isDropdownOpen.value) {
@@ -138,6 +143,12 @@ watch(locale, (newLang) => {
   if (!newLang) return
   const matchedOption = langOptions.find((opt) => opt.value === newLang)
   if (matchedOption) currentLangOption.value = matchedOption
+})
+
+// 核心：暴露closeDropdown方法给父组件调用
+defineExpose({
+  closeDropdown,
+  isDropdownOpen, // 可选：暴露状态供父组件查看
 })
 </script>
 

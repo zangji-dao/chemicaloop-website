@@ -7,7 +7,7 @@
         alt="Chemicaloop Logo"
         class="pc-logo-img"
         @error="handleLogoError"
-        loading="lazy"
+        loading="eager"
       />
     </div>
 
@@ -24,13 +24,19 @@
           />
         </div>
         <div class="mobile-search-wrap">
-          <div class="mobile-search-input-wrap" @click="focusSearchInput">
+          <div
+            class="mobile-search-input-wrap"
+            @click="focusSearchInput"
+            :class="{ active: isSearchFocused }"
+          >
             <input
               ref="searchInputRef"
               class="mobile-search-input"
               type="text"
               placeholder="product search..."
               @click.stop
+              @focus="handleSearchFocus"
+              @blur="handleSearchBlur"
               :aria-label="'search input field'"
             />
             <button
@@ -49,13 +55,18 @@
           </div>
         </div>
         <div class="mobile-right-actions">
-          <!-- 移动端语言选择器：绑定所有相关事件关闭菜单 -->
+          <!-- 移动端语言选择器 -->
           <LangSelector
+            ref="mobileLangRef"
             class="mobile-lang-selector"
             @langClick="closeMobileMenu"
             @langChange="closeMobileMenu"
             @select="closeMobileMenu"
+            :class="{
+              'lang-dropdown-hidden': isMobileMenuOpen || isSearchFocused,
+            }"
           />
+          <!-- 菜单按钮 -->
           <button
             class="mobile-menu-btn"
             @click.stop="handleMenuClick"
@@ -74,7 +85,7 @@
     </div>
 
     <!-- 移动端导航菜单 -->
-    <div class="mobile-nav-menu" :class="{ 'menu-show': isMobileMenuOpen }">
+    <div class="mobile-nav-menu" :class="{ 'menu-show': isMobileMenuOpen && !isSearchFocused }">
       <ul class="mobile-nav-list">
         <li @click="closeMobileMenu">
           <router-link to="/home" class="mobile-nav-link" active-class="active">HOME</router-link>
@@ -103,7 +114,7 @@
     <!-- 移动端菜单遮罩 -->
     <div
       class="mobile-mask"
-      :class="{ 'mask-show': isMobileMenuOpen }"
+      :class="{ 'mask-show': isMobileMenuOpen && !isSearchFocused }"
       @click="closeMobileMenu"
     ></div>
 
@@ -234,8 +245,8 @@
                   />
                 </button>
               </div>
-              <!-- PC端语言选择器 -->
-              <LangSelector class="pc-lang-selector" />
+              <!-- PC端语言选择器：新增ref用于关闭 -->
+              <LangSelector ref="pcLangRef" class="pc-lang-selector" />
             </div>
           </div>
         </div>
@@ -297,12 +308,9 @@
 </template>
 
 <script setup>
-// 核心依赖导入
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-// 导入语言选择器组件
 import LangSelector from '@/components/LangSelector.vue'
-// 导入Logo图片资源
 import whiteLogoImg from '@/assets/logo-white-bg.png'
 import blueLogoImg from '@/assets/logo-blue-bg.png'
 
@@ -312,14 +320,20 @@ const blueLogo = ref(blueLogoImg)
 
 // 路由与状态管理
 const route = useRoute()
-const isScrolled = ref(false) // 滚动状态
-const isMobileMenuOpen = ref(false) // 移动端菜单显隐
+const isScrolled = ref(false)
+const isMobileMenuOpen = ref(false)
+const isSearchFocused = ref(false)
+// 语言选择器Ref：移动端 + PC端
+const mobileLangRef = ref(null)
+const pcLangRef = ref(null) // 新增PC端语言选择器ref
 const logoRef = ref(null)
 const searchInputRef = ref(null)
 const pcSearchInputRef = ref(null)
 
 // 常量配置
-const PC_MIN_WIDTH_THRESHOLD = 768
+const PC_MIN_WIDTH_THRESHOLD = 768 // 移动端/PC端切换断点
+let isCurrentMobile = ref(false) // 当前是否为移动端
+const SCROLL_THRESHOLD = 5
 let scrollTimer = null
 
 /**
@@ -344,11 +358,38 @@ const focusSearchInput = () => {
 }
 
 /**
+ * 搜索框聚焦：关闭语言选择器下拉 + 关闭菜单
+ */
+const handleSearchFocus = () => {
+  isSearchFocused.value = true
+  // 关闭移动端语言选择器下拉
+  if (mobileLangRef.value && typeof mobileLangRef.value.closeDropdown === 'function') {
+    mobileLangRef.value.closeDropdown()
+  }
+  // 关闭PC端语言选择器下拉（如果存在）
+  if (pcLangRef.value && typeof pcLangRef.value.closeDropdown === 'function') {
+    pcLangRef.value.closeDropdown()
+  }
+  if (isMobileMenuOpen.value) {
+    closeMobileMenu()
+  }
+}
+
+/**
+ * 搜索框失焦：恢复状态
+ */
+const handleSearchBlur = () => {
+  setTimeout(() => {
+    isSearchFocused.value = false
+  }, 200)
+}
+
+/**
  * 滚动事件处理
  */
 const handleScroll = () => {
   if (typeof window !== 'undefined') {
-    isScrolled.value = window.scrollY > 5
+    isScrolled.value = window.scrollY > SCROLL_THRESHOLD
   }
 }
 
@@ -364,6 +405,15 @@ const debouncedScroll = () => {
  * 移动端菜单切换
  */
 const handleMenuClick = () => {
+  // 关闭所有语言选择器下拉
+  if (mobileLangRef.value && typeof mobileLangRef.value.closeDropdown === 'function') {
+    mobileLangRef.value.closeDropdown()
+  }
+  if (pcLangRef.value && typeof pcLangRef.value.closeDropdown === 'function') {
+    pcLangRef.value.closeDropdown()
+  }
+
+  // 切换菜单显隐
   isMobileMenuOpen.value = !isMobileMenuOpen.value
   if (typeof document !== 'undefined') {
     document.body.style.overflow = isMobileMenuOpen.value ? 'hidden' : 'auto'
@@ -371,14 +421,12 @@ const handleMenuClick = () => {
 }
 
 /**
- * 关闭移动端菜单（核心：确保触发时能正确关闭菜单）
+ * 关闭移动端菜单
  */
 const closeMobileMenu = () => {
-  // 强制关闭菜单并恢复body滚动
   isMobileMenuOpen.value = false
   if (typeof document !== 'undefined') {
     document.body.style.overflow = 'auto'
-    // 修复：强制重绘避免样式卡顿
     document.body.offsetHeight
   }
 }
@@ -407,30 +455,68 @@ const handlePcSearchClick = () => {
   console.log('PC端搜索内容：', value)
 }
 
-// 路由监听：切换路由关闭移动端菜单
+/**
+ * 检测当前设备类型 + 切换时关闭所有展开内容
+ */
+const checkDeviceType = () => {
+  const newIsMobile = window.innerWidth < PC_MIN_WIDTH_THRESHOLD
+
+  // 1. 移动端 → PC端：关闭移动端菜单、移动端语言下拉
+  if (isCurrentMobile.value && !newIsMobile) {
+    closeMobileMenu()
+    mobileLangRef.value?.closeDropdown()
+    isSearchFocused.value = false
+    document.body.style.overflow = 'auto'
+  }
+
+  // 2. PC端 → 移动端：关闭PC端语言下拉
+  if (!isCurrentMobile.value && newIsMobile) {
+    pcLangRef.value?.closeDropdown()
+  }
+
+  isCurrentMobile.value = newIsMobile
+}
+
+/**
+ * 窗口尺寸变化防抖处理
+ */
+let resizeTimer = null
+const debouncedResize = () => {
+  clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(checkDeviceType, 100)
+}
+
+// 路由监听
 watch(
   () => route.path,
   () => {
     closeMobileMenu()
+    // 关闭所有语言选择器下拉
+    mobileLangRef.value?.closeDropdown()
+    pcLangRef.value?.closeDropdown()
     handleScroll()
   },
   { immediate: true },
 )
 
-// 生命周期：挂载
+// 生命周期
 onMounted(() => {
   nextTick(handleScroll)
   if (typeof window !== 'undefined') {
     window.addEventListener('scroll', debouncedScroll)
+    window.addEventListener('resize', debouncedResize)
+    // 初始化设备类型
+    checkDeviceType()
   }
 })
 
-// 生命周期：卸载
 onUnmounted(() => {
   if (typeof window !== 'undefined') {
     window.removeEventListener('scroll', debouncedScroll)
+    window.removeEventListener('resize', debouncedResize)
   }
   clearTimeout(scrollTimer)
+  clearTimeout(resizeTimer)
   if (typeof document !== 'undefined') {
     document.body.style.overflow = 'auto'
   }
@@ -513,7 +599,7 @@ $transition-timing: ease;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 99999 !important; /* 核心修复：提升层级确保语言选择器不被遮挡 */
+  z-index: 99999 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   padding: 0 15px;
 
@@ -552,6 +638,13 @@ $transition-timing: ease;
       justify-content: flex-end;
       padding: 0 12px;
       position: relative;
+      transition: all $transition-duration $transition-timing;
+
+      &.active {
+        width: calc(100% + 20px);
+        border-color: $primary-color;
+        box-shadow: 0 0 0 2px rgba(0, 74, 153, 0.2);
+      }
     }
 
     .mobile-search-input {
@@ -565,9 +658,14 @@ $transition-timing: ease;
       outline: none;
       font-size: 14px;
       color: $dark-gray;
+      transition: all $transition-duration $transition-timing;
 
       &::placeholder {
         color: #999;
+      }
+
+      &:focus {
+        width: calc(100% - 45px);
       }
     }
 
@@ -596,19 +694,32 @@ $transition-timing: ease;
     align-items: center;
     gap: 0.8rem;
     flex-shrink: 0;
-    z-index: 99999 !important; /* 核心修复：提升右侧操作区层级 */
+    z-index: 99999 !important;
   }
 
-  // 移动端语言选择器样式适配
+  // 移动端语言选择器样式
   .mobile-lang-selector {
     display: inline-block !important;
+    transition: all $transition-duration $transition-timing;
+
+    &.lang-dropdown-hidden {
+      :deep(*) {
+        &[class*='dropdown'],
+        &[class*='menu'] {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+        }
+      }
+    }
+
     :deep(.lang-selector-container) {
       display: flex !important;
       align-items: center;
       gap: 4px;
       color: $primary-color !important;
       font-size: 14px !important;
-      z-index: 99999 !important; /* 核心修复：确保语言选择器层级最高 */
+      z-index: 99999 !important;
     }
   }
 
@@ -643,7 +754,7 @@ $transition-timing: ease;
   width: 260px;
   height: calc(100vh - $nav-height);
   background: $white;
-  z-index: 9999 !important; /* 低于顶部栏，确保语言选择器可点击 */
+  z-index: 9999 !important;
   box-shadow: -2px 0 15px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   display: none !important;
@@ -861,7 +972,6 @@ $transition-timing: ease;
     }
   }
 
-  // PC端语言选择器样式适配
   .pc-lang-selector {
     display: inline-block !important;
     margin-left: 10px !important;
@@ -886,9 +996,8 @@ $transition-timing: ease;
   transition: all $transition-duration $transition-timing;
 
   &.is-scrolled {
-    background-color: #ffffff !important;
+    background-color: $white !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
-    // 滚动后调整PC端语言选择器颜色
     .pc-lang-selector :deep(.lang-selector-container) {
       color: $primary-color !important;
     }
@@ -917,7 +1026,7 @@ $transition-timing: ease;
         text-decoration: none;
         font-weight: 700;
         font-size: clamp(12px, 0.9vw, 16px);
-        color: #ffffff !important;
+        color: $white !important;
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
         transition: color $transition-duration $transition-timing;
       }
@@ -932,7 +1041,7 @@ $transition-timing: ease;
         border-radius: 1px;
         transition: all $transition-duration $transition-timing;
         opacity: 0;
-        background-color: #ffffff !important;
+        background-color: $white !important;
       }
 
       &::before {
@@ -958,12 +1067,12 @@ $transition-timing: ease;
 
 // 穿透样式：滚动后导航链接颜色调整
 :deep(.pc-main-nav.is-scrolled .nav-item .pc-nav-link) {
-  color: #004a99 !important;
+  color: $primary-color !important;
   text-shadow: 0 1px 2px rgba(0, 74, 153, 0.2) !important;
 }
 
 :deep(.pc-main-nav.is-scrolled .nav-item::before),
 :deep(.pc-main-nav.is-scrolled .nav-item::after) {
-  background-color: #004a99 !important;
+  background-color: $primary-color !important;
 }
 </style>
