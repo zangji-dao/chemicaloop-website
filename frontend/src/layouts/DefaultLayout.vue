@@ -3,7 +3,7 @@
   <!-- 布局根容器：控制整体垂直排布 & 占满视口高度 -->
   <div class="default-layout">
     <!-- 头部导航组件：全局公共导航 -->
-    <AppMainNavbarSimple />
+    <AppMainNavbar />
     <!-- 主内容渲染区：所有业务页面通过路由渲染到此处 -->
     <main class="layout-content">
       <router-view />
@@ -17,7 +17,7 @@
 
 <script setup>
 // 导入全局布局组件（路径需匹配实际文件位置）
-import AppMainNavbarSimple from '@/components/AppMainNavbarSimple.vue' // 头部导航（简化版）
+import AppMainNavbar from '@/components/AppMainNavbar.vue' // 头部导航
 import AppFooter from '@/components/AppFooter.vue'         // 尾部
 import FloatingTools from '@/components/FloatingTools.vue' // 浮动工具
 </script>

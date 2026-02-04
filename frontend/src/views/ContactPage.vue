@@ -1,6 +1,6 @@
 <template>
   <div class="contact-page-wrapper">
-    <AppMainNavbarSimple />
+    <AppMainNavbar />
     <div class="contact-content" style="padding: 120px 20px; text-align: center">
       <h1 class="contact-title">Contact Us</h1>
       <p
@@ -15,7 +15,7 @@
 
 <script setup>
 // 确保导入的组件路径正确
-import AppMainNavbarSimple from '@/components/AppMainNavbarSimple.vue'
+import AppMainNavbar from '@/components/AppMainNavbar.vue'
 </script>
 
 <style scoped>

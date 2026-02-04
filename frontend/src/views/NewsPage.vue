@@ -1,6 +1,6 @@
 <template>
   <div class="news-page-wrapper">
-    <AppMainNavbarSimple />
+    <AppMainNavbar />
     <div class="news-content" style="padding: 120px 20px; text-align: center">
       <h1 class="news-title">Latest News</h1>
       <p
@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import AppMainNavbarSimple from '@/components/AppMainNavbarSimple.vue'
+import AppMainNavbar from '@/components/AppMainNavbar.vue'
 </script>
 
 <style scoped>
