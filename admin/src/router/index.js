@@ -50,24 +50,28 @@ const router = createRouter({
 
 // 登录拦截逻辑
 router.beforeEach((to, from, next) => {
+  // 如果页面不需要登录（如登录页），直接放行
   if (to.meta.noNeedAuth) {
     next();
     return;
   }
 
+  // 检查 token 是否存在
   const token = localStorage.getItem("token");
   if (!token) {
     next("/login");
     return;
   }
 
+  // 如果用户信息中有 role，进行权限检查
   const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
-  if (to.meta.role && to.meta.role.includes(userInfo.role)) {
-    next();
-  } else {
+  if (to.meta.role && userInfo.role && !to.meta.role.includes(userInfo.role)) {
     alert("No permission to access!");
     next(from.path);
+    return;
   }
+
+  next();
 });
 
 export default router;

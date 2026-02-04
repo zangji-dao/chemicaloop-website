@@ -87,8 +87,10 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
-import axios from "axios";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import { login } from "@/api/login";
+import { setToken, setUserInfo, clearAuth } from "@/utils/auth";
 
 const router = useRouter();
 
@@ -118,16 +120,10 @@ onMounted(() => {
   }
 });
 
-// 用户名验证 - 兼容手机号/邮箱/纯用户名
+// 用户名验证
 const validateUsername = () => {
   if (!loginForm.username.trim()) {
     errors.username = "Username cannot be empty";
-  } else if (
-    !/^[a-zA-Z0-9_]{3,20}$|^1[3-9]\d{9}$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
-      loginForm.username
-    )
-  ) {
-    errors.username = "Please enter a valid username/phone/email";
   } else {
     errors.username = "";
   }
@@ -137,8 +133,6 @@ const validateUsername = () => {
 const validatePassword = () => {
   if (!loginForm.password.trim()) {
     errors.password = "Password cannot be empty";
-  } else if (loginForm.password.length < 6 || loginForm.password.length > 20) {
-    errors.password = "Password length must be 6-20 characters";
   } else {
     errors.password = "";
   }
@@ -151,45 +145,28 @@ const validateForm = () => {
   return !errors.username && !errors.password;
 };
 
-// 核心登录逻辑 - 适配默认账号 15585606688 / 123456
+// 核心登录逻辑 - 调用真实后端接口
 const handleLogin = async () => {
   if (!validateForm()) return;
   isLoading.value = true;
 
   try {
-    // 模拟登录接口 - 实际项目替换为真实后端接口地址 /api/login 即可
-    const response = {
-      data: {
-        code: 200,
-        msg: "Login success",
-        data: {
-          token: "mock-token-" + Date.now(),
-          userInfo: {
-            username: loginForm.username.trim(),
-            // 账号匹配：默认手机号=普通用户 | admin=超级管理员 | 其他=编辑
-            nickname:
-              loginForm.username.trim() === "15585606688"
-                ? "Default User"
-                : loginForm.username.trim() === "admin"
-                ? "Super Admin"
-                : "Content Editor",
-            // 角色匹配：默认手机号=editor | admin=admin
-            role:
-              loginForm.username.trim() === "15585606688"
-                ? "editor"
-                : loginForm.username.trim() === "admin"
-                ? "admin"
-                : "editor",
-          },
-        },
-      },
-    };
+    // 调用后端登录接口
+    const response = await login({
+      username: loginForm.username.trim(),
+      password: loginForm.password.trim(),
+    });
 
-    const { code, data, msg } = response.data;
+    const { code, message, data } = response;
+
     if (code === 200) {
       // 存储用户凭证和信息
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userInfo", JSON.stringify(data.userInfo));
+      setToken(data.token);
+      setUserInfo({
+        userId: data.userId,
+        username: data.username,
+        realName: data.realName,
+      });
 
       // 记住密码 - 密码加密存储
       if (loginForm.remember) {
@@ -206,21 +183,12 @@ const handleLogin = async () => {
 
       // 清空密码+跳转首页
       loginForm.password = "";
+      ElMessage.success(message || "Login successful");
       router.push("/home");
-    } else {
-      alert(msg || "Login failed, please check your username and password");
     }
   } catch (error) {
-    if (error.response) {
-      alert(
-        error.response.data.msg ||
-          "Login failed, please check your username and password"
-      );
-    } else if (error.request) {
-      alert("Network exception, please check your network connection");
-    } else {
-      alert("Login error: " + error.message);
-    }
+    // 错误已在 request.js 的拦截器中处理，这里不需要额外处理
+    console.error("Login error:", error);
   } finally {
     isLoading.value = false;
   }
