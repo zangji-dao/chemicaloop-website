@@ -22,6 +22,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'legacy', // 使用旧版编译器以兼容旧语法
+        silenceDeprecations: ['legacy-js-api'],
+      },
+    },
+  },
   server: {
     port: 5000,
     host: '0.0.0.0',
