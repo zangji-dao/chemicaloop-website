@@ -1,8 +1,3 @@
-我会把这些社交图标（位于`src/assets/icons/`目录下）添加到`AppFooter`中，和联系方式排版在同一区域，保持视觉统一且适配整体风格：
-
-
-### 最终版 `AppFooter.vue`（含社交图标）
-```vue
 <!-- src/components/AppFooter.vue -->
 <template>
   <footer class="app-footer">
@@ -19,7 +14,7 @@
         <!-- 联系方式 + 社交图标 -->
         <div class="contact-and-social">
           <div class="contact-info">
-            <p>T: +91.979 979 6565 | E: support@multichemindia.com</p>
+            <p>T: +86.15585606688 | E: support@chemicaloop.com</p>
           </div>
           <!-- 社交图标容器 -->
           <div class="social-icons">
@@ -44,11 +39,11 @@
         <!-- 版权 + 快捷链接 -->
         <div class="copyright-and-links">
           <div class="copyright">
-            © {{ currentYear }} Multichem Specialties Private Limited. All Rights Reserved.
+            © {{ currentYear }} Chemicaloop. All Rights Reserved.
           </div>
           <div class="footer-links">
-            <a href="/privacy" class="link">Privacy Policy</a>
-            <a href="/terms" class="link">Terms</a>
+            <a href="#" class="link">Privacy Policy</a>
+            <a href="#" class="link">Terms</a>
           </div>
         </div>
       </div>
@@ -159,21 +154,3 @@ const currentYear = ref(new Date().getFullYear())
   }
 }
 </style>
-```
-
-
-### 关键说明
-1. **图标路径正确性**：
-   所有社交图标均引用`src/assets/icons/`下的文件（如`x.png`对应`@/assets/icons/x.png`），无需调整路径。
-
-2. **布局逻辑**：
-   - 社交图标与联系方式放在同一行（通过`contact-and-social`的`flex`布局实现），右侧对齐；
-   - 移动端下自动换行并居中，避免排版错乱。
-
-3. **样式适配**：
-   - 用`filter: invert(1)`将深色图标转为白色，完美适配深灰背景；
-   - 统一图标尺寸为`24px`，保持视觉一致性；
-   - 添加`hover`透明度变化，提升交互体验。
-
-
-该组件已完整整合 **Logo + 联系方式 + 社交图标 + 版权 + 快捷链接**，排版整洁且适配全设备尺寸。若需调整图标大小、间距或增减社交平台，可直接修改对应代码块。
