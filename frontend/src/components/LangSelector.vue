@@ -152,136 +152,126 @@ defineExpose({
 })
 </script>
 
-<style scoped lang="scss">
-@use 'sass:list';
-
-// 核心样式变量
-$primary-color: #004a99;
-$white: #ffffff;
-$border-width: 1px;
-$flag-size: 28px 20px;
-$trigger-height: 36px;
-$transition: all 0.2s ease;
-
-// 核心容器
+<style scoped>
+/* 语言选择器核心容器 */
 .lang-selector-container {
-  position: relative !important;
-  display: inline-block !important;
-  z-index: 99999 !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  position: relative;
+  display: inline-block;
+  z-index: 99999;
+  margin: 0;
+  padding: 0;
+}
 
-  // 下拉触发器
-  .lang-trigger {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    width: auto !important;
-    height: $trigger-height !important;
-    padding: 0 12px !important;
-    background-color: $white !important;
-    border: $border-width solid $primary-color !important;
-    border-radius: 6px !important;
-    cursor: pointer !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-    transition: $transition !important;
-    color: $primary-color !important;
-    font-size: 14px !important;
+/* 下拉触发器 */
+.lang-selector-container .lang-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: auto;
+  height: 36px;
+  padding: 0 12px;
+  background-color: #ffffff;
+  border: 1px solid #004a99;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  color: #004a99;
+  font-size: 14px;
+}
 
-    &:hover,
-    &.active {
-      background-color: $primary-color !important;
-      color: $white !important;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
-    }
+.lang-selector-container .lang-trigger:hover,
+.lang-selector-container .lang-trigger.active {
+  background-color: #004a99;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
 
-    // 国旗样式
-    .lang-flag {
-      width: list.nth($flag-size, 1) !important;
-      height: list.nth($flag-size, 2) !important;
-      object-fit: cover !important;
-      border-radius: 2px !important;
-      border: $border-width solid #e0e0e0 !important;
-      display: block !important;
-      margin: 0 !important;
-      padding: 0 !important;
+/* 国旗样式 */
+.lang-selector-container .lang-trigger .lang-flag {
+  width: 28px;
+  height: 20px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid #e0e0e0;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
 
-      .lang-trigger:hover &,
-      .lang-trigger.active & {
-        border-color: $white !important;
-      }
-    }
+.lang-selector-container .lang-trigger:hover .lang-flag,
+.lang-selector-container .lang-trigger.active .lang-flag {
+  border-color: #ffffff;
+}
 
-    // 下拉箭头
-    .lang-arrow {
-      font-size: 10px !important;
-      color: inherit !important;
-      line-height: 1 !important;
-      transition: $transition !important;
-      transform-origin: center !important;
+/* 下拉箭头 */
+.lang-selector-container .lang-trigger .lang-arrow {
+  font-size: 10px;
+  color: inherit;
+  line-height: 1;
+  transition: all 0.2s ease;
+  transform-origin: center;
+}
 
-      &.rotated {
-        transform: rotate(180deg) !important;
-      }
-    }
-  }
+.lang-selector-container .lang-trigger .lang-arrow.rotated {
+  transform: rotate(180deg);
+}
 
-  // 下拉列表（窄宽度+居中显示）
-  .lang-dropdown {
-    position: absolute !important;
-    top: calc(100% + 4px) !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important; // 水平居中
-    min-width: 50px !important; // 窄宽度
-    max-width: 80px !important;
-    background-color: $white !important;
-    border: $border-width solid $primary-color !important;
-    border-radius: 6px !important;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15) !important;
-    overflow: hidden !important;
-    padding: 4px 0 !important;
-    margin: 0 !important;
-    z-index: 99999 !important;
+/* 下拉列表 */
+.lang-selector-container .lang-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 50px;
+  max-width: 80px;
+  background-color: #ffffff;
+  border: 1px solid #004a99;
+  border-radius: 6px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  padding: 4px 0;
+  margin: 0;
+  z-index: 99999;
+}
 
-    // 单个选项（居中显示）
-    .lang-option {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      height: 36px !important;
-      padding: 0 8px !important;
-      cursor: pointer !important;
-      transition: $transition !important;
-      width: 100% !important;
-      box-sizing: border-box !important;
+/* 单个选项 */
+.lang-selector-container .lang-dropdown .lang-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
 
-      &:hover {
-        background-color: rgba(0, 74, 153, 0.1) !important;
-      }
+.lang-selector-container .lang-dropdown .lang-option:hover {
+  background-color: rgba(0, 74, 153, 0.1);
+}
 
-      &.selected {
-        background-color: $primary-color !important;
-      }
+.lang-selector-container .lang-dropdown .lang-option.selected {
+  background-color: #004a99;
+}
 
-      // 选项内国旗
-      .lang-flag {
-        width: list.nth($flag-size, 1) !important;
-        height: list.nth($flag-size, 2) !important;
-        object-fit: cover !important;
-        border-radius: 2px !important;
-        border: $border-width solid #e0e0e0 !important;
-        display: block !important;
+/* 选项内国旗 */
+.lang-selector-container .lang-dropdown .lang-option .lang-flag {
+  width: 28px;
+  height: 20px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid #e0e0e0;
+  display: block;
+}
 
-        .lang-option:hover & {
-          border-color: $primary-color !important;
-        }
+.lang-selector-container .lang-dropdown .lang-option:hover .lang-flag {
+  border-color: #004a99;
+}
 
-        .lang-option.selected & {
-          border-color: $white !important;
-        }
-      }
-    }
-  }
+.lang-selector-container .lang-dropdown .lang-option.selected .lang-flag {
+  border-color: #ffffff;
 }
 </style>

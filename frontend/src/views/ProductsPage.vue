@@ -1,6 +1,6 @@
 <template>
   <div class="products-page-wrapper">
-    <AppMainNavbar />
+    <AppMainNavbarSimple />
     <div class="products-content" style="padding: 120px 20px; text-align: center">
       <h1 class="products-title">Our Products</h1>
       <p
@@ -14,10 +14,10 @@
 </template>
 
 <script setup>
-import AppMainNavbar from '@/components/AppMainNavbar.vue'
+import AppMainNavbarSimple from '@/components/AppMainNavbarSimple.vue'
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .products-page-wrapper {
   width: 100%;
   height: 100%;
