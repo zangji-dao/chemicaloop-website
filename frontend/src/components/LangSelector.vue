@@ -153,15 +153,13 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-@use 'sass:list';
-
 // 核心样式变量
-$primary-color: #004a99 !default;
-$white: #ffffff !default;
-$border-width: 1px !default;
-$flag-size: 28px 20px !default;
-$trigger-height: 36px !default;
-$transition: all 0.2s ease !default;
+$primary-color: #004a99;
+$white: #ffffff;
+$border-width: 1px;
+$flag-size: 28px 20px;
+$trigger-height: 36px;
+$transition: all 0.2s ease;
 
 // 核心容器
 .lang-selector-container {
@@ -198,8 +196,8 @@ $transition: all 0.2s ease !default;
 
     // 国旗样式
     .lang-flag {
-      width: list.nth($flag-size, 1) !important;
-      height: list.nth($flag-size, 2) !important;
+      width: nth($flag-size, 1) !important;
+      height: nth($flag-size, 2) !important;
       object-fit: cover !important;
       border-radius: 2px !important;
       border: $border-width solid #e0e0e0 !important;
@@ -266,8 +264,8 @@ $transition: all 0.2s ease !default;
 
       // 选项内国旗
       .lang-flag {
-        width: list.nth($flag-size, 1) !important;
-        height: list.nth($flag-size, 2) !important;
+        width: nth($flag-size, 1) !important;
+        height: nth($flag-size, 2) !important;
         object-fit: cover !important;
         border-radius: 2px !important;
         border: $border-width solid #e0e0e0 !important;
