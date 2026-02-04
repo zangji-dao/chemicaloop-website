@@ -1,0 +1,63 @@
+.
+├── backend
+│   ├── src
+│   │   ├── main
+│   │   │   ├── java
+│   │   │   └── resources
+│   │   └── test
+│   │       └── java
+│   └── pom.xml
+├── database
+│   └── init.sql
+├── frontend
+│   ├── public
+│   │   └── favicon.ico
+│   ├── src
+│   │   ├── assets
+│   │   │   ├── banners
+│   │   │   ├── flags
+│   │   │   ├── fonts
+│   │   │   ├── icons
+│   │   │   ├── images
+│   │   │   ├── styles
+│   │   │   ├── logo-blue-bg.png
+│   │   │   └── logo-white-bg.png
+│   │   ├── components
+│   │   │   ├── AppBanner.vue
+│   │   │   ├── AppFooter.vue
+│   │   │   ├── AppMainNavbar.vue
+│   │   │   ├── FloatingTools.vue
+│   │   │   ├── LangSelector.vue
+│   │   │   └── PageBanner.vue
+│   │   ├── constants
+│   │   │   └── lang.js
+│   │   ├── i18n
+│   │   │   ├── lang
+│   │   │   └── index.js
+│   │   ├── layouts
+│   │   │   └── DefaultLayout.vue
+│   │   ├── router
+│   │   │   └── index.js
+│   │   ├── views
+│   │   │   ├── AboutPage.vue
+│   │   │   ├── ContactPage.vue
+│   │   │   ├── HomePage.vue
+│   │   │   ├── NewsPage.vue
+│   │   │   └── ProductsPage.vue
+│   │   ├── App.vue
+│   │   └── main.js
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── jsconfig.json
+│   ├── package.json
+│   ├── pnpm-lock.yaml
+│   ├── translate-lang.js
+│   └── vite.config.js
+├── PROJECT_STRUCTURE.md
+├── PROJECT_TREE.txt
+├── QUICK_START.md
+├── README.md
+├── start.sh
+└── stop.sh
+
+26 directories, 35 files
