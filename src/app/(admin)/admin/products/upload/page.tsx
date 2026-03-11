@@ -904,10 +904,10 @@ function ProductUploadContent() {
     <div className="max-w-5xl mx-auto">
       {/* 页面标题 */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-white mb-2">
           {locale === 'zh' ? '产品上架' : 'Upload Product'}
         </h1>
-        <p className="text-gray-600">
+        <p className="text-slate-400">
           {locale === 'zh' ? '从产品库选择或手动录入产品信息' : 'Select from product library or enter manually'}
         </p>
       </div>
@@ -927,8 +927,8 @@ function ProductUploadContent() {
                         isCompleted
                           ? 'bg-blue-600 border-blue-600 text-white'
                           : isCurrent
-                          ? 'bg-blue-50 border-blue-600 text-blue-600'
-                          : 'bg-white border-gray-300 text-gray-400'
+                          ? 'bg-slate-700 border-blue-500 text-blue-400'
+                          : 'bg-slate-800 border-slate-600 text-slate-500'
                       }`}
                     >
                       {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
@@ -936,7 +936,7 @@ function ProductUploadContent() {
                     <div className="ml-3 hidden sm:block">
                       <div
                         className={`text-sm font-medium ${
-                          isCurrent ? 'text-blue-600' : isCompleted ? 'text-gray-900' : 'text-gray-400'
+                          isCurrent ? 'text-blue-400' : isCompleted ? 'text-white' : 'text-slate-500'
                         }`}
                       >
                         {step.title[locale]}
@@ -946,7 +946,7 @@ function ProductUploadContent() {
                   {index < steps.length - 1 && (
                     <div
                       className={`flex-1 h-0.5 mx-4 ${
-                        index < currentStep ? 'bg-blue-600' : 'bg-gray-300'
+                        index < currentStep ? 'bg-blue-600' : 'bg-slate-700'
                       }`}
                     />
                   )}
@@ -956,64 +956,64 @@ function ProductUploadContent() {
           </div>
 
         {/* 表单内容 */}
-        <div className="bg-white rounded-xl shadow-sm p-8">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-8">
           {/* Step 1: 选择产品 */}
           {currentStep === 0 && (
             <div className="space-y-6">
               <div className="flex items-center gap-2 mb-4">
-                <Database className="h-6 w-6 text-blue-600" />
-                <h2 className="text-xl font-bold text-gray-900">{steps[0].title[locale]}</h2>
+                <Database className="h-6 w-6 text-blue-400" />
+                <h2 className="text-xl font-bold text-white">{steps[0].title[locale]}</h2>
               </div>
 
               {/* 已选择的 SPU */}
               {selectedSPU ? (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                <div className="bg-green-600/10 border border-green-500/30 rounded-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <Link2 className="h-5 w-5 text-green-600" />
-                      <span className="font-semibold text-green-900">
+                      <Link2 className="h-5 w-5 text-green-400" />
+                      <span className="font-semibold text-green-400">
                         {locale === 'zh' ? '已关联 SPU' : 'Linked SPU'}
                       </span>
                     </div>
                     <button
                       onClick={handleClearSPU}
-                      className="text-sm text-gray-500 hover:text-gray-700"
+                      className="text-sm text-slate-400 hover:text-white transition-colors"
                     >
                       {locale === 'zh' ? '取消关联' : 'Unlink'}
                     </button>
                   </div>
                   
                   <div className="grid md:grid-cols-2 gap-4">
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <div className="text-sm text-gray-600 mb-1">{locale === 'zh' ? '中文名称' : 'Chinese Name'}</div>
-                      <div className="font-semibold text-gray-900">{selectedSPU.name}</div>
+                    <div className="bg-slate-700/50 rounded-lg p-4">
+                      <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '中文名称' : 'Chinese Name'}</div>
+                      <div className="font-semibold text-white">{selectedSPU.name}</div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <div className="text-sm text-gray-600 mb-1">{locale === 'zh' ? '英文名称' : 'English Name'}</div>
-                      <div className="font-semibold text-gray-900">{selectedSPU.name_en || '-'}</div>
+                    <div className="bg-slate-700/50 rounded-lg p-4">
+                      <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '英文名称' : 'English Name'}</div>
+                      <div className="font-semibold text-white">{selectedSPU.name_en || '-'}</div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <div className="text-sm text-gray-600 mb-1">CAS Number</div>
-                      <div className="font-mono font-semibold text-blue-700">{selectedSPU.cas}</div>
+                    <div className="bg-slate-700/50 rounded-lg p-4">
+                      <div className="text-sm text-slate-400 mb-1">CAS Number</div>
+                      <div className="font-mono font-semibold text-blue-400">{selectedSPU.cas}</div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <div className="text-sm text-gray-600 mb-1">{locale === 'zh' ? '分子式' : 'Formula'}</div>
-                      <div className="font-mono font-semibold text-gray-900">{selectedSPU.formula || '-'}</div>
+                    <div className="bg-slate-700/50 rounded-lg p-4">
+                      <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '分子式' : 'Formula'}</div>
+                      <div className="font-mono font-semibold text-white">{selectedSPU.formula || '-'}</div>
                     </div>
                     {selectedSPU.hs_code && (
-                      <div className="bg-white rounded-lg p-4 shadow-sm">
-                        <div className="text-sm text-gray-600 mb-1">HS Code</div>
-                        <div className="font-mono font-semibold text-gray-900">{selectedSPU.hs_code}</div>
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <div className="text-sm text-slate-400 mb-1">HS Code</div>
+                        <div className="font-mono font-semibold text-white">{selectedSPU.hs_code}</div>
                       </div>
                     )}
                     {selectedSPU.pubchem_cid && (
-                      <div className="bg-white rounded-lg p-4 shadow-sm">
-                        <div className="text-sm text-gray-600 mb-1">PubChem CID</div>
+                      <div className="bg-slate-700/50 rounded-lg p-4">
+                        <div className="text-sm text-slate-400 mb-1">PubChem CID</div>
                         <a 
                           href={`https://pubchem.ncbi.nlm.nih.gov/compound/${selectedSPU.pubchem_cid}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-mono font-semibold text-blue-600 hover:underline flex items-center gap-1"
+                          className="font-mono font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1"
                         >
                           {selectedSPU.pubchem_cid}
                           <ExternalLink className="h-3 w-3" />
@@ -1027,7 +1027,7 @@ function ProductUploadContent() {
                   {/* SPU 搜索 */}
                   {/* 统一搜索框 */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       {locale === 'zh' ? '搜索产品 (CAS 号或名称)' : 'Search Product (CAS or Name)'}
                     </label>
                     <div className="flex gap-3">
@@ -1046,7 +1046,7 @@ function ProductUploadContent() {
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && handleUnifiedSearch()}
                         placeholder={locale === 'zh' ? '输入 CAS 号，如 64-17-5' : 'Enter CAS number, e.g., 64-17-5'}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                        className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400 text-lg"
                       />
                       <button
                         onClick={handleUnifiedSearch}
@@ -1057,7 +1057,7 @@ function ProductUploadContent() {
                         {locale === 'zh' ? '搜索' : 'Search'}
                       </button>
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-slate-500 mt-2">
                       {locale === 'zh' 
                         ? '系统会先搜索产品库，如无结果则自动从 PubChem 获取' 
                         : 'System searches product library first, then PubChem if not found'}
@@ -1066,7 +1066,7 @@ function ProductUploadContent() {
 
                   {/* 搜索状态指示 */}
                   {(searchingSPU || searchingPubChem) && (
-                    <div className="flex items-center gap-2 text-blue-600 mb-4">
+                    <div className="flex items-center gap-2 text-blue-400 mb-4">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span className="text-sm">
                         {searchingSPU 
@@ -1078,30 +1078,30 @@ function ProductUploadContent() {
 
                   {/* SPU 搜索结果 */}
                   {spuSearchResults.length > 0 && !pubchemData && (
-                    <div className="border border-gray-200 rounded-lg divide-y mb-4">
-                      <div className="px-4 py-2 bg-gray-50 text-sm text-gray-600">
+                    <div className="border border-slate-600 rounded-lg divide-y divide-slate-700 mb-4">
+                      <div className="px-4 py-2 bg-slate-700 text-sm text-slate-300">
                         {locale === 'zh' ? `找到 ${spuSearchResults.length} 个产品` : `Found ${spuSearchResults.length} products`}
                       </div>
                       {spuSearchResults.map((spu) => (
                         <button
                           key={spu.id}
                           onClick={() => handleSelectSPU(spu)}
-                          className="w-full p-4 flex items-center justify-between hover:bg-blue-50 transition-colors text-left"
+                          className="w-full p-4 flex items-center justify-between hover:bg-slate-700 transition-colors text-left"
                         >
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm text-blue-600 font-medium">{spu.cas}</span>
-                              <span className="text-gray-400">|</span>
-                              <span className="font-medium">{spu.name}</span>
-                              {spu.name_en && <span className="text-gray-500 text-sm">({spu.name_en})</span>}
+                              <span className="font-mono text-sm text-blue-400 font-medium">{spu.cas}</span>
+                              <span className="text-slate-600">|</span>
+                              <span className="font-medium text-white">{spu.name}</span>
+                              {spu.name_en && <span className="text-slate-400 text-sm">({spu.name_en})</span>}
                             </div>
                             {spu.formula && (
-                              <div className="text-sm text-gray-500 mt-1">
+                              <div className="text-sm text-slate-500 mt-1">
                                 {locale === 'zh' ? '分子式' : 'Formula'}: {spu.formula}
                               </div>
                             )}
                           </div>
-                          <Check className="h-5 w-5 text-gray-400" />
+                          <Check className="h-5 w-5 text-slate-500" />
                         </button>
                       ))}
                     </div>
@@ -1109,13 +1109,13 @@ function ProductUploadContent() {
 
                   {/* PubChem 数据 */}
                   {pubchemData && !selectedSPU && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                    <div className="bg-green-600/10 border border-green-500/30 rounded-lg p-6">
                       <div className="flex items-center gap-2 mb-4">
-                        <Check className="h-5 w-5 text-green-600" />
-                        <span className="font-semibold text-green-900">
+                        <Check className="h-5 w-5 text-green-400" />
+                        <span className="font-semibold text-green-400">
                           {locale === 'zh' ? '从 PubChem 获取成功' : 'Fetched from PubChem'}
                         </span>
-                        <span className="ml-auto text-xs text-gray-500 bg-green-100 px-2 py-1 rounded">
+                        <span className="ml-auto text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">
                           PubChem
                         </span>
                       </div>
@@ -1124,12 +1124,12 @@ function ProductUploadContent() {
                       <div className="grid md:grid-cols-3 gap-4 mb-4">
                         {/* 2D 结构图 */}
                         {pubchemData.structure2dUrl && (
-                          <div className="bg-white rounded-lg p-4 shadow-sm flex flex-col items-center justify-center row-span-2">
-                            <div className="text-sm text-gray-600 mb-2">{locale === 'zh' ? '2D 结构图' : '2D Structure'}</div>
+                          <div className="bg-slate-700/50 rounded-lg p-4 flex flex-col items-center justify-center row-span-2">
+                            <div className="text-sm text-slate-400 mb-2">{locale === 'zh' ? '2D 结构图' : '2D Structure'}</div>
                             <img 
                               src={pubchemData.structure2dUrl} 
                               alt={`${pubchemData.nameEn || pubchemData.nameZh || 'Compound'} 2D Structure`}
-                              className="max-w-full h-auto rounded border border-gray-200"
+                              className="max-w-full h-auto rounded border border-slate-600"
                               style={{ maxHeight: '180px' }}
                               loading="lazy"
                               onError={(e) => {
@@ -1142,7 +1142,7 @@ function ProductUploadContent() {
                                 href={`https://pubchem.ncbi.nlm.nih.gov/compound/${pubchemData.cid}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="mt-2 text-xs text-blue-600 hover:underline flex items-center gap-1"
+                                className="mt-2 text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
                               >
                                 <ExternalLink className="h-3 w-3" />
                                 PubChem CID: {pubchemData.cid}
@@ -1151,50 +1151,50 @@ function ProductUploadContent() {
                           </div>
                         )}
                         
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-600 mb-1">{locale === 'zh' ? '中文名称' : 'Chinese Name'}</div>
-                          <div className="font-semibold text-gray-900">{pubchemData.nameZh || '-'}</div>
+                        <div className="bg-slate-700/50 rounded-lg p-4">
+                          <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '中文名称' : 'Chinese Name'}</div>
+                          <div className="font-semibold text-white">{pubchemData.nameZh || '-'}</div>
                         </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-600 mb-1">{locale === 'zh' ? '英文名称' : 'English Name'}</div>
-                          <div className="font-semibold text-gray-900">{pubchemData.nameEn || '-'}</div>
+                        <div className="bg-slate-700/50 rounded-lg p-4">
+                          <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '英文名称' : 'English Name'}</div>
+                          <div className="font-semibold text-white">{pubchemData.nameEn || '-'}</div>
                         </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-600 mb-1">CAS Number</div>
-                          <div className="font-mono font-semibold text-blue-700">{pubchemData.cas}</div>
+                        <div className="bg-slate-700/50 rounded-lg p-4">
+                          <div className="text-sm text-slate-400 mb-1">CAS Number</div>
+                          <div className="font-mono font-semibold text-blue-400">{pubchemData.cas}</div>
                         </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-600 mb-1">{locale === 'zh' ? '分子式' : 'Molecular Formula'}</div>
-                          <div className="font-mono font-semibold text-gray-900">{pubchemData.formula || '-'}</div>
+                        <div className="bg-slate-700/50 rounded-lg p-4">
+                          <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '分子式' : 'Molecular Formula'}</div>
+                          <div className="font-mono font-semibold text-white">{pubchemData.formula || '-'}</div>
                         </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm text-gray-600 mb-1">{locale === 'zh' ? '分子量' : 'Molecular Weight'}</div>
-                          <div className="font-mono font-semibold text-gray-900">{pubchemData.molecularWeight || '-'}</div>
+                        <div className="bg-slate-700/50 rounded-lg p-4">
+                          <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '分子量' : 'Molecular Weight'}</div>
+                          <div className="font-mono font-semibold text-white">{pubchemData.molecularWeight || '-'}</div>
                         </div>
                       </div>
                       
                       {/* 结构信息区 */}
-                      <div className="bg-white rounded-lg p-4 shadow-sm mb-4">
-                        <div className="text-sm font-medium text-gray-700 mb-3">{locale === 'zh' ? '结构信息' : 'Structural Information'}</div>
+                      <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
+                        <div className="text-sm font-medium text-slate-300 mb-3">{locale === 'zh' ? '结构信息' : 'Structural Information'}</div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                          <div className="bg-gray-50 rounded px-3 py-2">
-                            <span className="text-gray-500">SMILES:</span>{' '}
-                            <span className="font-mono text-gray-900 break-all">{pubchemData.smiles || '-'}</span>
+                          <div className="bg-slate-800 rounded px-3 py-2">
+                            <span className="text-slate-500">SMILES:</span>{' '}
+                            <span className="font-mono text-slate-300 break-all">{pubchemData.smiles || '-'}</span>
                           </div>
-                          <div className="bg-gray-50 rounded px-3 py-2">
-                            <span className="text-gray-500">InChIKey:</span>{' '}
-                            <span className="font-mono text-gray-900">{pubchemData.inchiKey || '-'}</span>
+                          <div className="bg-slate-800 rounded px-3 py-2">
+                            <span className="text-slate-500">InChIKey:</span>{' '}
+                            <span className="font-mono text-slate-300">{pubchemData.inchiKey || '-'}</span>
                           </div>
                           {pubchemData.inchi && (
-                            <div className="bg-gray-50 rounded px-3 py-2 md:col-span-2">
-                              <span className="text-gray-500">InChI:</span>{' '}
-                              <span className="font-mono text-gray-900 break-all text-xs">{pubchemData.inchi}</span>
+                            <div className="bg-slate-800 rounded px-3 py-2 md:col-span-2">
+                              <span className="text-slate-500">InChI:</span>{' '}
+                              <span className="font-mono text-slate-300 break-all text-xs">{pubchemData.inchi}</span>
                             </div>
                           )}
                           {pubchemData.xlogp && (
-                            <div className="bg-gray-50 rounded px-3 py-2">
-                              <span className="text-gray-500">XLogP:</span>{' '}
-                              <span className="font-mono text-gray-900">{pubchemData.xlogp}</span>
+                            <div className="bg-slate-800 rounded px-3 py-2">
+                              <span className="text-slate-500">XLogP:</span>{' '}
+                              <span className="font-mono text-slate-300">{pubchemData.xlogp}</span>
                             </div>
                           )}
                         </div>
@@ -1202,16 +1202,16 @@ function ProductUploadContent() {
                       
                       {/* 同义词区 */}
                       {pubchemData.synonyms && pubchemData.synonyms.length > 0 && (
-                        <div className="bg-white rounded-lg p-4 shadow-sm mb-4">
-                          <div className="text-sm font-medium text-gray-700 mb-3">{locale === 'zh' ? '同义词/别名' : 'Synonyms/Aliases'}</div>
+                        <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
+                          <div className="text-sm font-medium text-slate-300 mb-3">{locale === 'zh' ? '同义词/别名' : 'Synonyms/Aliases'}</div>
                           <div className="flex flex-wrap gap-2">
                             {pubchemData.synonyms.slice(0, 15).map((synonym: string, index: number) => (
-                              <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                              <span key={index} className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">
                                 {synonym}
                               </span>
                             ))}
                             {pubchemData.synonyms.length > 15 && (
-                              <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded text-xs">
+                              <span className="px-2 py-1 bg-slate-700 text-slate-500 rounded text-xs">
                                 +{pubchemData.synonyms.length - 15} more
                               </span>
                             )}
@@ -1221,61 +1221,61 @@ function ProductUploadContent() {
                       
                       {/* 物理化学性质 */}
                       {(pubchemData.boilingPoint || pubchemData.meltingPoint || pubchemData.flashPoint || pubchemData.density || pubchemData.solubility || pubchemData.vaporPressure) && (
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <div className="text-sm font-medium text-gray-700 mb-3">{locale === 'zh' ? '物理化学性质' : 'Physicochemical Properties'}</div>
+                        <div className="bg-slate-700/50 rounded-lg p-4">
+                          <div className="text-sm font-medium text-slate-300 mb-3">{locale === 'zh' ? '物理化学性质' : 'Physicochemical Properties'}</div>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
                             {pubchemData.boilingPoint && (
-                              <div className="bg-gray-50 rounded px-3 py-2">
-                                <span className="text-gray-500">{locale === 'zh' ? '沸点' : 'Boiling Point'}:</span>{' '}
-                                <span className="font-medium">{pubchemData.boilingPoint}</span>
+                              <div className="bg-slate-800 rounded px-3 py-2">
+                                <span className="text-slate-500">{locale === 'zh' ? '沸点' : 'Boiling Point'}:</span>{' '}
+                                <span className="font-medium text-slate-300">{pubchemData.boilingPoint}</span>
                               </div>
                             )}
                             {pubchemData.meltingPoint && (
-                              <div className="bg-gray-50 rounded px-3 py-2">
-                                <span className="text-gray-500">{locale === 'zh' ? '熔点' : 'Melting Point'}:</span>{' '}
-                                <span className="font-medium">{pubchemData.meltingPoint}</span>
+                              <div className="bg-slate-800 rounded px-3 py-2">
+                                <span className="text-slate-500">{locale === 'zh' ? '熔点' : 'Melting Point'}:</span>{' '}
+                                <span className="font-medium text-slate-300">{pubchemData.meltingPoint}</span>
                               </div>
                             )}
                             {pubchemData.flashPoint && (
-                              <div className="bg-gray-50 rounded px-3 py-2">
-                                <span className="text-gray-500">{locale === 'zh' ? '闪点' : 'Flash Point'}:</span>{' '}
-                                <span className="font-medium">{pubchemData.flashPoint}</span>
+                              <div className="bg-slate-800 rounded px-3 py-2">
+                                <span className="text-slate-500">{locale === 'zh' ? '闪点' : 'Flash Point'}:</span>{' '}
+                                <span className="font-medium text-slate-300">{pubchemData.flashPoint}</span>
                               </div>
                             )}
                             {pubchemData.density && (
-                              <div className="bg-gray-50 rounded px-3 py-2">
-                                <span className="text-gray-500">{locale === 'zh' ? '密度' : 'Density'}:</span>{' '}
-                                <span className="font-medium">{pubchemData.density}</span>
+                              <div className="bg-slate-800 rounded px-3 py-2">
+                                <span className="text-slate-500">{locale === 'zh' ? '密度' : 'Density'}:</span>{' '}
+                                <span className="font-medium text-slate-300">{pubchemData.density}</span>
                               </div>
                             )}
                             {pubchemData.solubility && (
-                              <div className="bg-gray-50 rounded px-3 py-2">
-                                <span className="text-gray-500">{locale === 'zh' ? '溶解度' : 'Solubility'}:</span>{' '}
-                                <span className="font-medium">{pubchemData.solubility}</span>
+                              <div className="bg-slate-800 rounded px-3 py-2">
+                                <span className="text-slate-500">{locale === 'zh' ? '溶解度' : 'Solubility'}:</span>{' '}
+                                <span className="font-medium text-slate-300">{pubchemData.solubility}</span>
                               </div>
                             )}
                             {pubchemData.vaporPressure && (
-                              <div className="bg-gray-50 rounded px-3 py-2">
-                                <span className="text-gray-500">{locale === 'zh' ? '蒸气压' : 'Vapor Pressure'}:</span>{' '}
-                                <span className="font-medium">{pubchemData.vaporPressure}</span>
+                              <div className="bg-slate-800 rounded px-3 py-2">
+                                <span className="text-slate-500">{locale === 'zh' ? '蒸气压' : 'Vapor Pressure'}:</span>{' '}
+                                <span className="font-medium text-slate-300">{pubchemData.vaporPressure}</span>
                               </div>
                             )}
                             {pubchemData.physicalDescription && (
-                              <div className="bg-gray-50 rounded px-3 py-2 md:col-span-2">
-                                <span className="text-gray-500">{locale === 'zh' ? '物理描述' : 'Physical Description'}:</span>{' '}
-                                <span className="font-medium">{pubchemData.physicalDescription}</span>
+                              <div className="bg-slate-800 rounded px-3 py-2 md:col-span-2">
+                                <span className="text-slate-500">{locale === 'zh' ? '物理描述' : 'Physical Description'}:</span>{' '}
+                                <span className="font-medium text-slate-300">{pubchemData.physicalDescription}</span>
                               </div>
                             )}
                             {pubchemData.colorForm && (
-                              <div className="bg-gray-50 rounded px-3 py-2">
-                                <span className="text-gray-500">{locale === 'zh' ? '颜色/形态' : 'Color/Form'}:</span>{' '}
-                                <span className="font-medium">{pubchemData.colorForm}</span>
+                              <div className="bg-slate-800 rounded px-3 py-2">
+                                <span className="text-slate-500">{locale === 'zh' ? '颜色/形态' : 'Color/Form'}:</span>{' '}
+                                <span className="font-medium text-slate-300">{pubchemData.colorForm}</span>
                               </div>
                             )}
                             {pubchemData.odor && (
-                              <div className="bg-gray-50 rounded px-3 py-2">
-                                <span className="text-gray-500">{locale === 'zh' ? '气味' : 'Odor'}:</span>{' '}
-                                <span className="font-medium">{pubchemData.odor}</span>
+                              <div className="bg-slate-800 rounded px-3 py-2">
+                                <span className="text-slate-500">{locale === 'zh' ? '气味' : 'Odor'}:</span>{' '}
+                                <span className="font-medium text-slate-300">{pubchemData.odor}</span>
                               </div>
                             )}
                           </div>
@@ -1284,17 +1284,17 @@ function ProductUploadContent() {
                       
                       {/* 产品描述 */}
                       {pubchemData.description && (
-                        <div className="bg-white rounded-lg p-4 shadow-sm mt-4">
-                          <div className="text-sm font-medium text-gray-700 mb-2">{locale === 'zh' ? '产品描述' : 'Description'}</div>
-                          <p className="text-sm text-gray-600">{pubchemData.description}</p>
+                        <div className="bg-slate-700/50 rounded-lg p-4 mt-4">
+                          <div className="text-sm font-medium text-slate-300 mb-2">{locale === 'zh' ? '产品描述' : 'Description'}</div>
+                          <p className="text-sm text-slate-400">{pubchemData.description}</p>
                         </div>
                       )}
                       
                       {/* 行业应用 */}
                       {pubchemData.applications && pubchemData.applications.length > 0 && (
-                        <div className="bg-white rounded-lg p-4 shadow-sm mt-4">
-                          <div className="text-sm font-medium text-gray-700 mb-2">{locale === 'zh' ? '行业应用' : 'Applications'}</div>
-                          <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+                        <div className="bg-slate-700/50 rounded-lg p-4 mt-4">
+                          <div className="text-sm font-medium text-slate-300 mb-2">{locale === 'zh' ? '行业应用' : 'Applications'}</div>
+                          <ul className="text-sm text-slate-400 list-disc list-inside space-y-1">
                             {pubchemData.applications.slice(0, 5).map((app: string, index: number) => (
                               <li key={index}>{app}</li>
                             ))}
@@ -1306,32 +1306,32 @@ function ProductUploadContent() {
                       {(pubchemData || selectedSPU) && (
                         <div className={`mt-6 rounded-lg p-4 ${
                           processingError 
-                            ? 'bg-red-50 border border-red-200' 
+                            ? 'bg-red-600/10 border border-red-500/30' 
                             : processingStep === 'done' 
-                              ? 'bg-green-50 border border-green-200'
+                              ? 'bg-green-600/10 border border-green-500/30'
                               : autoProcessing
-                                ? 'bg-blue-50 border border-blue-200'
-                                : 'bg-gray-50 border border-gray-200'
+                                ? 'bg-blue-600/10 border border-blue-500/30'
+                                : 'bg-slate-700/50 border border-slate-600'
                         }`}>
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                               {processingError ? (
-                                <X className="h-5 w-5 text-red-600" />
+                                <X className="h-5 w-5 text-red-400" />
                               ) : processingStep === 'done' ? (
-                                <Check className="h-5 w-5 text-green-600" />
+                                <Check className="h-5 w-5 text-green-400" />
                               ) : autoProcessing ? (
-                                <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                                <Loader2 className="h-5 w-5 text-blue-400 animate-spin" />
                               ) : (
-                                <Database className="h-5 w-5 text-gray-600" />
+                                <Database className="h-5 w-5 text-slate-400" />
                               )}
                               <span className={`font-medium ${
                                 processingError 
-                                  ? 'text-red-900' 
+                                  ? 'text-red-400' 
                                   : processingStep === 'done' 
-                                    ? 'text-green-900'
+                                    ? 'text-green-400'
                                     : autoProcessing
-                                      ? 'text-blue-900'
-                                      : 'text-gray-900'
+                                      ? 'text-blue-400'
+                                      : 'text-slate-300'
                               }`}>
                                 {processingError 
                                   ? (locale === 'zh' ? '处理失败' : 'Processing Failed')
@@ -1360,26 +1360,26 @@ function ProductUploadContent() {
                           </div>
                           
                           {processingError && (
-                            <p className="text-sm text-red-700 mb-3">{processingError}</p>
+                            <p className="text-sm text-red-400 mb-3">{processingError}</p>
                           )}
                           
                           <div className="space-y-2 text-sm">
                             {/* 产品图生成 */}
                             <div className="flex items-center gap-2">
                               {processingStep === 'image' && autoProcessing ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
                               ) : generatedImageUrl ? (
-                                <Check className="h-4 w-4 text-green-500" />
+                                <Check className="h-4 w-4 text-green-400" />
                               ) : processingStep && ['hscode', 'translate', 'done'].includes(processingStep) ? (
                                 <X className="h-4 w-4 text-red-400" />
                               ) : (
-                                <div className="h-4 w-4 rounded-full border-2 border-gray-300" />
+                                <div className="h-4 w-4 rounded-full border-2 border-slate-600" />
                               )}
-                              <span className={generatedImageUrl ? 'text-green-700' : processingStep && ['hscode', 'translate', 'done'].includes(processingStep) && !generatedImageUrl ? 'text-red-600' : 'text-gray-600'}>
+                              <span className={generatedImageUrl ? 'text-green-400' : processingStep && ['hscode', 'translate', 'done'].includes(processingStep) && !generatedImageUrl ? 'text-red-400' : 'text-slate-400'}>
                                 {locale === 'zh' ? '生成产品图' : 'Generate product image'}
                               </span>
                               {generatedImageUrl && (
-                                <a href={generatedImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-xs ml-auto hover:underline">
+                                <a href={generatedImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 text-xs ml-auto hover:text-blue-300">
                                   {locale === 'zh' ? '查看' : 'View'}
                                 </a>
                               )}
@@ -1388,38 +1388,38 @@ function ProductUploadContent() {
                             {/* HS编码匹配 */}
                             <div className="flex items-center gap-2">
                               {processingStep === 'hscode' && autoProcessing ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
                               ) : matchedHsCode ? (
-                                <Check className="h-4 w-4 text-green-500" />
+                                <Check className="h-4 w-4 text-green-400" />
                               ) : processingStep && ['translate', 'done'].includes(processingStep) ? (
                                 <X className="h-4 w-4 text-red-400" />
                               ) : (
-                                <div className="h-4 w-4 rounded-full border-2 border-gray-300" />
+                                <div className="h-4 w-4 rounded-full border-2 border-slate-600" />
                               )}
-                              <span className={matchedHsCode ? 'text-green-700' : processingStep && ['translate', 'done'].includes(processingStep) && !matchedHsCode ? 'text-red-600' : 'text-gray-600'}>
+                              <span className={matchedHsCode ? 'text-green-400' : processingStep && ['translate', 'done'].includes(processingStep) && !matchedHsCode ? 'text-red-400' : 'text-slate-400'}>
                                 {locale === 'zh' ? '匹配 HS 编码' : 'Match HS code'}
                               </span>
                               {matchedHsCode && (
-                                <span className="text-blue-600 font-mono text-xs ml-auto">{matchedHsCode}</span>
+                                <span className="text-blue-400 font-mono text-xs ml-auto">{matchedHsCode}</span>
                               )}
                             </div>
                             
                             {/* 多语言翻译 */}
                             <div className="flex items-center gap-2">
                               {processingStep === 'translate' && autoProcessing ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
                               ) : Object.keys(translations).length > 0 ? (
-                                <Check className="h-4 w-4 text-green-500" />
+                                <Check className="h-4 w-4 text-green-400" />
                               ) : processingStep === 'done' && Object.keys(translations).length === 0 ? (
-                                <X className="h-4 w-4 text-gray-400" />
+                                <X className="h-4 w-4 text-slate-500" />
                               ) : (
-                                <div className="h-4 w-4 rounded-full border-2 border-gray-300" />
+                                <div className="h-4 w-4 rounded-full border-2 border-slate-600" />
                               )}
-                              <span className={Object.keys(translations).length > 0 ? 'text-green-700' : 'text-gray-600'}>
+                              <span className={Object.keys(translations).length > 0 ? 'text-green-400' : 'text-slate-400'}>
                                 {locale === 'zh' ? '翻译多语言（10种）' : 'Translate to 10 languages'}
                               </span>
                               {translatingFields.size > 0 && (
-                                <span className="text-blue-600 text-xs ml-auto animate-pulse">
+                                <span className="text-blue-400 text-xs ml-auto animate-pulse">
                                   {locale === 'zh' 
                                     ? `正在翻译: ${Array.from(translatingFields).map(f => 
                                         f === 'name' ? '名称' : 
@@ -1434,7 +1434,7 @@ function ProductUploadContent() {
                                 </span>
                               )}
                               {Object.keys(translations).length > 0 && translatingFields.size === 0 && (
-                                <span className="text-green-600 text-xs ml-auto">
+                                <span className="text-green-400 text-xs ml-auto">
                                   {locale === 'zh' ? '已完成' : 'Done'}
                                 </span>
                               )}
@@ -1444,8 +1444,8 @@ function ProductUploadContent() {
                       )}
                       
                       {/* 提示信息 */}
-                      <div className="mt-6 pt-4 border-t border-green-200">
-                        <p className="text-sm text-gray-600 text-center">
+                      <div className="mt-6 pt-4 border-t border-slate-600">
+                        <p className="text-sm text-slate-400 text-center">
                           {processingStep === 'done' 
                             ? (locale === 'zh' ? '✓ 数据已生成，点击下方"下一步"按钮继续' : '✓ Data generated, click "Next" below to continue')
                             : autoProcessing
@@ -1458,7 +1458,7 @@ function ProductUploadContent() {
                 </>
               )}
 
-              {errors.cas && <p className="text-red-500 text-sm mt-1">{errors.cas}</p>}
+              {errors.cas && <p className="text-red-400 text-sm mt-1">{errors.cas}</p>}
             </div>
           )}
 
@@ -1466,30 +1466,30 @@ function ProductUploadContent() {
           {currentStep === 1 && (
             <div className="space-y-6">
               <div className="flex items-center gap-2 mb-4">
-                <Check className="h-6 w-6 text-blue-600" />
-                <h2 className="text-xl font-bold text-gray-900">{steps[1].title[locale]}</h2>
+                <Check className="h-6 w-6 text-blue-400" />
+                <h2 className="text-xl font-bold text-white">{steps[1].title[locale]}</h2>
               </div>
 
               {/* 基本信息区块 */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Database className="h-4 w-4 text-blue-600" />
+              <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+                <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                  <Database className="h-4 w-4 text-blue-400" />
                   {locale === 'zh' ? '基本信息' : 'Basic Information'}
                 </h3>
                 <div className="grid md:grid-cols-3 gap-4">
                   {/* CAS号 */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? 'CAS 号' : 'CAS Number'}</label>
+                    <label className="block text-xs text-slate-400 mb-1">{locale === 'zh' ? 'CAS 号' : 'CAS Number'}</label>
                     <input
                       type="text"
                       value={formData.cas}
                       readOnly
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-blue-700"
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-blue-400"
                     />
                   </div>
                   {/* 名称（根据当前语言统一显示） */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '名称' : 'Name'}</label>
+                    <label className="block text-xs text-slate-400 mb-1">{locale === 'zh' ? '名称' : 'Name'}</label>
                     <input
                       type="text"
                       value={(() => {
@@ -1510,43 +1510,43 @@ function ProductUploadContent() {
                           setFormData({ ...formData, nameEn: e.target.value });
                         }
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                       placeholder={locale === 'zh' ? '产品名称' : 'Product name'}
                     />
                   </div>
                   {/* 分子式 */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '分子式' : 'Molecular Formula'}</label>
+                    <label className="block text-xs text-slate-400 mb-1">{locale === 'zh' ? '分子式' : 'Molecular Formula'}</label>
                     <input
                       type="text"
                       value={formData.formula}
                       onChange={(e) => setFormData({ ...formData, formula: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                       placeholder="C2H4O2"
                     />
                   </div>
                   {/* 分子量 */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '分子量' : 'Molecular Weight'}</label>
+                    <label className="block text-xs text-slate-400 mb-1">{locale === 'zh' ? '分子量' : 'Molecular Weight'}</label>
                     <input
                       type="text"
                       value={(pubchemData?.molecularWeight || selectedSPU?.molecular_weight) || ''}
                       onChange={(e) => {
                         // 分子量不可编辑，仅展示
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono"
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-slate-300"
                       readOnly
                     />
                   </div>
                   {/* PubChem CID */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">PubChem CID</label>
+                    <label className="block text-xs text-slate-400 mb-1">PubChem CID</label>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={(pubchemData?.cid || selectedSPU?.pubchem_cid) || ''}
                         readOnly
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono"
+                        className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-slate-300"
                       />
                       {(pubchemData?.cid || selectedSPU?.pubchem_cid) && (
                         <a
