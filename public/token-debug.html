@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Debug</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 2px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+    .section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 4px;
+      border-left: 4px solid #4CAF50;
+    }
+    .section h2 {
+      margin-top: 0;
+      color: #555;
+      font-size: 18px;
+    }
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .status.ok {
+      background: #4CAF50;
+      color: white;
+    }
+    .status.error {
+      background: #f44336;
+      color: white;
+    }
+    .status.warning {
+      background: #ff9800;
+      color: white;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    button.danger {
+      background: #f44336;
+    }
+    button.danger:hover {
+      background: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Token Debug Tool</h1>
+
+    <div class="section">
+      <h2>Token Status</h2>
+      <p>Status: <span id="tokenStatus" class="status">Checking...</span></p>
+      <p>Token Length: <span id="tokenLength">-</span> characters</p>
+      <p>Has Bearer Prefix: <span id="bearerPrefix">-</span></p>
+    </div>
+
+    <div class="section">
+      <h2>Raw Token</h2>
+      <pre id="rawToken">Loading...</pre>
+    </div>
+
+    <div class="section">
+      <h2>Decoded Token (Payload)</h2>
+      <pre id="decodedToken">Loading...</pre>
+    </div>
+
+    <div class="section">
+      <h2>Token Analysis</h2>
+      <ul id="analysis">
+        <li>Loading...</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Actions</h2>
+      <button onclick="analyzeToken()">🔄 Refresh</button>
+      <button onclick="clearToken()" class="danger">🗑️ Clear Token</button>
+      <button onclick="testMarkAsRead()">🧪 Test Mark as Read API</button>
+    </div>
+
+    <div class="section">
+      <h2>API Test Results</h2>
+      <pre id="apiTestResult">No test run yet</pre>
+    </div>
+  </div>
+
+  <script>
+    function analyzeToken() {
+      const token = localStorage.getItem('auth_token');
+      const statusEl = document.getElementById('tokenStatus');
+      const lengthEl = document.getElementById('tokenLength');
+      const bearerEl = document.getElementById('bearerPrefix');
+      const rawEl = document.getElementById('rawToken');
+      const decodedEl = document.getElementById('decodedToken');
+      const analysisEl = document.getElementById('analysis');
+
+      if (!token) {
+        statusEl.textContent = 'Not Found';
+        statusEl.className = 'status error';
+        lengthEl.textContent = '0';
+        bearerEl.textContent = 'N/A';
+        rawEl.textContent = 'No token found in localStorage';
+        decodedEl.textContent = 'N/A';
+        analysisEl.innerHTML = '<li>No token found. Please login first.</li>';
+        return;
+      }
+
+      // Status
+      statusEl.textContent = 'Found';
+      statusEl.className = 'status ok';
+
+      // Length
+      lengthEl.textContent = token.length;
+
+      // Bearer prefix check
+      const hasBearer = token.startsWith('Bearer ');
+      bearerEl.textContent = hasBearer ? 'Yes ⚠️' : 'No ✓';
+      bearerEl.className = hasBearer ? 'status warning' : 'status ok';
+
+      // Raw token (truncated for display)
+      rawEl.textContent = token.length > 200
+        ? token.substring(0, 200) + '... (truncated)'
+        : token;
+
+      // Decode JWT
+      let decoded = null;
+      let analysis = [];
+
+      try {
+        const parts = token.replace('Bearer ', '').split('.');
+        if (parts.length !== 3) {
+          throw new Error('Invalid JWT format (should have 3 parts separated by dots)');
+        }
+
+        const payload = parts[1];
+        const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+        const paddedBase64 = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
+        decoded = JSON.parse(atob(paddedBase64));
+
+        decodedEl.textContent = JSON.stringify(decoded, null, 2);
+
+        // Analysis
+        if (decoded.userId) {
+          analysis.push(`<li>✓ User ID found: <code>${decoded.userId}</code></li>`);
+        } else if (decoded.sub) {
+          analysis.push(`<li>✓ Subject found (sub): <code>${decoded.sub}</code></li>`);
+        } else {
+          analysis.push(`<li class="warning">⚠️ No user identifier (userId or sub) found in token</li>`);
+        }
+
+        if (decoded.exp) {
+          const expDate = new Date(decoded.exp * 1000);
+          const now = new Date();
+          const isExpired = expDate < now;
+          analysis.push(`<li>${isExpired ? '⚠️' : '✓'} Expiration: ${expDate.toLocaleString()} (${isExpired ? 'EXPIRED' : 'Valid'})</li>`);
+        } else {
+          analysis.push(`<li class="warning">⚠️ No expiration date found in token</li>`);
+        }
+
+        if (hasBearer) {
+          analysis.push(`<li class="warning">⚠️ Token has "Bearer " prefix. This will cause "Bearer Bearer ..." duplication when sending requests.</li>`);
+          analysis.push(`<li>💡 Solution: The application should check for "Bearer " prefix before adding it.</li>`);
+        }
+
+      } catch (error) {
+        decodedEl.textContent = `Failed to decode: ${error.message}`;
+        analysis.push(`<li class="error">❌ Error decoding token: ${error.message}</li>`);
+      }
+
+      analysisEl.innerHTML = analysis.join('');
+    }
+
+    function clearToken() {
+      if (confirm('Are you sure you want to clear the token? You will need to login again.')) {
+        localStorage.removeItem('auth_token');
+        analyzeToken();
+      }
+    }
+
+    async function testMarkAsRead() {
+      const resultEl = document.getElementById('apiTestResult');
+      resultEl.textContent = 'Testing...';
+
+      try {
+        const response = await fetch('/api/messages/msg-test-1/read', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        resultEl.textContent = `Status: ${response.status}\n\nResponse:\n${JSON.stringify(data, null, 2)}`;
+
+        if (response.ok) {
+          resultEl.style.background = '#d4edda';
+        } else {
+          resultEl.style.background = '#f8d7da';
+        }
+      } catch (error) {
+        resultEl.textContent = `Error: ${error.message}`;
+        resultEl.style.background = '#f8d7da';
+      }
+    }
+
+    // Analyze on load
+    analyzeToken();
+  </script>
+</body>
+</html>

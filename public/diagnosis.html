@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>诊断页面 - 请提供信息</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-4 bg-gray-100">
+  <div class="max-w-4xl mx-auto bg-white rounded shadow p-6">
+    <h1 class="text-2xl font-bold mb-4 text-center">问题诊断</h1>
+
+    <div class="mb-6 p-4 bg-blue-50 rounded border-l-4 border-blue-500">
+      <h2 class="font-bold mb-2">请检查以下内容：</h2>
+      <ol class="list-decimal list-inside space-y-2">
+        <li>您的浏览器窗口宽度是多少？</li>
+        <li>您看到的是哪两种语言同时显示？（例如：英文+中文）</li>
+        <li>这些文字出现在页面的哪个位置？（例如：导航栏、页面内容、Footer）</li>
+        <li>您访问的是哪个URL？（例如：/en、/zh）</li>
+      </ol>
+    </div>
+
+    <div class="mb-6">
+      <h2 class="font-bold mb-2">当前屏幕信息：</h2>
+      <div class="p-4 bg-gray-100 rounded">
+        <p>屏幕宽度：<span id="screen-width" class="font-bold text-blue-600"></span>px</p>
+        <p>屏幕高度：<span id="screen-height" class="font-bold text-blue-600"></span>px</p>
+        <p class="mt-2">
+          <span id="layout-type" class="font-bold"></span>
+        </p>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <h2 class="font-bold mb-2">响应式断点说明：</h2>
+      <table class="w-full border-collapse border">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border p-2 text-left">屏幕宽度</th>
+            <th class="border p-2 text-left">显示内容</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border p-2">&lt; 1280px</td>
+            <td class="border p-2">移动端导航栏（白色背景，带搜索框和汉堡菜单）</td>
+          </tr>
+          <tr class="bg-gray-50">
+            <td class="border p-2">≥ 1280px</td>
+            <td class="border p-2">PC端导航栏（蓝色背景，带社交媒体链接和独立Logo）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mb-6">
+      <h2 class="font-bold mb-2">可能的问题：</h2>
+      <ul class="list-disc list-inside space-y-2">
+        <li>如果浏览器窗口宽度在1280px附近，可能同时显示部分PC端和移动端元素</li>
+        <li>如果在语言选择器中看到多种语言名称，这是正常的（需要列出所有可选语言）</li>
+        <li>如果页面加载过程中短暂显示混合语言，可能是由于页面渲染顺序问题</li>
+      </ul>
+    </div>
+
+    <div class="mb-6">
+      <h2 class="font-bold mb-2">快速测试：</h2>
+      <div class="flex gap-2 flex-wrap">
+        <a href="/en" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          测试英文页面 /en
+        </a>
+        <a href="/zh" target="_blank" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          测试中文页面 /zh
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function updateInfo() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const widthEl = document.getElementById('screen-width');
+      const heightEl = document.getElementById('screen-height');
+      const layoutEl = document.getElementById('layout-type');
+      
+      widthEl.textContent = width;
+      heightEl.textContent = height;
+      
+      if (width >= 1280) {
+        layoutEl.innerHTML = '<span class="text-green-600">✓ 应该显示 PC 端导航栏</span>';
+      } else {
+        layoutEl.innerHTML = '<span class="text-blue-600">✓ 应该显示移动端导航栏</span>';
+      }
+    }
+    
+    updateInfo();
+    window.addEventListener('resize', updateInfo);
+  </script>
+</body>
+</html>

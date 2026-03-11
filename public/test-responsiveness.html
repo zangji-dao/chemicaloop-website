@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试响应式 - 检查同时显示问题</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-4 bg-gray-100">
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4 text-center">响应式测试页面</h1>
+    
+    <div class="mb-4 p-4 bg-white rounded shadow">
+      <p class="mb-2">当前屏幕宽度: <span id="screen-width" class="font-bold text-blue-600"></span>px</p>
+      <p class="text-sm text-gray-600">调整浏览器窗口宽度，观察下方导航栏的变化</p>
+    </div>
+
+    <!-- 模拟Header组件 -->
+    <div class="relative">
+      <!-- PC端Logo -->
+      <div class="pc-logo-standalone hidden xl:block fixed top-0 left-[100px] z-[9999] px-0 py-2.5 leading-none">
+        <div class="w-[160px] h-auto bg-red-500 text-white p-2 text-center rounded">
+          PC端Logo (xl:block)
+        </div>
+      </div>
+
+      <!-- 移动端顶部栏 -->
+      <div class="mobile-top-bar flex xl:hidden fixed top-0 left-0 right-0 z-[99999] bg-blue-500 text-white h-20 border-b border-gray-200 shadow-sm px-4 items-center">
+        <div class="w-full flex items-center justify-between">
+          <div class="flex-shrink-0 w-20 bg-yellow-500 text-white p-2 text-center rounded">
+            移动端Logo
+          </div>
+          <div class="flex-1 flex items-center ml-4">
+            <div class="w-full h-10 border rounded-lg bg-gray-200 flex items-center justify-end px-3">
+              <input type="text" placeholder="搜索产品..." class="flex-1 border-none bg-transparent outline-none text-sm text-gray-900" />
+            </div>
+          </div>
+          <div class="flex items-center gap-3 flex-shrink-0">
+            <span class="text-white">中文</span>
+            <button class="w-10 h-10 border-none bg-white text-blue-600 rounded font-bold">
+              ☰
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PC端导航栏容器 -->
+      <div class="pc-nav-wrapper hidden xl:block w-full fixed top-0 left-0 z-[9998]">
+        <!-- 顶部信息栏 -->
+        <div class="pc-top-header bg-green-600 h-[60px] flex items-center text-white px-5">
+          <div class="w-full max-w-[1920px] mx-auto flex items-center justify-end gap-4">
+            <div class="flex items-center gap-3">
+              <span>Twitter</span>
+              <span class="text-white/90">|</span>
+              <span>LinkedIn</span>
+              <span class="text-white/90">|</span>
+              <span>+86.15585606688</span>
+              <span class="text-white/90">|</span>
+              <span>support@chemicaloop.com</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 主导航 -->
+        <div class="pc-main-nav h-[50px] flex items-center px-5 bg-purple-600 text-white">
+          <div class="w-full max-w-[1920px] mx-auto flex justify-end items-center gap-8">
+            <a href="#" class="hover:text-blue-200">Home</a>
+            <a href="#" class="hover:text-blue-200">About</a>
+            <a href="#" class="hover:text-blue-200">Products</a>
+            <a href="#" class="hover:text-blue-200">Brands</a>
+            <a href="#" class="hover:text-blue-200">Partner</a>
+            <a href="#" class="hover:text-blue-200">News</a>
+            <a href="#" class="hover:text-blue-200">Contact</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 占位内容 -->
+      <div class="pt-[190px] p-4">
+        <div class="bg-white rounded shadow p-6">
+          <h2 class="text-xl font-bold mb-4">当前显示的导航栏</h2>
+          <div id="display-info" class="space-y-2"></div>
+        </div>
+
+        <div class="mt-6 bg-white rounded shadow p-6">
+          <h2 class="text-xl font-bold mb-4">预期行为</h2>
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border p-2 text-left">屏幕宽度</th>
+                <th class="border p-2 text-left">显示内容</th>
+                <th class="border p-2 text-left">隐藏内容</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border p-2">&lt; 1280px (xl)</td>
+                <td class="border p-2">移动端导航栏（蓝色）</td>
+                <td class="border p-2">PC端Logo、PC端导航栏</td>
+              </tr>
+              <tr class="bg-gray-50">
+                <td class="border p-2">≥ 1280px (xl)</td>
+                <td class="border p-2">PC端Logo（红色）、PC端导航栏（绿色+紫色）</td>
+                <td class="border p-2">移动端导航栏</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function updateDisplay() {
+      const width = window.innerWidth;
+      const widthEl = document.getElementById('screen-width');
+      const infoEl = document.getElementById('display-info');
+      
+      widthEl.textContent = width;
+      
+      let items = [];
+      
+      if (width >= 1280) {
+        items.push('<div class="text-green-600 font-bold">✓ PC端Logo (红色) - xl:block</div>');
+        items.push('<div class="text-green-600 font-bold">✓ PC端导航栏 (绿色+紫色) - xl:block</div>');
+        items.push('<div class="text-red-600 font-bold">✗ 移动端导航栏 (蓝色) - xl:hidden</div>');
+      } else {
+        items.push('<div class="text-green-600 font-bold">✓ 移动端导航栏 (蓝色) - flex xl:hidden</div>');
+        items.push('<div class="text-red-600 font-bold">✗ PC端Logo (红色) - hidden xl:block</div>');
+        items.push('<div class="text-red-600 font-bold">✗ PC端导航栏 (绿色+紫色) - hidden xl:block</div>');
+      }
+      
+      infoEl.innerHTML = items.join('');
+    }
+    
+    updateDisplay();
+    window.addEventListener('resize', updateDisplay);
+  </script>
+</body>
+</html>

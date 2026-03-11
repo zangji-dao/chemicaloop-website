@@ -1,0 +1,86 @@
+const bcrypt = require('bcryptjs');
+const { Pool } = require('pg');
+
+// 使用环境变量中的数据库 URL
+const pool = new Pool({
+  connectionString: 'postgresql://user_7604443655382024211:c3e80e89-5034-4404-b4b6-44a66c4ce9d6@cp-valid-flake-22c4b76e.pg4.aidap-global.cn-beijing.volces.com:5432/Database_1770552714254?sslmode=require&channel_binding=require',
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+async function createTestUsers() {
+  try {
+    // 密码哈希
+    const passwordHash = await bcrypt.hash('password123', 10);
+
+    console.log('Creating test users...');
+
+    // 创建普通用户 - username = name
+    await pool.query(
+      `INSERT INTO users (id, email, password_hash, name, username, internal_email, role, verified, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+       ON CONFLICT (email) DO UPDATE SET
+         name = EXCLUDED.name,
+         username = EXCLUDED.username,
+         internal_email = EXCLUDED.internal_email,
+         verified = EXCLUDED.verified`,
+      [
+        'c4ca4238a0b923820dcc509a6f75849b', // UUID
+        'normal@example.com', // 注册邮箱（外网邮箱）
+        passwordHash,
+        'normaluser', // name = username
+        'normaluser', // username
+        'normaluser@chemicaloop', // internal_email（内网邮箱）
+        'USER',
+        true
+      ]
+    );
+
+    // 创建代理用户 - username = name
+    await pool.query(
+      `INSERT INTO users (id, email, password_hash, name, username, internal_email, role, verified, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+       ON CONFLICT (email) DO UPDATE SET
+         name = EXCLUDED.name,
+         username = EXCLUDED.username,
+         internal_email = EXCLUDED.internal_email,
+         verified = EXCLUDED.verified`,
+      [
+        'c81e728d9d4c2f636f067f89cc14862c', // UUID
+        'agent@example.com', // 注册邮箱（外网邮箱）
+        passwordHash,
+        'agentuser', // name = username
+        'agentuser', // username
+        'agentuser@chemicaloop', // internal_email（内网邮箱）
+        'AGENT',
+        true
+      ]
+    );
+
+    // 验证创建结果
+    const result = await pool.query(
+      `SELECT id, email, name, username, internal_email, role, verified FROM users WHERE email IN ($1, $2)`,
+      ['normal@example.com', 'agent@example.com']
+    );
+
+    console.log('\n✅ Test users created successfully:');
+    result.rows.forEach(user => {
+      console.log(`\n${user.role}:`);
+      console.log(`  Email: ${user.email}`);
+      console.log(`  Name: ${user.name}`);
+      console.log(`  Username: ${user.username}`);
+      console.log(`  Internal Email: ${user.internal_email}`);
+      console.log(`  Password: password123`);
+      console.log(`  Verified: ${user.verified}`);
+      console.log(`  User ID: ${user.id}`);
+    });
+
+    await pool.end();
+  } catch (error) {
+    console.error('Error creating test users:', error);
+    process.exit(1);
+  }
+}
+
+createTestUsers();

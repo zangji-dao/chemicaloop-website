@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录状态测试工具 - Normal User</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .section {
+      background: #f5f5f5;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .info { color: #666; }
+    pre {
+      background: #333;
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>登录状态测试工具 - Normal User</h1>
+
+  <div class="section">
+    <h2>当前登录状态</h2>
+    <p><strong>Token:</strong> <span id="tokenStatus">检查中...</span></p>
+    <p><strong>用户信息:</strong> <span id="userInfo">检查中...</span></p>
+  </div>
+
+  <div class="section">
+    <h2>快速操作</h2>
+    <button onclick="setLoginState()">设置 Normal User 登录状态</button>
+    <button onclick="clearLoginState()">清除登录状态</button>
+    <button onclick="testAPI()">测试 API</button>
+    <button onclick="goToMessages()">跳转到消息中心</button>
+  </div>
+
+  <div class="section">
+    <h2>API 测试结果</h2>
+    <pre id="apiResult">点击"测试 API"按钮查看结果</pre>
+  </div>
+
+  <div class="section">
+    <h2>用户信息</h2>
+    <p><strong>姓名:</strong> Normal User</p>
+    <p><strong>邮箱:</strong> normal@chemicaloop.com</p>
+    <p><strong>角色:</strong> USER</p>
+    <p><strong>用户 ID:</strong> c4ca4238-a0b9-2382-0dcc-509a6f75849b</p>
+  </div>
+
+  <div class="section">
+    <h2>消息数据</h2>
+    <p><strong>总消息数:</strong> 17 条</p>
+    <p><strong>收件箱:</strong> 1 条</p>
+    <p><strong>询价:</strong> 16 条（多语言）</p>
+  </div>
+
+  <script>
+    // Normal User 的 token
+    const NORMAL_USER_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjNGNhNDIzOC1hMGI5LTIzODItMGRjYy01MDlhNmY3NTg0OWIiLCJlbWFpbCI6Im5vcm1hbEBjaGVtaWNhbG9vcC5jb20iLCJyb2xlIjoiVVNFUiIsImlhdCI6MTc3MDk3ODM1OSwiZXhwIjoxNzcxNTgzMTU5fQ.Gopq1GpSXQBDzj5jXWTED5HZiLLQjPL38TQUMEm2t3U';
+
+    const NORMAL_USER = {
+      id: 'c4ca4238-a0b9-2382-0dcc-509a6f75849b',
+      email: 'normal@chemicaloop.com',
+      name: 'Normal User',
+      role: 'USER'
+    };
+
+    // 检查当前登录状态
+    function checkLoginState() {
+      const token = localStorage.getItem('auth_token');
+      const user = localStorage.getItem('user');
+
+      const tokenStatus = document.getElementById('tokenStatus');
+      const userInfo = document.getElementById('userInfo');
+
+      if (token) {
+        tokenStatus.innerHTML = '<span class="success">✓ 已设置</span>';
+        tokenStatus.innerHTML += `<br><small>${token.substring(0, 50)}...</small>`;
+      } else {
+        tokenStatus.innerHTML = '<span class="error">✗ 未设置</span>';
+      }
+
+      if (user) {
+        try {
+          const userData = JSON.parse(user);
+          userInfo.innerHTML = `<span class="success">✓ ${userData.email}</span>`;
+          userInfo.innerHTML += `<br><small>姓名: ${userData.name}</small>`;
+        } catch (e) {
+          userInfo.innerHTML = '<span class="error">✗ 数据格式错误</span>';
+        }
+      } else {
+        userInfo.innerHTML = '<span class="error">✗ 未设置</span>';
+      }
+    }
+
+    // 设置登录状态
+    function setLoginState() {
+      localStorage.setItem('auth_token', NORMAL_USER_TOKEN);
+      localStorage.setItem('user', JSON.stringify(NORMAL_USER));
+
+      alert('Normal User 登录状态已设置！');
+      checkLoginState();
+    }
+
+    // 清除登录状态
+    function clearLoginState() {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+
+      alert('登录状态已清除！');
+      checkLoginState();
+    }
+
+    // 测试 API
+    async function testAPI() {
+      const token = localStorage.getItem('auth_token');
+      const resultDiv = document.getElementById('apiResult');
+
+      if (!token) {
+        resultDiv.innerHTML = '<span class="error">错误：未设置 token，请先设置登录状态</span>';
+        return;
+      }
+
+      resultDiv.innerHTML = '<span class="info">正在测试 API...</span>';
+
+      try {
+        // 测试收件箱
+        const inboxResponse = await fetch('http://localhost:5000/api/messages?folder=inbox', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const inboxData = await inboxResponse.json();
+
+        // 测试询价
+        const inquiriesResponse = await fetch('http://localhost:5000/api/messages?folder=inquiries', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const inquiriesData = await inquiriesResponse.json();
+
+        resultDiv.innerHTML = `
+<span class="success">✓ API 测试成功</span>
+
+<span class="info">收件箱：</span>
+- 总数: ${inboxData.total || 0}
+- 未读: ${inboxData.unreadCount || 0}
+- 状态: ${inboxResponse.ok ? '✓' : '✗'}
+
+<span class="info">询价：</span>
+- 总数: ${inquiriesData.total || 0}
+- 未读: ${inquiriesData.unreadCount || 0}
+- 状态: ${inquiriesResponse.ok ? '✓' : '✗'}
+`;
+      } catch (error) {
+        resultDiv.innerHTML = `<span class="error">错误：${error.message}</span>`;
+      }
+    }
+
+    // 跳转到消息中心
+    function goToMessages() {
+      window.location.href = 'http://localhost:5000/en/messages';
+    }
+
+    // 页面加载时检查登录状态
+    checkLoginState();
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="white"/>
+  
+  <!-- Ethanol Molecule: C2H5OH -->
+  <!-- CH3-CH2-OH -->
+  
+  <g transform="translate(50, 50)">
+    <!-- Bonds -->
+    <line x1="100" y1="150" x2="150" y2="100" stroke="#1a1a1a" stroke-width="3"/>
+    <line x1="150" y1="100" x2="200" y2="150" stroke="#1a1a1a" stroke-width="3"/>
+    <line x1="200" y1="150" x2="200" y2="200" stroke="#1a1a1a" stroke-width="3"/>
+    
+    <!-- Carbon Atoms -->
+    <circle cx="100" cy="150" r="20" fill="#333333"/>
+    <text x="100" y="157" text-anchor="middle" fill="white" font-size="20" font-weight="bold">CH₃</text>
+    
+    <circle cx="150" cy="100" r="20" fill="#333333"/>
+    <text x="150" y="107" text-anchor="middle" fill="white" font-size="20" font-weight="bold">CH₂</text>
+    
+    <!-- Oxygen Atom -->
+    <circle cx="200" cy="150" r="20" fill="#e74c3c"/>
+    <text x="200" y="157" text-anchor="middle" fill="white" font-size="20" font-weight="bold">O</text>
+    
+    <!-- Hydroxyl Group -->
+    <circle cx="200" cy="200" r="18" fill="#333333"/>
+    <text x="200" y="207" text-anchor="middle" fill="white" font-size="18" font-weight="bold">H</text>
+  </g>
+  
+  <!-- Formula -->
+  <text x="200" y="270" text-anchor="middle" fill="#1a1a1a" font-size="24" font-weight="bold">C₂H₆O</text>
+  
+  <!-- Name -->
+  <text x="200" y="40" text-anchor="middle" fill="#1a1a1a" font-size="18" font-weight="bold">Ethanol (Ethyl Alcohol)</text>
+</svg>

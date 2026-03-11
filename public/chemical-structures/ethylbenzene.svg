@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="white"/>
+  
+  <!-- Ethylbenzene Molecule: C6H5-CH2-CH3 -->
+  <g transform="translate(50, 30)">
+    <!-- Benzene Ring -->
+    <g transform="translate(100, 100)">
+      <!-- Hexagon -->
+      <polygon points="0,-40 35,-20 35,20 0,40 -35,20 -35,-20" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+      
+      <!-- Double Bonds (alternating) -->
+      <line x1="-5" y1="-35" x2="30" y2="-18" stroke="#1a1a1a" stroke-width="2"/>
+      <line x1="35" y1="20" x2="5" y2="35" stroke="#1a1a1a" stroke-width="2"/>
+      <line x1="-30" y1="18" x2="-30" y2="-18" stroke="#1a1a1a" stroke-width="2"/>
+      
+      <!-- Carbon labels -->
+      <circle cx="0" cy="-40" r="12" fill="#333333"/>
+      <circle cx="35" cy="-20" r="12" fill="#333333"/>
+      <circle cx="35" cy="20" r="12" fill="#333333"/>
+      <circle cx="0" cy="40" r="12" fill="#333333"/>
+      <circle cx="-35" cy="20" r="12" fill="#333333"/>
+      <circle cx="-35" cy="-20" r="12" fill="#333333"/>
+    </g>
+    
+    <!-- Bond from benzene to CH2 -->
+    <line x1="135" y1="100" x2="180" y2="100" stroke="#1a1a1a" stroke-width="3"/>
+    
+    <!-- CH2 -->
+    <circle cx="200" cy="100" r="18" fill="#333333"/>
+    <text x="200" y="107" text-anchor="middle" fill="white" font-size="16" font-weight="bold">CH₂</text>
+    
+    <!-- Bond to CH3 -->
+    <line x1="200" y1="100" x2="240" y2="130" stroke="#1a1a1a" stroke-width="3"/>
+    
+    <!-- CH3 -->
+    <circle cx="250" cy="140" r="18" fill="#333333"/>
+    <text x="250" y="147" text-anchor="middle" fill="white" font-size="16" font-weight="bold">CH₃</text>
+  </g>
+  
+  <!-- Formula -->
+  <text x="200" y="270" text-anchor="middle" fill="#1a1a1a" font-size="24" font-weight="bold">C₈H₁₀</text>
+  
+  <!-- Name -->
+  <text x="200" y="30" text-anchor="middle" fill="#1a1a1a" font-size="18" font-weight="bold">Ethylbenzene</text>
+</svg>
