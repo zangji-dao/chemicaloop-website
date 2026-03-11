@@ -2803,24 +2803,44 @@ export default function AdminSPUPage() {
       {/* 图片对比弹窗 */}
       {showImageCompareModal && newProductImageUrl && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[90vh] overflow-y-auto scrollbar-thin">
-            <div className="sticky top-0 bg-slate-800 border-b border-slate-700 px-5 py-3 flex items-center justify-between">
-              <h2 className="text-base font-semibold">
-                {locale === 'zh' ? '图片对比 - 选择要使用的图片' : 'Image Comparison - Choose Image'}
-              </h2>
-              <button
-                onClick={handleKeepOldImage}
-                className="p-1 hover:bg-slate-700 rounded transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+          <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+            {/* 头部：标题 + 操作按钮 */}
+            <div className="flex-shrink-0 bg-slate-800 border-b border-slate-700 px-5 py-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold">
+                  {locale === 'zh' ? '选择要使用的图片' : 'Choose Image'}
+                </h2>
+                <button
+                  onClick={handleKeepOldImage}
+                  className="p-1 hover:bg-slate-700 rounded transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {/* 操作按钮 */}
+              <div className="flex items-center justify-center gap-4 mt-3">
+                <button
+                  onClick={handleKeepOldImage}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"
+                >
+                  <span>{locale === 'zh' ? '保留原图' : 'Keep Current'}</span>
+                </button>
+                <button
+                  onClick={handleUseNewImage}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors"
+                >
+                  <span>{locale === 'zh' ? '使用新图片' : 'Use New Image'}</span>
+                  <span className="text-green-200 text-xs">({locale === 'zh' ? 'AI重绘' : 'AI Redrawn'})</span>
+                </button>
+              </div>
             </div>
             
-            <div className="p-5">
-              <div className="grid grid-cols-2 gap-6">
+            {/* 图片对比区域 */}
+            <div className="flex-1 overflow-y-auto scrollbar-thin p-4">
+              <div className="grid grid-cols-2 gap-4">
                 {/* 原图 */}
                 <div className="flex flex-col">
-                  <div className="text-sm text-slate-400 mb-2 text-center font-medium">
+                  <div className="text-xs text-slate-500 mb-1.5 text-center">
                     {locale === 'zh' ? '当前图片' : 'Current Image'}
                   </div>
                   <div className="aspect-square bg-white/5 rounded-lg flex items-center justify-center overflow-hidden border-2 border-transparent hover:border-blue-500 transition-colors cursor-pointer"
@@ -2832,21 +2852,12 @@ export default function AdminSPUPage() {
                       className="max-w-full max-h-full object-contain"
                     />
                   </div>
-                  <button
-                    onClick={handleKeepOldImage}
-                    className="mt-3 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"
-                  >
-                    {locale === 'zh' ? '保留原图' : 'Keep Current'}
-                  </button>
                 </div>
                 
                 {/* 新图 */}
                 <div className="flex flex-col">
-                  <div className="text-sm text-slate-400 mb-2 text-center font-medium">
+                  <div className="text-xs text-slate-500 mb-1.5 text-center">
                     {locale === 'zh' ? '新图片' : 'New Image'}
-                    <span className="ml-2 text-green-400 text-xs">
-                      {locale === 'zh' ? '(AI 重新生成)' : '(AI Regenerated)'}
-                    </span>
                   </div>
                   <div className="aspect-square bg-white/5 rounded-lg flex items-center justify-center overflow-hidden border-2 border-transparent hover:border-green-500 transition-colors cursor-pointer"
                     onClick={handleUseNewImage}
@@ -2857,17 +2868,11 @@ export default function AdminSPUPage() {
                       className="max-w-full max-h-full object-contain"
                     />
                   </div>
-                  <button
-                    onClick={handleUseNewImage}
-                    className="mt-3 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors"
-                  >
-                    {locale === 'zh' ? '使用新图片' : 'Use New Image'}
-                  </button>
                 </div>
               </div>
               
-              <div className="mt-4 text-center text-xs text-slate-500">
-                {locale === 'zh' ? '点击图片或按钮进行选择' : 'Click image or button to select'}
+              <div className="mt-3 text-center text-xs text-slate-500">
+                {locale === 'zh' ? '点击图片可直接选择' : 'Click image to select directly'}
               </div>
             </div>
           </div>
