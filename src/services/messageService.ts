@@ -1,5 +1,5 @@
 // 消息服务 API
-import { getToken } from './authService';
+import { getToken, clearAuth } from './authService';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -123,12 +123,8 @@ const apiRequest = async (
     const error = await response.json().catch(() => ({ error: 'Request failed' }));
     // 对于 401 错误，提示用户重新登录
     if (response.status === 401) {
-      // 清除过期的 token
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
-        localStorage.removeItem('auth_user_role');
-      }
+      // 清除过期的 token（使用 authService 统一方法）
+      clearAuth();
       throw new Error('Unauthorized - Please sign in again');
     }
     throw new Error(error.error || 'Request failed');

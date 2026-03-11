@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, FileText, Clock, Check, ExternalLink, Package, User, Phone, MessageSquare } from 'lucide-react';
+import { getUser } from '@/services/authService';
 
 interface Inquiry {
   id: string;
@@ -28,16 +29,8 @@ export default function InquiryWidget() {
   const [loading, setLoading] = useState(false);
 
   const getUserId = () => {
-    if (typeof window === 'undefined') return null;
-    // 使用 authService 统一获取用户信息
-    const userStr = localStorage.getItem('auth_user');
-    if (!userStr) return null;
-    try {
-      const user = JSON.parse(userStr);
-      return user?.id || null;
-    } catch {
-      return null;
-    }
+    const user = getUser();
+    return user?.id || null;
   };
 
   // 加载询价列表

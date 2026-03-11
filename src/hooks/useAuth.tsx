@@ -158,11 +158,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // 登出
   const handleLogout = async () => {
-    console.log('=== useAuth: handleLogout called ===');
-    console.log('Before logout - User:', user);
-    console.log('Before logout - isLoggedIn:', isLoggedIn);
-    console.log('Before logout - localStorage length:', localStorage.length);
-
     // 调用 authService 的 logout（会调用后端 API）
     await logout();
 
@@ -170,11 +165,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setIsLoggedIn(false);
     setError(null);
-
-    console.log('After logout - User:', null);
-    console.log('After logout - isLoggedIn:', false);
-    console.log('After logout - localStorage length:', localStorage.length);
-    console.log('useAuth: Logged out successfully');
   };
 
   // 刷新用户信息

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, MoreVertical, User, Clock, CheckCheck, MessageSquare, Plus, Minimize2, Maximize2, Minus } from 'lucide-react';
+import { getUser } from '@/services/authService';
 
 interface Contact {
   id: string;
@@ -54,16 +55,8 @@ export default function ChatWidget() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const getUserId = () => {
-    if (typeof window === 'undefined') return null;
-    // 使用 authService 统一获取用户信息
-    const userStr = localStorage.getItem('auth_user');
-    if (!userStr) return null;
-    try {
-      const user = JSON.parse(userStr);
-      return user?.id || null;
-    } catch {
-      return null;
-    }
+    const user = getUser();
+    return user?.id || null;
   };
 
   // 初始化窗口位置
