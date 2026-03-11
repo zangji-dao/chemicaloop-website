@@ -285,7 +285,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                 {hasChildren && isExpanded && !sidebarCollapsed && (
                   <div className="mt-1 ml-4 pl-4 border-l border-slate-600 space-y-1">
                     {item.children!.map((child) => {
-                      const childIsActive = pathname === child.path || pathname.startsWith(child.path + '/');
+                      // 子菜单精确匹配路径
+                      const childIsActive = pathname === child.path;
                       return (
                         <button
                           key={child.path}
