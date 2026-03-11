@@ -29,7 +29,15 @@ export default function InquiryWidget() {
 
   const getUserId = () => {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('userId') || 'user-001';
+    // 使用 authService 统一获取用户信息
+    const userStr = localStorage.getItem('auth_user');
+    if (!userStr) return null;
+    try {
+      const user = JSON.parse(userStr);
+      return user?.id || null;
+    } catch {
+      return null;
+    }
   };
 
   // 加载询价列表

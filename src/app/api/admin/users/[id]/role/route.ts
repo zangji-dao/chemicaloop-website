@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { API_CONFIG } from '@/config/api';
+import { getToken } from '@/lib/auth';
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = getToken(request);
     const { id } = await params;
     const body = await request.json();
 

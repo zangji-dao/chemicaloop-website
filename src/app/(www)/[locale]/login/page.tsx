@@ -12,7 +12,6 @@ export default function LoginPage() {
   const t = useTranslations('auth');
   const router = useRouter();
   const { login, isLoggedIn, isLoading } = useAuth();
-  console.log('LoginPage rendered -', new Date().toISOString());
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,7 +20,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('=== handleSubmit called ===');
     setError('');
 
     if (!email || !password) {
@@ -29,33 +27,11 @@ export default function LoginPage() {
       return;
     }
 
-    console.log('Attempting login with:', { email, password: '***' });
-    console.log('API URL:', process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
-
     try {
-      console.log('Calling login function...');
-      
       await login(email, password);
-      console.log('✅ Login successful! Redirecting to home...');
-      
       router.push('/');
     } catch (err: any) {
-      console.error('❌ Login failed:', err);
       setError(err.message || 'Login failed');
-    }
-  };
-
-  // 测试 API 连接
-  const testApiConnection = async () => {
-    console.log('=== Testing API Connection ===');
-    console.log('API URL:', process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
-    
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/health`);
-      const data = await response.json();
-      console.log('✅ API Connection Successful:', data);
-    } catch (err: any) {
-      console.error('❌ API Connection Failed:', err);
     }
   };
 
@@ -240,40 +216,6 @@ export default function LoginPage() {
                     )}
                   </button>
 
-                  {/* API 测试按钮 */}
-                  <button
-                    type="button"
-                    onClick={testApiConnection}
-                    className="w-full bg-yellow-50 text-yellow-700 py-3 rounded-xl font-medium hover:bg-yellow-100 transition-all text-sm border border-yellow-200"
-                  >
-                    🔧 Test API Connection
-                  </button>
-
-                  {/* 快速测试按钮 - 普通用户 */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail('normaluser@chemicaloop');
-                      setPassword('123456');
-                      handleSubmit({ preventDefault: () => {} } as React.FormEvent);
-                    }}
-                    className="w-full bg-blue-50 text-blue-700 py-3 rounded-xl font-medium hover:bg-blue-100 transition-all text-sm border border-blue-200"
-                  >
-                    🚀 Quick Test: Normal User
-                  </button>
-
-                  {/* 快速测试按钮 - 代理用户 */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail('agent@example.com');
-                      setPassword('123456');
-                      handleSubmit({ preventDefault: () => {} } as React.FormEvent);
-                    }}
-                    className="w-full bg-green-50 text-green-700 py-3 rounded-xl font-medium hover:bg-green-100 transition-all text-sm border border-green-200"
-                  >
-                    🚀 Quick Test: Agent User
-                  </button>
                 </form>
 
                 {/* 底部提示 */}

@@ -8,9 +8,8 @@ import Header from '@/components/Header';
 import AuthModal from '@/components/AuthModal';
 import { useToast } from '@/components/ui/Toast';
 import { ContactCard } from '@/components/ContactCard';
-import { getToken } from '@/services/authService';
+import { getToken, getUser, saveUser } from '@/services/authService';
 import type { AddressData } from '@/components/AddressPicker';
-import { saveUser } from '@/services/authService';
 import {
   Shield,
   MessageSquare,
@@ -397,11 +396,13 @@ function ProfileContent({ user, locale }: { user: any; locale: string }) {
         setEditingUsername(false);
         setUsernameSaved(true);
         
-        // 更新 localStorage 中的用户数据
-        const currentUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
-        const updatedUser = { ...currentUser, username: data.data.username };
-        console.log('[SetUsername] Updated user:', updatedUser);
-        saveUser(updatedUser);
+        // 更新 localStorage 中的用户数据（使用 authService 统一方法）
+        const currentUser = getUser();
+        if (currentUser) {
+          const updatedUser = { ...currentUser, username: data.data.username };
+          console.log('[SetUsername] Updated user:', updatedUser);
+          saveUser(updatedUser);
+        }
         
         // 刷新全局用户状态（Header 和 UserCard 会更新）
         await refreshUser();

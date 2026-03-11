@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import PageBanner from '@/components/PageBanner';
 import TradeDataDisplay from '@/components/trade-data-display';
 import { TradeDataPanel } from '@/components/trade-data-panel';
+import { getToken } from '@/services/authService';
 import { 
   ArrowLeft, Tag, DollarSign, Globe, Package, Droplet, Check, ChevronRight, Filter, 
   Thermometer, Beaker, AlertTriangle, ExternalLink, Loader2, FlaskConical, Shield, 
@@ -211,7 +212,7 @@ export default function ProductDetailPage() {
     setSubmitError(null);
     
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       const response = await fetch('/api/supply-inquiries', {
         method: 'POST',
         headers: {
@@ -257,7 +258,7 @@ export default function ProductDetailPage() {
     setSubmitError(null);
     
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       const response = await fetch('/api/supply-inquiries', {
         method: 'POST',
         headers: {

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { API_CONFIG } from '@/config/api';
+import { getToken } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = getToken(request);
 
     if (!token) {
       return NextResponse.json({ error: '未授权' }, { status: 401 });
