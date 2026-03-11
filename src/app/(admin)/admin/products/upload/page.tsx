@@ -18,9 +18,10 @@ import {
 } from 'lucide-react';
 
 // 步骤定义 - 简化为两步
-const steps = [
-  { key: 'identification', title: { zh: '选择产品', en: 'Select Product' }, icon: Search },
-  { key: 'confirmation', title: { zh: '确认数据', en: 'Confirm Data' }, icon: Check },
+// 注意：标题需要在组件内部使用 t() 函数获取，这里只定义 key
+const stepKeys = [
+  { key: 'identification', titleKey: 'spu.selectProduct', icon: Search },
+  { key: 'confirmation', titleKey: 'spu.confirmData', icon: Check },
 ];
 
 // SPU 数据类型
@@ -43,7 +44,7 @@ interface SPUItem {
 }
 
 function ProductUploadContent() {
-  const { locale: adminLocale } = useAdminLocale();
+  const { locale: adminLocale, t } = useAdminLocale();
   // 将 AdminLocale 转换为页面支持的语言类型，默认使用英文
   const locale = (adminLocale === 'zh' ? 'zh' : 'en') as 'zh' | 'en';
   const searchParams = useSearchParams();
@@ -156,7 +157,7 @@ function ProductUploadContent() {
   const handleUnifiedSearch = async () => {
     const query = spuSearchQuery || formData.cas;
     if (!query || query.length < 2) {
-      setErrors({ cas: locale === 'zh' ? '请输入至少 2 个字符' : 'Please enter at least 2 characters' });
+      setErrors({ cas: t('spu.casRequired') });
       return;
     }
 
@@ -251,13 +252,13 @@ function ProductUploadContent() {
       } else {
         setConnectionStatus('failed');
         setPubchemData(null);
-        setErrors({ cas: locale === 'zh' ? '未找到该 CAS 号对应的产品信息' : 'No data found for this CAS number' });
+        setErrors({ cas: t('spu.noDataFound') });
       }
     } catch (error) {
       console.error('PubChem search error:', error);
       setConnectionStatus('failed');
       setPubchemData(null);
-      setErrors({ cas: locale === 'zh' ? '查询失败，请稍后重试' : 'Search failed, please try again' });
+      setErrors({ cas: t('spu.searchFailed') });
     } finally {
       setSearchingPubChem(false);
     }
@@ -415,13 +416,13 @@ function ProductUploadContent() {
       } else {
         setConnectionStatus('failed');
         setPubchemData(null);
-        setErrors({ cas: locale === 'zh' ? '未找到该 CAS 号对应的产品信息' : 'No data found for this CAS number' });
+        setErrors({ cas: t('spu.noDataFound') });
       }
     } catch (error) {
       console.error('PubChem search error:', error);
       setConnectionStatus('failed');
       setPubchemData(null);
-      setErrors({ cas: locale === 'zh' ? '查询失败，请稍后重试' : 'Search failed, please try again' });
+      setErrors({ cas: t('spu.searchFailed') });
     } finally {
       setSearchingPubChem(false);
     }
@@ -739,8 +740,8 @@ function ProductUploadContent() {
     // 验证必填数据
     if (!formData.cas) {
       showNotification(
-        locale === 'zh' ? '保存失败' : 'Save Failed',
-        locale === 'zh' ? '缺少 CAS 号' : 'CAS number is required',
+        t('spu.saveFailed'),
+        t('spu.casRequired'),
         'error'
       );
       return null;
@@ -749,8 +750,8 @@ function ProductUploadContent() {
     const spuName = formData.name || formData.nameEn || pubchemData?.nameZh || pubchemData?.nameEn || selectedSPU?.name || selectedSPU?.name_en;
     if (!spuName) {
       showNotification(
-        locale === 'zh' ? '保存失败' : 'Save Failed',
-        locale === 'zh' ? '缺少产品名称' : 'Product name is required',
+        t('spu.saveFailed'),
+        t('spu.productNameRequired'),
         'error'
       );
       return null;
@@ -814,8 +815,8 @@ function ProductUploadContent() {
       } else {
         console.error('Failed to save SPU:', result.error);
         showNotification(
-          locale === 'zh' ? '保存失败' : 'Save Failed',
-          `${locale === 'zh' ? '错误：' : 'Error: '}${result.error}`,
+          t('spu.saveFailed'),
+          `${t('spu.error')}: ${result.error}`,
           'error'
         );
         return null;
@@ -823,8 +824,8 @@ function ProductUploadContent() {
     } catch (error) {
       console.error('Error saving SPU:', error);
       showNotification(
-        locale === 'zh' ? '保存失败' : 'Save Failed',
-        locale === 'zh' ? '网络错误，请稍后重试' : 'Network error, please try again',
+        t('spu.saveFailed'),
+        t('spu.networkError'),
         'error'
       );
       return null;
@@ -858,8 +859,8 @@ function ProductUploadContent() {
         const savedSpuId = await saveSPU();
         if (savedSpuId) {
           showNotification(
-            locale === 'zh' ? '保存成功' : 'Save Successful',
-            locale === 'zh' ? '产品信息已保存到产品库！' : 'Product saved to library!',
+            t('spu.saveSuccess'),
+            t('spu.productSavedToLibrary'),
             'success'
           );
           // 延迟跳转，让用户看到成功提示
@@ -883,8 +884,8 @@ function ProductUploadContent() {
       const savedSpuId = await saveSPU();
       if (savedSpuId) {
         showNotification(
-          locale === 'zh' ? '保存成功' : 'Save Successful',
-          locale === 'zh' ? '产品信息已保存到产品库（暂不上架）！' : 'Product saved to library (not listed)!',
+          t('spu.saveSuccess'),
+          t('spu.productSavedNotListed'),
           'success'
         );
         // 延迟跳转，让用户看到成功提示
@@ -905,17 +906,17 @@ function ProductUploadContent() {
       {/* 页面标题 */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">
-          {locale === 'zh' ? '产品上架' : 'Upload Product'}
+          {t('spu.upload')}
         </h1>
         <p className="text-slate-400">
-          {locale === 'zh' ? '从产品库选择或手动录入产品信息' : 'Select from product library or enter manually'}
+          {t('spu.uploadSubtitle')}
         </p>
       </div>
 
         {/* 步骤指示器 */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            {steps.map((step, index) => {
+            {stepKeys.map((step, index) => {
               const Icon = step.icon;
               const isCompleted = index < currentStep;
               const isCurrent = index === currentStep;
@@ -939,11 +940,11 @@ function ProductUploadContent() {
                           isCurrent ? 'text-blue-400' : isCompleted ? 'text-white' : 'text-slate-500'
                         }`}
                       >
-                        {step.title[locale]}
+                        {t(step.titleKey)}
                       </div>
                     </div>
                   </div>
-                  {index < steps.length - 1 && (
+                  {index < stepKeys.length - 1 && (
                     <div
                       className={`flex-1 h-0.5 mx-4 ${
                         index < currentStep ? 'bg-blue-600' : 'bg-slate-700'
@@ -962,7 +963,7 @@ function ProductUploadContent() {
             <div className="space-y-6">
               <div className="flex items-center gap-2 mb-4">
                 <Database className="h-6 w-6 text-blue-400" />
-                <h2 className="text-xl font-bold text-white">{steps[0].title[locale]}</h2>
+                <h2 className="text-xl font-bold text-white">{t(stepKeys[0].titleKey)}</h2>
               </div>
 
               {/* 已选择的 SPU */}
@@ -972,24 +973,24 @@ function ProductUploadContent() {
                     <div className="flex items-center gap-2">
                       <Link2 className="h-5 w-5 text-green-400" />
                       <span className="font-semibold text-green-400">
-                        {locale === 'zh' ? '已关联 SPU' : 'Linked SPU'}
+                        {t('spu.linkedSpu')}
                       </span>
                     </div>
                     <button
                       onClick={handleClearSPU}
                       className="text-sm text-slate-400 hover:text-white transition-colors"
                     >
-                      {locale === 'zh' ? '取消关联' : 'Unlink'}
+                      {t('spu.unlink')}
                     </button>
                   </div>
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="bg-slate-700/50 rounded-lg p-4">
-                      <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '中文名称' : 'Chinese Name'}</div>
+                      <div className="text-sm text-slate-400 mb-1">{t('spu.nameZh')}</div>
                       <div className="font-semibold text-white">{selectedSPU.name}</div>
                     </div>
                     <div className="bg-slate-700/50 rounded-lg p-4">
-                      <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '英文名称' : 'English Name'}</div>
+                      <div className="text-sm text-slate-400 mb-1">{t('spu.nameEn')}</div>
                       <div className="font-semibold text-white">{selectedSPU.name_en || '-'}</div>
                     </div>
                     <div className="bg-slate-700/50 rounded-lg p-4">
@@ -997,7 +998,7 @@ function ProductUploadContent() {
                       <div className="font-mono font-semibold text-blue-400">{selectedSPU.cas}</div>
                     </div>
                     <div className="bg-slate-700/50 rounded-lg p-4">
-                      <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '分子式' : 'Formula'}</div>
+                      <div className="text-sm text-slate-400 mb-1">{t('spu.formula')}</div>
                       <div className="font-mono font-semibold text-white">{selectedSPU.formula || '-'}</div>
                     </div>
                     {selectedSPU.hs_code && (
@@ -1028,7 +1029,7 @@ function ProductUploadContent() {
                   {/* 统一搜索框 */}
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      {locale === 'zh' ? '搜索产品 (CAS 号或名称)' : 'Search Product (CAS or Name)'}
+                      {t('spu.searchProduct')}
                     </label>
                     <div className="flex gap-3">
                       <input
@@ -1045,7 +1046,7 @@ function ProductUploadContent() {
                           setErrors({});
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && handleUnifiedSearch()}
-                        placeholder={locale === 'zh' ? '输入 CAS 号，如 64-17-5' : 'Enter CAS number, e.g., 64-17-5'}
+                        placeholder={t('spu.enterCas')}
                         className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400 text-lg"
                       />
                       <button
@@ -1054,13 +1055,11 @@ function ProductUploadContent() {
                         className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 font-medium"
                       >
                         {(searchingSPU || searchingPubChem) ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
-                        {locale === 'zh' ? '搜索' : 'Search'}
+                        {t('common.search')}
                       </button>
                     </div>
                     <p className="text-sm text-slate-500 mt-2">
-                      {locale === 'zh' 
-                        ? '系统会先搜索产品库，如无结果则自动从 PubChem 获取' 
-                        : 'System searches product library first, then PubChem if not found'}
+                      {t('spu.systemSearchHint')}
                     </p>
                   </div>
 
@@ -1070,8 +1069,8 @@ function ProductUploadContent() {
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span className="text-sm">
                         {searchingSPU 
-                          ? (locale === 'zh' ? '正在搜索产品库...' : 'Searching product library...')
-                          : (locale === 'zh' ? '正在从 PubChem 获取数据...' : 'Fetching from PubChem...')}
+                          ? t('spu.searchingLibrary')
+                          : t('spu.fetchingFromPubchem')}
                       </span>
                     </div>
                   )}
@@ -1097,7 +1096,7 @@ function ProductUploadContent() {
                             </div>
                             {spu.formula && (
                               <div className="text-sm text-slate-500 mt-1">
-                                {locale === 'zh' ? '分子式' : 'Formula'}: {spu.formula}
+                                {t('spu.formula')}: {spu.formula}
                               </div>
                             )}
                           </div>
@@ -1113,7 +1112,7 @@ function ProductUploadContent() {
                       <div className="flex items-center gap-2 mb-4">
                         <Check className="h-5 w-5 text-green-400" />
                         <span className="font-semibold text-green-400">
-                          {locale === 'zh' ? '从 PubChem 获取成功' : 'Fetched from PubChem'}
+                          {t('spu.fetchedFromPubchem')}
                         </span>
                         <span className="ml-auto text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">
                           PubChem
@@ -1125,7 +1124,7 @@ function ProductUploadContent() {
                         {/* 2D 结构图 */}
                         {pubchemData.structure2dUrl && (
                           <div className="bg-slate-700/50 rounded-lg p-4 flex flex-col items-center justify-center row-span-2">
-                            <div className="text-sm text-slate-400 mb-2">{locale === 'zh' ? '2D 结构图' : '2D Structure'}</div>
+                            <div className="text-sm text-slate-400 mb-2">{t('spu.twoDStructure')}</div>
                             <img 
                               src={pubchemData.structure2dUrl} 
                               alt={`${pubchemData.nameEn || pubchemData.nameZh || 'Compound'} 2D Structure`}
@@ -1152,11 +1151,11 @@ function ProductUploadContent() {
                         )}
                         
                         <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '中文名称' : 'Chinese Name'}</div>
+                          <div className="text-sm text-slate-400 mb-1">{t('spu.nameZh')}</div>
                           <div className="font-semibold text-white">{pubchemData.nameZh || '-'}</div>
                         </div>
                         <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '英文名称' : 'English Name'}</div>
+                          <div className="text-sm text-slate-400 mb-1">{t('spu.nameEn')}</div>
                           <div className="font-semibold text-white">{pubchemData.nameEn || '-'}</div>
                         </div>
                         <div className="bg-slate-700/50 rounded-lg p-4">
@@ -1164,18 +1163,18 @@ function ProductUploadContent() {
                           <div className="font-mono font-semibold text-blue-400">{pubchemData.cas}</div>
                         </div>
                         <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '分子式' : 'Molecular Formula'}</div>
+                          <div className="text-sm text-slate-400 mb-1">{t('spu.molecularFormula')}</div>
                           <div className="font-mono font-semibold text-white">{pubchemData.formula || '-'}</div>
                         </div>
                         <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm text-slate-400 mb-1">{locale === 'zh' ? '分子量' : 'Molecular Weight'}</div>
+                          <div className="text-sm text-slate-400 mb-1">{t('spu.molecularWeight')}</div>
                           <div className="font-mono font-semibold text-white">{pubchemData.molecularWeight || '-'}</div>
                         </div>
                       </div>
                       
                       {/* 结构信息区 */}
                       <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
-                        <div className="text-sm font-medium text-slate-300 mb-3">{locale === 'zh' ? '结构信息' : 'Structural Information'}</div>
+                        <div className="text-sm font-medium text-slate-300 mb-3">{t('spu.structureInfo')}</div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                           <div className="bg-slate-800 rounded px-3 py-2">
                             <span className="text-slate-500">SMILES:</span>{' '}
@@ -1203,7 +1202,7 @@ function ProductUploadContent() {
                       {/* 同义词区 */}
                       {pubchemData.synonyms && pubchemData.synonyms.length > 0 && (
                         <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
-                          <div className="text-sm font-medium text-slate-300 mb-3">{locale === 'zh' ? '同义词/别名' : 'Synonyms/Aliases'}</div>
+                          <div className="text-sm font-medium text-slate-300 mb-3">{t('spu.synonymsAliases')}</div>
                           <div className="flex flex-wrap gap-2">
                             {pubchemData.synonyms.slice(0, 15).map((synonym: string, index: number) => (
                               <span key={index} className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">
@@ -1222,59 +1221,59 @@ function ProductUploadContent() {
                       {/* 物理化学性质 */}
                       {(pubchemData.boilingPoint || pubchemData.meltingPoint || pubchemData.flashPoint || pubchemData.density || pubchemData.solubility || pubchemData.vaporPressure) && (
                         <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm font-medium text-slate-300 mb-3">{locale === 'zh' ? '物理化学性质' : 'Physicochemical Properties'}</div>
+                          <div className="text-sm font-medium text-slate-300 mb-3">{t('spu.physicochemicalProperties')}</div>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
                             {pubchemData.boilingPoint && (
                               <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{locale === 'zh' ? '沸点' : 'Boiling Point'}:</span>{' '}
+                                <span className="text-slate-500">{t('spu.boilingPoint')}:</span>{' '}
                                 <span className="font-medium text-slate-300">{pubchemData.boilingPoint}</span>
                               </div>
                             )}
                             {pubchemData.meltingPoint && (
                               <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{locale === 'zh' ? '熔点' : 'Melting Point'}:</span>{' '}
+                                <span className="text-slate-500">{t('spu.meltingPoint')}:</span>{' '}
                                 <span className="font-medium text-slate-300">{pubchemData.meltingPoint}</span>
                               </div>
                             )}
                             {pubchemData.flashPoint && (
                               <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{locale === 'zh' ? '闪点' : 'Flash Point'}:</span>{' '}
+                                <span className="text-slate-500">{t('spu.flashPoint')}:</span>{' '}
                                 <span className="font-medium text-slate-300">{pubchemData.flashPoint}</span>
                               </div>
                             )}
                             {pubchemData.density && (
                               <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{locale === 'zh' ? '密度' : 'Density'}:</span>{' '}
+                                <span className="text-slate-500">{t('spu.density')}:</span>{' '}
                                 <span className="font-medium text-slate-300">{pubchemData.density}</span>
                               </div>
                             )}
                             {pubchemData.solubility && (
                               <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{locale === 'zh' ? '溶解度' : 'Solubility'}:</span>{' '}
+                                <span className="text-slate-500">{t('spu.solubility')}:</span>{' '}
                                 <span className="font-medium text-slate-300">{pubchemData.solubility}</span>
                               </div>
                             )}
                             {pubchemData.vaporPressure && (
                               <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{locale === 'zh' ? '蒸气压' : 'Vapor Pressure'}:</span>{' '}
+                                <span className="text-slate-500">{t('spu.vaporPressure')}:</span>{' '}
                                 <span className="font-medium text-slate-300">{pubchemData.vaporPressure}</span>
                               </div>
                             )}
                             {pubchemData.physicalDescription && (
                               <div className="bg-slate-800 rounded px-3 py-2 md:col-span-2">
-                                <span className="text-slate-500">{locale === 'zh' ? '物理描述' : 'Physical Description'}:</span>{' '}
+                                <span className="text-slate-500">{t('spu.physicalDescription')}:</span>{' '}
                                 <span className="font-medium text-slate-300">{pubchemData.physicalDescription}</span>
                               </div>
                             )}
                             {pubchemData.colorForm && (
                               <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{locale === 'zh' ? '颜色/形态' : 'Color/Form'}:</span>{' '}
+                                <span className="text-slate-500">{t('spu.colorForm')}:</span>{' '}
                                 <span className="font-medium text-slate-300">{pubchemData.colorForm}</span>
                               </div>
                             )}
                             {pubchemData.odor && (
                               <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{locale === 'zh' ? '气味' : 'Odor'}:</span>{' '}
+                                <span className="text-slate-500">{t('spu.odor')}:</span>{' '}
                                 <span className="font-medium text-slate-300">{pubchemData.odor}</span>
                               </div>
                             )}
@@ -1285,7 +1284,7 @@ function ProductUploadContent() {
                       {/* 产品描述 */}
                       {pubchemData.description && (
                         <div className="bg-slate-700/50 rounded-lg p-4 mt-4">
-                          <div className="text-sm font-medium text-slate-300 mb-2">{locale === 'zh' ? '产品描述' : 'Description'}</div>
+                          <div className="text-sm font-medium text-slate-300 mb-2">{t('spu.description')}</div>
                           <p className="text-sm text-slate-400">{pubchemData.description}</p>
                         </div>
                       )}
@@ -1293,7 +1292,7 @@ function ProductUploadContent() {
                       {/* 行业应用 */}
                       {pubchemData.applications && pubchemData.applications.length > 0 && (
                         <div className="bg-slate-700/50 rounded-lg p-4 mt-4">
-                          <div className="text-sm font-medium text-slate-300 mb-2">{locale === 'zh' ? '行业应用' : 'Applications'}</div>
+                          <div className="text-sm font-medium text-slate-300 mb-2">{t('spu.applications')}</div>
                           <ul className="text-sm text-slate-400 list-disc list-inside space-y-1">
                             {pubchemData.applications.slice(0, 5).map((app: string, index: number) => (
                               <li key={index}>{app}</li>
@@ -1334,12 +1333,12 @@ function ProductUploadContent() {
                                       : 'text-slate-300'
                               }`}>
                                 {processingError 
-                                  ? (locale === 'zh' ? '处理失败' : 'Processing Failed')
+                                  ? t('spu.processingFailed')
                                   : processingStep === 'done' 
-                                    ? (locale === 'zh' ? '处理完成' : 'Processing Complete')
+                                    ? t('spu.processingComplete')
                                     : autoProcessing 
-                                      ? (locale === 'zh' ? '正在处理产品数据...' : 'Processing product data...')
-                                      : (locale === 'zh' ? 'AI 数据处理' : 'AI Data Processing')}
+                                      ? t('spu.processingData')
+                                      : t('spu.aiDataProcessing')}
                               </span>
                             </div>
                             {(processingError || !autoProcessing && processingStep !== 'done') && (
@@ -1353,8 +1352,8 @@ function ProductUploadContent() {
                                 } disabled:opacity-50`}
                               >
                                 {processingError 
-                                  ? (locale === 'zh' ? '重新生成' : 'Retry')
-                                  : (locale === 'zh' ? '开始生成' : 'Start')}
+                                  ? t('spu.retry')
+                                  : t('spu.startGeneration')}
                               </button>
                             )}
                           </div>
@@ -1376,11 +1375,11 @@ function ProductUploadContent() {
                                 <div className="h-4 w-4 rounded-full border-2 border-slate-600" />
                               )}
                               <span className={generatedImageUrl ? 'text-green-400' : processingStep && ['hscode', 'translate', 'done'].includes(processingStep) && !generatedImageUrl ? 'text-red-400' : 'text-slate-400'}>
-                                {locale === 'zh' ? '生成产品图' : 'Generate product image'}
+                                {t('spu.generateProductImage')}
                               </span>
                               {generatedImageUrl && (
                                 <a href={generatedImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 text-xs ml-auto hover:text-blue-300">
-                                  {locale === 'zh' ? '查看' : 'View'}
+                                  {t('common.view')}
                                 </a>
                               )}
                             </div>
@@ -1397,7 +1396,7 @@ function ProductUploadContent() {
                                 <div className="h-4 w-4 rounded-full border-2 border-slate-600" />
                               )}
                               <span className={matchedHsCode ? 'text-green-400' : processingStep && ['translate', 'done'].includes(processingStep) && !matchedHsCode ? 'text-red-400' : 'text-slate-400'}>
-                                {locale === 'zh' ? '匹配 HS 编码' : 'Match HS code'}
+                                {t('spu.matchHsCode')}
                               </span>
                               {matchedHsCode && (
                                 <span className="text-blue-400 font-mono text-xs ml-auto">{matchedHsCode}</span>
@@ -1416,7 +1415,7 @@ function ProductUploadContent() {
                                 <div className="h-4 w-4 rounded-full border-2 border-slate-600" />
                               )}
                               <span className={Object.keys(translations).length > 0 ? 'text-green-400' : 'text-slate-400'}>
-                                {locale === 'zh' ? '翻译多语言（10种）' : 'Translate to 10 languages'}
+                                {t('spu.translateTenLang')}
                               </span>
                               {translatingFields.size > 0 && (
                                 <span className="text-blue-400 text-xs ml-auto animate-pulse">
@@ -1435,7 +1434,7 @@ function ProductUploadContent() {
                               )}
                               {Object.keys(translations).length > 0 && translatingFields.size === 0 && (
                                 <span className="text-green-400 text-xs ml-auto">
-                                  {locale === 'zh' ? '已完成' : 'Done'}
+                                  {t('spu.processingDone')}
                                 </span>
                               )}
                             </div>
@@ -1447,10 +1446,10 @@ function ProductUploadContent() {
                       <div className="mt-6 pt-4 border-t border-slate-600">
                         <p className="text-sm text-slate-400 text-center">
                           {processingStep === 'done' 
-                            ? (locale === 'zh' ? '✓ 数据已生成，点击下方"下一步"按钮继续' : '✓ Data generated, click "Next" below to continue')
+                            ? t('spu.dataGeneratedClickNext')
                             : autoProcessing
-                              ? (locale === 'zh' ? '⏳ 正在处理数据，请稍候...' : '⏳ Processing data, please wait...')
-                              : (locale === 'zh' ? '✓ 确认产品信息无误后，点击上方"开始生成"按钮' : '✓ Confirm product info, then click "Start" above')}
+                              ? t('spu.processingDataPleaseWait')
+                              : t('spu.confirmThenStart')}
                         </p>
                       </div>
                     </div>
@@ -1467,19 +1466,19 @@ function ProductUploadContent() {
             <div className="space-y-6">
               <div className="flex items-center gap-2 mb-4">
                 <Check className="h-6 w-6 text-blue-400" />
-                <h2 className="text-xl font-bold text-white">{steps[1].title[locale]}</h2>
+                <h2 className="text-xl font-bold text-white">{t(stepKeys[1].titleKey)}</h2>
               </div>
 
               {/* 基本信息区块 */}
               <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
                 <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
                   <Database className="h-4 w-4 text-blue-400" />
-                  {locale === 'zh' ? '基本信息' : 'Basic Information'}
+                  {t('spu.basicInformation')}
                 </h3>
                 <div className="grid md:grid-cols-3 gap-4">
                   {/* CAS号 */}
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">{locale === 'zh' ? 'CAS 号' : 'CAS Number'}</label>
+                    <label className="block text-xs text-slate-400 mb-1">{t('spu.casNumber')}</label>
                     <input
                       type="text"
                       value={formData.cas}
@@ -1489,7 +1488,7 @@ function ProductUploadContent() {
                   </div>
                   {/* 名称（根据当前语言统一显示） */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs text-slate-400 mb-1">{locale === 'zh' ? '名称' : 'Name'}</label>
+                    <label className="block text-xs text-slate-400 mb-1">{t('spu.name')}</label>
                     <input
                       type="text"
                       value={(() => {
@@ -1511,12 +1510,12 @@ function ProductUploadContent() {
                         }
                       }}
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-                      placeholder={locale === 'zh' ? '产品名称' : 'Product name'}
+                      placeholder={t('spu.name')}
                     />
                   </div>
                   {/* 分子式 */}
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">{locale === 'zh' ? '分子式' : 'Molecular Formula'}</label>
+                    <label className="block text-xs text-slate-400 mb-1">{t('spu.molecularFormula')}</label>
                     <input
                       type="text"
                       value={formData.formula}
@@ -1527,7 +1526,7 @@ function ProductUploadContent() {
                   </div>
                   {/* 分子量 */}
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">{locale === 'zh' ? '分子量' : 'Molecular Weight'}</label>
+                    <label className="block text-xs text-slate-400 mb-1">{t('spu.molecularWeight')}</label>
                     <input
                       type="text"
                       value={(pubchemData?.molecularWeight || selectedSPU?.molecular_weight) || ''}
@@ -1566,7 +1565,7 @@ function ProductUploadContent() {
               {/* 结构信息区块 */}
               {(pubchemData?.smiles || pubchemData?.inchiKey || pubchemData?.inchi || pubchemData?.xlogp) && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{locale === 'zh' ? '结构信息' : 'Structure Information'}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.structureInfo')}</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     {/* SMILES */}
                     {pubchemData?.smiles && (
@@ -1624,11 +1623,11 @@ function ProductUploadContent() {
               {(pubchemData?.boilingPoint || pubchemData?.meltingPoint || pubchemData?.flashPoint || 
                 pubchemData?.density || pubchemData?.solubility || pubchemData?.vaporPressure) && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{locale === 'zh' ? '物理化学性质' : 'Physicochemical Properties'}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.physicochemicalProperties')}</h3>
                   <div className="grid md:grid-cols-3 gap-4">
                     {pubchemData?.boilingPoint && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '沸点' : 'Boiling Point'}</label>
+                        <label className="block text-xs text-gray-500 mb-1">{t('spu.boilingPoint')}</label>
                         <input
                           type="text"
                           value={formData.translations?.boilingPoint?.[locale] || pubchemData.boilingPoint}
@@ -1639,7 +1638,7 @@ function ProductUploadContent() {
                     )}
                     {pubchemData?.meltingPoint && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '熔点' : 'Melting Point'}</label>
+                        <label className="block text-xs text-gray-500 mb-1">{t('spu.meltingPoint')}</label>
                         <input
                           type="text"
                           value={formData.translations?.meltingPoint?.[locale] || pubchemData.meltingPoint}
@@ -1650,7 +1649,7 @@ function ProductUploadContent() {
                     )}
                     {pubchemData?.flashPoint && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '闪点' : 'Flash Point'}</label>
+                        <label className="block text-xs text-gray-500 mb-1">{t('spu.flashPoint')}</label>
                         <input
                           type="text"
                           value={formData.translations?.flashPoint?.[locale] || pubchemData.flashPoint}
@@ -1661,7 +1660,7 @@ function ProductUploadContent() {
                     )}
                     {pubchemData?.density && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '密度' : 'Density'}</label>
+                        <label className="block text-xs text-gray-500 mb-1">{t('spu.density')}</label>
                         <input
                           type="text"
                           value={formData.translations?.density?.[locale] || pubchemData.density}
@@ -1672,7 +1671,7 @@ function ProductUploadContent() {
                     )}
                     {pubchemData?.solubility && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '溶解度' : 'Solubility'}</label>
+                        <label className="block text-xs text-gray-500 mb-1">{t('spu.solubility')}</label>
                         <input
                           type="text"
                           value={formData.translations?.solubility?.[locale] || pubchemData.solubility}
@@ -1683,7 +1682,7 @@ function ProductUploadContent() {
                     )}
                     {pubchemData?.vaporPressure && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '蒸气压' : 'Vapor Pressure'}</label>
+                        <label className="block text-xs text-gray-500 mb-1">{t('spu.vaporPressure')}</label>
                         <input
                           type="text"
                           value={formData.translations?.vaporPressure?.[locale] || pubchemData.vaporPressure}
@@ -1700,11 +1699,11 @@ function ProductUploadContent() {
               {(pubchemData?.physicalDescription || pubchemData?.colorForm || pubchemData?.odor || 
                 selectedSPU?.physicalDescription || selectedSPU?.colorForm || selectedSPU?.odor) && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{locale === 'zh' ? '物理描述' : 'Physical Description'}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.physicalDescription')}</h3>
                   <div className="grid md:grid-cols-3 gap-4">
                     {/* 物理描述 */}
                     <div className="md:col-span-3">
-                      <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '物理描述' : 'Physical Description'}</label>
+                      <label className="block text-xs text-gray-500 mb-1">{t('spu.physicalDescription')}</label>
                       <textarea
                         value={formData.translations?.physicalDescription?.[locale] || pubchemData?.physicalDescription || selectedSPU?.physicalDescription || ''}
                         readOnly
@@ -1714,7 +1713,7 @@ function ProductUploadContent() {
                     </div>
                     {/* 颜色/形态 */}
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '颜色/形态' : 'Color/Form'}</label>
+                      <label className="block text-xs text-gray-500 mb-1">{t('spu.colorForm')}</label>
                       <input
                         type="text"
                         value={formData.translations?.colorForm?.[locale] || pubchemData?.colorForm || selectedSPU?.colorForm || ''}
@@ -1724,7 +1723,7 @@ function ProductUploadContent() {
                     </div>
                     {/* 气味 */}
                     <div className="md:col-span-2">
-                      <label className="block text-xs text-gray-500 mb-1">{locale === 'zh' ? '气味' : 'Odor'}</label>
+                      <label className="block text-xs text-gray-500 mb-1">{t('spu.odor')}</label>
                       <input
                         type="text"
                         value={formData.translations?.odor?.[locale] || pubchemData?.odor || selectedSPU?.odor || ''}
@@ -1739,7 +1738,7 @@ function ProductUploadContent() {
               {/* 危险性分类 */}
               {(pubchemData?.hazardClasses || selectedSPU?.hazardClasses) && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{locale === 'zh' ? '危险性分类' : 'Hazard Classification'}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.hazardClassification')}</h3>
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                     <p className="text-sm text-red-800">{formData.translations?.hazardClasses?.[locale] || pubchemData?.hazardClasses || selectedSPU?.hazardClasses}</p>
                   </div>
@@ -1749,7 +1748,7 @@ function ProductUploadContent() {
               {/* 产品描述 */}
               {(pubchemData?.description || selectedSPU?.description) && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{locale === 'zh' ? '产品描述' : 'Description'}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.description')}</h3>
                   <textarea
                     value={(() => {
                       // 优先显示翻译后的描述
@@ -1772,7 +1771,7 @@ function ProductUploadContent() {
               {/* 行业应用 */}
               {((pubchemData?.applications && pubchemData.applications.length > 0) || (selectedSPU?.applications && selectedSPU.applications.length > 0)) && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{locale === 'zh' ? '行业应用' : 'Applications'}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.applications')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {(() => {
                       const apps = pubchemData?.applications || selectedSPU?.applications || [];
@@ -1799,7 +1798,7 @@ function ProductUploadContent() {
               {/* 同义词/别名 */}
               {(pubchemData?.synonyms?.length > 0) && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{locale === 'zh' ? '同义词/别名' : 'Synonyms/Aliases'}</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.synonymsAliases')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {pubchemData.synonyms.slice(0, 20).map((synonym: string, index: number) => (
                       <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
@@ -1808,7 +1807,7 @@ function ProductUploadContent() {
                     ))}
                     {pubchemData.synonyms.length > 20 && (
                       <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded text-xs">
-                        +{pubchemData.synonyms.length - 20} {locale === 'zh' ? '更多' : 'more'}
+                        +{pubchemData.synonyms.length - 20} {t('spu.more')}
                       </span>
                     )}
                   </div>
@@ -1820,14 +1819,14 @@ function ProductUploadContent() {
                 <div className="flex items-center gap-2 mb-4">
                   <Database className="h-5 w-5 text-blue-600" />
                   <span className="font-semibold text-blue-900">
-                    {locale === 'zh' ? 'AI 自动生成的数据（可编辑）' : 'AI Generated Data (Editable)'}
+                    {t('spu.aiGeneratedEditable')}
                   </span>
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* 产品图 */}
                   <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="text-sm text-gray-600 mb-2">{locale === 'zh' ? '产品图' : 'Product Image'}</div>
+                    <div className="text-sm text-gray-600 mb-2">{t('spu.productImage')}</div>
                     {formData.generatedImageUrl ? (
                       <div className="relative">
                         <img 
@@ -1845,18 +1844,18 @@ function ProductUploadContent() {
                       </div>
                     ) : (
                       <div className="w-full h-40 rounded border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-gray-400">
-                        {locale === 'zh' ? '暂无产品图' : 'No product image'}
+                        {t('spu.noProductImage')}
                       </div>
                     )}
                     <div className="mt-2">
                       <label className="block text-xs text-gray-500 mb-1">
-                        {locale === 'zh' ? '图片URL（可替换）' : 'Image URL (replaceable)'}
+                        {t('spu.imageUrlReplaceable')}
                       </label>
                       <input
                         type="text"
                         value={formData.generatedImageUrl}
                         onChange={(e) => setFormData({ ...formData, generatedImageUrl: e.target.value })}
-                        placeholder={locale === 'zh' ? '输入图片URL' : 'Enter image URL'}
+                        placeholder={t('spu.enterImageUrl')}
                         className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
                       />
                     </div>
@@ -1864,22 +1863,22 @@ function ProductUploadContent() {
 
                   {/* HS编码 */}
                   <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="text-sm text-gray-600 mb-2">{locale === 'zh' ? 'HS 编码' : 'HS Code'}</div>
+                    <div className="text-sm text-gray-600 mb-2">{t('spu.hsCode')}</div>
                     <input
                       type="text"
                       value={formData.hsCode}
                       onChange={(e) => setFormData({ ...formData, hsCode: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg font-mono text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder={locale === 'zh' ? '输入 HS 编码' : 'Enter HS code'}
+                      placeholder={t('spu.hsCode')}
                     />
                     <p className="text-xs text-gray-500 mt-2">
-                      {locale === 'zh' ? 'HS 编码用于海关报关和贸易统计' : 'HS code for customs declaration and trade statistics'}
+                      {t('spu.hsCodeForCustoms')}
                     </p>
                   </div>
 
                   {/* 多语言翻译 */}
                   <div className="bg-white rounded-lg p-4 shadow-sm md:col-span-2">
-                    <div className="text-sm text-gray-600 mb-3">{locale === 'zh' ? '多语言翻译（名称）' : 'Multi-language Translations (Name)'}</div>
+                    <div className="text-sm text-gray-600 mb-3">{t('spu.multiLangTranslations')}</div>
                     {Object.keys(formData.translations.name || {}).length > 0 ? (
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                         {Object.entries(formData.translations.name || {}).map(([lang, name]) => (
@@ -1910,7 +1909,7 @@ function ProductUploadContent() {
                       </div>
                     ) : (
                       <div className="text-gray-400 text-sm py-4 text-center">
-                        {locale === 'zh' ? '暂无翻译数据' : 'No translation data'}
+                        {t('spu.noTranslationData')}
                       </div>
                     )}
                   </div>
@@ -1928,7 +1927,7 @@ function ProductUploadContent() {
               className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="h-4 w-4" />
-              {locale === 'zh' ? '上一步' : 'Previous'}
+              {t('spu.previous')}
             </button>
 
             {currentStep === 0 ? (
@@ -1945,16 +1944,16 @@ function ProductUploadContent() {
                 {autoProcessing ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    {locale === 'zh' ? '处理中...' : 'Processing...'}
+                    {t('spu.processingDone')}
                   </>
                 ) : (pubchemData || selectedSPU) && processingStep !== 'done' ? (
                   <>
                     <Check className="h-4 w-4" />
-                    {locale === 'zh' ? '使用此数据创建产品' : 'Create Product with This Data'}
+                    {t('spu.createProductWithData')}
                   </>
                 ) : (
                   <>
-                    {locale === 'zh' ? '下一步' : 'Next'}
+                    {t('spu.next')}
                     <ChevronRight className="h-4 w-4" />
                   </>
                 )}
@@ -1972,7 +1971,7 @@ function ProductUploadContent() {
                   ) : (
                     <Check className="h-4 w-4" />
                   )}
-                  {locale === 'zh' ? '暂不上架' : 'Save as Draft'}
+                  {t('spu.saveAsDraft')}
                 </button>
                 <button
                   onClick={handleNext}
@@ -1984,7 +1983,7 @@ function ProductUploadContent() {
                   ) : (
                     <Database className="h-4 w-4" />
                   )}
-                  {locale === 'zh' ? '保存到产品库' : 'Save to Library'}
+                  {t('spu.saveToLibrary')}
                 </button>
               </div>
             )}
@@ -2018,7 +2017,7 @@ function ProductUploadContent() {
                   : 'bg-red-600 hover:bg-red-700'
               }`}
             >
-              {locale === 'zh' ? '确定' : 'OK'}
+              {t('common.confirm')}
             </button>
           </div>
         </div>

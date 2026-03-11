@@ -387,6 +387,93 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       parsingDataMsg: 'Parsing data...',
       updatingFormMsg: 'Updating form...',
       syncFailedMsg: 'PubChem connection failed',
+      
+      // ===== Upload Page (产品上架页面) =====
+      upload: 'Upload Product',
+      uploadSubtitle: 'Select from product library or enter manually',
+      selectProduct: 'Select Product',
+      confirmData: 'Confirm Data',
+      
+      // Search
+      searchProduct: 'Search Product (CAS or Name)',
+      enterCas: 'Enter CAS number, e.g., 64-17-5',
+      systemSearchHint: 'System searches product library first, then PubChem if not found',
+      searchingLibrary: 'Searching product library...',
+      fetchingFromPubchem: 'Fetching from PubChem...',
+      foundProducts: 'Found {count} products',
+      noDataFound: 'No data found for this CAS number',
+      searchFailed: 'Search failed, please try again',
+      
+      // Selected SPU
+      linkedSpu: 'Linked SPU',
+      unlink: 'Unlink',
+      
+      // PubChem Data
+      fetchedFromPubchem: 'Fetched from PubChem',
+      twoDStructure: '2D Structure',
+      structureInfo: 'Structural Information',
+      physicochemicalProperties: 'Physicochemical Properties',
+      
+      // Auto Processing
+      aiDataProcessing: 'AI Data Processing',
+      processingData: 'Processing product data...',
+      processingComplete: 'Processing Complete',
+      processingFailed: 'Processing Failed',
+      startGeneration: 'Start',
+      retry: 'Retry',
+      generateProductImage: 'Generate product image',
+      matchHsCode: 'Match HS code',
+      translateTenLang: 'Translate to 10 languages',
+      currentlyTranslating: 'Translating:',
+      processingDone: 'Done',
+      
+      // Confirm Data Page
+      molecularFormula: 'Molecular Formula',
+      hazardClassification: 'Hazard Classification',
+      applications: 'Applications',
+      synonymsAliases: 'Synonyms/Aliases',
+      more: 'more',
+      
+      // AI Generated Data
+      aiGeneratedEditable: 'AI Generated Data (Editable)',
+      noProductImage: 'No product image',
+      imageUrlReplaceable: 'Image URL (replaceable)',
+      enterImageUrl: 'Enter image URL',
+      hsCodeForCustoms: 'HS code for customs declaration and trade statistics',
+      multiLangTranslations: 'Multi-language Translations (Name)',
+      noTranslationData: 'No translation data',
+      
+      // Buttons
+      previous: 'Previous',
+      next: 'Next',
+      createProductWithData: 'Create Product with This Data',
+      saveAsDraft: 'Save as Draft',
+      saveToLibrary: 'Save to Library',
+      
+      // Messages
+      dataGeneratedClickNext: '✓ Data generated, click "Next" below to continue',
+      processingDataPleaseWait: '⏳ Processing data, please wait...',
+      confirmThenStart: '✓ Confirm product info, then click "Start" above',
+      
+      // Save Messages (excluding duplicates)
+      saveFailed: 'Save Failed',
+      productNameRequired: 'Product name is required',
+      networkError: 'Network error, please try again',
+      productSavedToLibrary: 'Product saved to library!',
+      productSavedNotListed: 'Product saved to library (not listed)!',
+      
+      // Translating fields
+      fieldName: 'Name',
+      fieldDescription: 'Description',
+      fieldApplications: 'Applications',
+      fieldPhysicalDescription: 'Physical Description',
+      fieldColorForm: 'Color/Form',
+      fieldOdor: 'Odor',
+      fieldHazardClasses: 'Hazard Classes',
+      
+      // Image generation errors
+      imageGenFailed: 'Failed to generate product image: {error}',
+      hsCodeMatchFailed: 'Failed to match HS code: {error}',
     },
     // 登录
     login: {
@@ -748,6 +835,93 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       parsingDataMsg: '正在解析数据...',
       updatingFormMsg: '正在更新表单...',
       syncFailedMsg: 'PubChem 连接失败',
+      
+      // ===== Upload Page (产品上架页面) =====
+      upload: '产品上架',
+      uploadSubtitle: '从产品库选择或手动录入产品信息',
+      selectProduct: '选择产品',
+      confirmData: '确认数据',
+      
+      // Search
+      searchProduct: '搜索产品 (CAS 号或名称)',
+      enterCas: '输入 CAS 号，如 64-17-5',
+      systemSearchHint: '系统会先搜索产品库，如无结果则自动从 PubChem 获取',
+      searchingLibrary: '正在搜索产品库...',
+      fetchingFromPubchem: '正在从 PubChem 获取数据...',
+      foundProducts: '找到 {count} 个产品',
+      noDataFound: '未找到该 CAS 号对应的产品信息',
+      searchFailed: '查询失败，请稍后重试',
+      
+      // Selected SPU
+      linkedSpu: '已关联 SPU',
+      unlink: '取消关联',
+      
+      // PubChem Data
+      fetchedFromPubchem: '从 PubChem 获取成功',
+      twoDStructure: '2D 结构图',
+      structureInfo: '结构信息',
+      physicochemicalProperties: '物理化学性质',
+      
+      // Auto Processing
+      aiDataProcessing: 'AI 数据处理',
+      processingData: '正在处理产品数据...',
+      processingComplete: '处理完成',
+      processingFailed: '处理失败',
+      startGeneration: '开始生成',
+      retry: '重新生成',
+      generateProductImage: '生成产品图',
+      matchHsCode: '匹配 HS 编码',
+      translateTenLang: '翻译多语言（10种）',
+      currentlyTranslating: '正在翻译:',
+      processingDone: '已完成',
+      
+      // Confirm Data Page
+      molecularFormula: '分子式',
+      hazardClassification: '危险性分类',
+      applications: '行业应用',
+      synonymsAliases: '同义词/别名',
+      more: '更多',
+      
+      // AI Generated Data
+      aiGeneratedEditable: 'AI 自动生成的数据（可编辑）',
+      noProductImage: '暂无产品图',
+      imageUrlReplaceable: '图片URL（可替换）',
+      enterImageUrl: '输入图片URL',
+      hsCodeForCustoms: 'HS 编码用于海关报关和贸易统计',
+      multiLangTranslations: '多语言翻译（名称）',
+      noTranslationData: '暂无翻译数据',
+      
+      // Buttons
+      previous: '上一步',
+      next: '下一步',
+      createProductWithData: '使用此数据创建产品',
+      saveAsDraft: '暂不上架',
+      saveToLibrary: '保存到产品库',
+      
+      // Messages
+      dataGeneratedClickNext: '✓ 数据已生成，点击下方"下一步"按钮继续',
+      processingDataPleaseWait: '⏳ 正在处理数据，请稍候...',
+      confirmThenStart: '✓ 确认产品信息无误后，点击上方"开始生成"按钮',
+      
+      // Save Messages (excluding duplicates)
+      saveFailed: '保存失败',
+      productNameRequired: '缺少产品名称',
+      networkError: '网络错误，请稍后重试',
+      productSavedToLibrary: '产品信息已保存到产品库！',
+      productSavedNotListed: '产品信息已保存到产品库（暂不上架）！',
+      
+      // Translating fields
+      fieldName: '名称',
+      fieldDescription: '描述',
+      fieldApplications: '应用领域',
+      fieldPhysicalDescription: '物理描述',
+      fieldColorForm: '颜色/形态',
+      fieldOdor: '气味',
+      fieldHazardClasses: '危险性分类',
+      
+      // Image generation errors
+      imageGenFailed: '产品图生成失败: {error}',
+      hsCodeMatchFailed: 'HS编码匹配失败: {error}',
     },
     // 登录
     login: {
