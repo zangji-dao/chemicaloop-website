@@ -1044,7 +1044,7 @@ export default function AdminSPUPage() {
   };
 
   /**
-   * 启动后台翻译（串行执行以正确显示进度）
+   * 启动后台翻译（并行执行）
    * 使用批量翻译API，一次请求翻译到多个语言
    */
   const startBackgroundTranslation = async (
@@ -1068,21 +1068,11 @@ export default function AdminSPUPage() {
       status: 'translating'
     });
     
-    // 串行翻译每个字段，以正确显示进度
-    for (let i = 0; i < fieldsToTranslate.length; i++) {
-      const { fieldName, value } = fieldsToTranslate[i];
-      
+    // 并行翻译所有字段
+    const translationPromises = fieldsToTranslate.map(async ({ fieldName, value }) => {
       setTranslatingFields(prev => new Set([...prev, fieldName]));
       
-      // 更新当前正在翻译的字段（使用友好名称）
-      setTranslationProgress(prev => ({ 
-        ...prev, 
-        current: i,
-        currentField: fieldDisplayNames[fieldName] || fieldName 
-      }));
-      
       try {
-        // 使用批量翻译API，一次请求翻译到所有语言
         const res = await fetch('/api/ai/translate', {
           method: 'POST',
           headers: { 
@@ -1097,10 +1087,8 @@ export default function AdminSPUPage() {
         const data = await res.json();
         
         if (data.translations) {
-          // 更新翻译结果
           translations[fieldName] = data.translations;
           
-          // 更新当前语言的表单显示
           const currentLangTranslation = data.translations[currentLang];
           if (currentLangTranslation) {
             if (fieldName === 'name') {
@@ -1146,11 +1134,13 @@ export default function AdminSPUPage() {
         // 更新完成进度
         setTranslationProgress(prev => ({ 
           ...prev, 
-          current: i + 1
+          current: prev.current + 1 
         }));
         
+        return { fieldName, success: true };
       } catch (e) {
         console.error(`Translation error for ${fieldName}:`, e);
+        return { fieldName, success: false };
       } finally {
         setTranslatingFields(prev => {
           const newSet = new Set(prev);
@@ -1158,11 +1148,11 @@ export default function AdminSPUPage() {
           return newSet;
         });
       }
-    }
+    });
     
-    // 更新临时翻译存储
+    await Promise.all(translationPromises);
+    
     setPendingTranslations({ ...translations });
-    // 不关闭遮罩，等待弹窗确认
     setTranslationProgress(prev => ({ ...prev, status: 'completed' }));
     
     return translations;
@@ -1955,7 +1945,15 @@ export default function AdminSPUPage() {
                     <span className="flex items-center gap-1.5 text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
                       <Loader2 className="w-3 h-3 animate-spin" />
                       {translationProgress.status === 'translating' ? (
-                        `${t('spu.translating')}: ${translationProgress.current}/${translationProgress.total} (${translationProgress.currentLang})`
+                        <>
+                          {t('spu.translating')}: {translationProgress.current}/{translationProgress.total}
+                          {translatingFields.size > 0 && (
+                            <span className="text-blue-300 ml-1">
+                              ({Array.from(translatingFields).map(f => fieldDisplayNames[f] || f).slice(0, 3).join(', ')}
+                              {translatingFields.size > 3 && ` +${translatingFields.size - 3}`})
+                            </span>
+                          )}
+                        </>
                       ) : (
                         `${t('spu.translating')}...`
                       )}
