@@ -361,7 +361,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             <AdminLanguageSwitcher />
 
             {/* User Menu */}
-            <div className="flex items-center gap-3 pl-3 border-l border-slate-700">
+            <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
                 {user?.name?.charAt(0).toUpperCase() || 'A'}
               </div>
