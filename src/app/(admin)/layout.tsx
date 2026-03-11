@@ -337,7 +337,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           : ''
       }`}>
         {/* Header */}
-        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4 flex-shrink-0 z-30">
+        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4 lg:px-6 flex-shrink-0 z-30">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -347,11 +347,11 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             </button>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             {/* 返回前台 */}
             <a
               href="/"
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-400 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-slate-400 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
             >
               <ExternalLink className="h-4 w-4" />
               <span className="hidden sm:inline">{t('nav.backToFrontend')}</span>
@@ -361,14 +361,14 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             <AdminLanguageSwitcher />
 
             {/* User Menu */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 pl-3 border-l border-slate-700">
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
                 {user?.name?.charAt(0).toUpperCase() || 'A'}
               </div>
               <span className="text-white hidden md:block">{user?.name || 'Admin'}</span>
               <button
                 onClick={handleLogout}
-                className="text-slate-400 hover:text-white"
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                 title={t('nav.logout')}
               >
                 <LogOut className="h-5 w-5" />
