@@ -1949,29 +1949,27 @@ export default function AdminSPUPage() {
                   )}
                 </div>
                 
-                {/* 右侧：保存按钮（有修改时显示） */}
-                {hasFormChanges && (
-                  <button
-                    onClick={handleSave}
-                    disabled={saving || translating || syncingSingle}
-                    className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm transition-colors disabled:opacity-50 ${
-                      justSynced 
-                        ? 'bg-amber-600 hover:bg-amber-700' 
-                        : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
-                  >
-                    {saving ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : translating ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4" />
-                    )}
-                    <span>
-                      {justSynced ? t('spu.translateAndSave') : t('spu.confirmSave')}
-                    </span>
-                  </button>
-                )}
+                {/* 右侧：保存按钮 */}
+                <button
+                  onClick={handleSave}
+                  disabled={saving || translating || syncingSingle}
+                  className={`flex items-center gap-2 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 ${
+                    justSynced 
+                      ? 'bg-amber-600 hover:bg-amber-700' 
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                >
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : translating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  <span>
+                    {justSynced ? t('spu.translateAndSave') : t('spu.saveAndExit')}
+                  </span>
+                </button>
               </div>
             </div>
 

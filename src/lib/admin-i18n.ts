@@ -240,6 +240,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       needSync: 'Need Sync',
       save: 'Save',
       confirmSave: 'Confirm Save',
+      saveAndExit: 'Save & Exit',
       translateAndSave: 'Translate & Save',
       syncing: 'Syncing...',
       delete: 'Delete',
@@ -594,6 +595,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       needSync: '待同步',
       save: '保存',
       confirmSave: '确认保存',
+      saveAndExit: '保存并退出',
       translateAndSave: '翻译并保存',
       syncing: '同步中...',
       delete: '删除',
@@ -903,6 +905,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncSuccessNoTranslation: 'PubChemデータが同期されました。翻訳は不要です',
       syncError: '同期エラー',
       confirmSave: '保存確認',
+      saveAndExit: '保存して終了',
       translateAndSave: '翻訳して保存',
       syncing: '同期中...',
       // 分区标题
@@ -1215,6 +1218,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncSuccessNoTranslation: 'PubChem 데이터가 동기화되었습니다. 번역 불필요',
       syncError: '동기화 오류',
       confirmSave: '저장 확인',
+      saveAndExit: '저장 후 종료',
       translateAndSave: '번역 후 저장',
       syncing: '동기화 중...',
       // 분야 제목
@@ -1522,6 +1526,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncSuccessNoTranslation: 'PubChem-Daten synchronisiert, keine Übersetzung erforderlich',
       syncError: 'Synchronisierungsfehler',
       confirmSave: 'Speichern bestätigen',
+      saveAndExit: 'Speichern & Beenden',
       translateAndSave: 'Übersetzen & Speichern',
       syncing: 'Synchronisiere...',
       // Bereichsüberschriften
@@ -1829,6 +1834,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncSuccessNoTranslation: 'Données PubChem synchronisées, aucune traduction nécessaire',
       syncError: 'Erreur de synchronisation',
       confirmSave: 'Confirmer l\'enregistrement',
+      saveAndExit: 'Enregistrer & Quitter',
       translateAndSave: 'Traduire & Enregistrer',
       syncing: 'Synchronisation...',
       // Titres de section
@@ -2136,6 +2142,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncSuccessNoTranslation: 'Datos de PubChem sincronizados, sin traducción necesaria',
       syncError: 'Error de sincronización',
       confirmSave: 'Confirmar guardado',
+      saveAndExit: 'Guardar y Salir',
       translateAndSave: 'Traducir & Guardar',
       syncing: 'Sincronizando...',
       // Títulos de sección
@@ -2443,6 +2450,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncSuccessNoTranslation: 'Dados do PubChem sincronizados, sem tradução necessária',
       syncError: 'Erro de sincronização',
       confirmSave: 'Confirmar salvamento',
+      saveAndExit: 'Salvar e Sair',
       translateAndSave: 'Traduzir & Salvar',
       syncing: 'Sincronizando...',
       // Títulos de seção
@@ -2750,6 +2758,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncSuccessNoTranslation: 'Данные PubChem синхронизированы, перевод не требуется',
       syncError: 'Ошибка синхронизации',
       confirmSave: 'Подтвердить сохранение',
+      saveAndExit: 'Сохранить и выйти',
       translateAndSave: 'Перевести & Сохранить',
       syncing: 'Синхронизация...',
       // Заголовки разделов
@@ -3057,6 +3066,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncSuccessNoTranslation: 'تمت مزامنة بيانات PubChem، لا حاجة للترجمة',
       syncError: 'خطأ في المزامنة',
       confirmSave: 'تأكيد الحفظ',
+      saveAndExit: 'حفظ والخروج',
       translateAndSave: 'ترجمة & حفظ',
       syncing: 'جاري المزامنة...',
       // عناوين الأقسام
