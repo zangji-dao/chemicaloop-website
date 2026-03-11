@@ -8,6 +8,14 @@
 
 > 本章节记录最近的重要技术决策，方便快速了解项目变更
 
+### 2026-03 开发原则体系化
+
+| 决策 | 说明 |
+|------|------|
+| 六大原则整合 | 代码质量、性能速度、安全权限、健壮性、可维护性、工作流规范 |
+| 原则优先级 | 架构约束 > 安全 > 性能 > 可维护性 |
+| 强制约束 | pnpm 包管理、BFF 架构、统一 Token/后端地址 |
+
 ### 2026-03 前端性能优化
 
 | 决策 | 说明 | 影响 |
@@ -166,37 +174,197 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
 
 ## 3. 开发核心原则（不能触碰）
 
-### 3.1 不能改变技术架构
-- 尊重现有的 BFF 架构设计
-- 不随意删除 `backend/` 或合并层级
-- 两套验证逻辑各司其职：
-  - `src/lib/auth.ts` — Next.js BFF 层验证
-  - `backend/src/middleware/auth.ts` — Express 后端验证
+### 3.1 架构约束
 
-### 3.2 代码考古
-- 修改任何代码前，先读取相关现有代码
-- 使用 `read_file`、`grep_file` 充分调研
-- 不盲目改动，不理解不写代码
+| 约束 | 说明 |
+|------|------|
+| 不能改变技术架构 | 尊重现有 BFF 架构，不删除 `backend/` 或合并层级 |
+| 两套验证逻辑 | `src/lib/auth.ts` (BFF层) 与 `backend/src/middleware/auth.ts` (后端) 各司其职 |
+| 包管理约束 | **只允许 pnpm**，禁止 npm/yarn |
+| 不能重复造轮子 | 复用已有代码、组件；shadcn/ui 位于 `src/components/ui/` |
 
-### 3.3 不能重复造轮子
-- 复用已有代码、组件、函数
-- 项目已有 shadcn/ui 组件库，位于 `src/components/ui/`
-- 检查是否已有类似功能再动手
+### 3.2 代码质量原则
 
-### 3.4 包管理约束
-- **只允许使用 pnpm**
-- 禁止使用 npm 或 yarn
+| 原则 | 说明 | 示例 |
+|------|------|------|
+| **DRY** | 绝不重复，相同逻辑只写一次 | 抽取公共函数/工具类 |
+| **KISS** | 保持简单，不炫技、不晦涩、不嵌套过深 | 扁平化逻辑，避免回调地狱 |
+| **单一职责** | 一个函数/组件只做一件事 | `validateEmail()` 只验证邮箱 |
+| **拒绝魔法值** | 常量清晰，不写无意义数字/字符串 | `const MAX_RETRY = 3` 而非 `if (count < 3)` |
 
-### 3.5 前端性能原则
+```typescript
+// ❌ 错误：魔法值 + 多职责
+function process(data) {
+  if (data.type === 1) { // 1 是什么？
+    return data.value * 0.85; // 0.85 是什么？
+  }
+}
 
-#### 请求与接口优化
+// ✅ 正确：常量清晰 + 单一职责
+const DISCOUNT_RATE = 0.85;
+const TYPE_PREMIUM = 1;
+
+function calculateDiscount(value: number): number {
+  return value * DISCOUNT_RATE;
+}
+```
+
+### 3.3 性能与速度原则
+
+| 原则 | 说明 | 实现方式 |
+|------|------|----------|
+| 不重复请求 | 相同参数、相同接口只发一次 | 缓存、状态管理 |
+| 不重复计算 | 同样结果只算一次 | `useMemo`、`useCallback` |
+| 不重复渲染 | 数据不变不重新渲染 | `React.memo`、依赖数组正确 |
+| 能缓存就缓存 | 计算结果、接口响应缓存 | `localStorage`、`Map`、`useMemo` |
+| 能合并就合并 | 多个请求/操作合并 | 批量接口、`Promise.all` |
+| 体积最小化 | 删除无用代码、空行、冗余 | Tree shaking、按需引入 |
+| DOM 操作最少化 | 避免频繁增删 DOM | 批量更新、`React.Fragment` |
+
+```typescript
+// ❌ 错误：循环内发请求
+for (const id of ids) {
+  await fetch(`/api/items/${id}`);
+}
+
+// ✅ 正确：批量请求
+await fetch(`/api/items?ids=${ids.join(',')}`);
+
+// ❌ 错误：渲染内重复计算
+function List({ items }) {
+  return items.map(item => {
+    const processed = heavyProcess(item); // 每次渲染都计算
+    return <Item key={item.id} data={processed} />;
+  });
+}
+
+// ✅ 正确：缓存计算结果
+function List({ items }) {
+  const processedItems = useMemo(
+    () => items.map(item => heavyProcess(item)),
+    [items]
+  );
+  return processedItems.map(item => <Item key={item.id} data={item} />);
+}
+```
+
+### 3.4 安全与权限原则
+
+| 原则 | 说明 | 实现方式 |
+|------|------|----------|
+| 所有接口必须鉴权 | 无白名单，全部验证 | 中间件、BFF 层验证 |
+| 不信任外部输入 | 必须校验类型、格式、范围 | `zod`、`class-validator` |
+| 防止越权 | 水平越权（同角色）、垂直越权（跨角色） | 角色/资源归属校验 |
+| 敏感数据不泄露 | 密码、token、密钥不明文 | 加密存储、环境变量 |
+
+```typescript
+// ❌ 错误：直接使用外部输入
+app.get('/user/:id', (req, res) => {
+  db.query(`SELECT * FROM users WHERE id = ${req.params.id}`); // SQL 注入
+});
+
+// ✅ 正确：参数校验 + 参数化查询
+app.get('/user/:id', authMiddleware, (req, res) => {
+  const id = z.string().uuid().parse(req.params.id);
+  db.query('SELECT * FROM users WHERE id = $1', [id]);
+});
+
+// ❌ 错误：未校验资源归属
+app.delete('/order/:id', authMiddleware, (req, res) => {
+  db.deleteOrder(req.params.id); // 任何人可删任何订单
+});
+
+// ✅ 正确：校验资源归属
+app.delete('/order/:id', authMiddleware, async (req, res) => {
+  const order = await db.getOrder(req.params.id);
+  if (order.userId !== req.userId) {
+    return res.status(403).json({ error: '无权操作' });
+  }
+  db.deleteOrder(req.params.id);
+});
+```
+
+### 3.5 健壮性原则
+
+| 原则 | 说明 | 实现方式 |
+|------|------|----------|
+| 防御性编程 | 处理空值、异常、边界 | `?.`、默认值、类型守卫 |
+| 异常必须捕获 | 不崩溃、不静默失败 | `try-catch`、全局错误处理 |
+| 统一返回格式 | `code + msg + data` | 封装响应函数 |
+
+```typescript
+// 统一响应格式
+interface ApiResponse<T> {
+  code: number;    // 0 成功，非 0 错误码
+  msg: string;     // 错误描述
+  data: T | null;  // 业务数据
+}
+
+// ✅ 正确：统一响应封装
+function success<T>(data: T): ApiResponse<T> {
+  return { code: 0, msg: 'success', data };
+}
+
+function fail(code: number, msg: string): ApiResponse<null> {
+  return { code, msg, data: null };
+}
+
+// ✅ 正确：防御性编程
+async function getUser(id: string) {
+  try {
+    const user = await db.user.findUnique({ where: { id } });
+    if (!user) {
+      return fail(404, '用户不存在');
+    }
+    return success(user);
+  } catch (error) {
+    console.error('getUser error:', error);
+    return fail(500, '服务器错误');
+  }
+}
+```
+
+### 3.6 可维护性原则
+
+| 原则 | 说明 |
+|------|------|
+| 命名见名知意 | `getUserById` 而非 `getData`，`isLoading` 而非 `loading` |
+| 结构清晰 | 分层明确：页面 → 组件 → 服务 → API → 数据库 |
+| 注释只写为什么 | 不写做什么（代码本身说明做什么） |
+| 禁止代码考古 | 修改前先读取现有代码，使用 `read_file`、`grep_file` 调研 |
+
+```typescript
+// ❌ 错误注释：描述做什么
+// 遍历用户列表
+users.forEach(u => console.log(u.name));
+
+// ✅ 正确注释：解释为什么
+// 使用批量插入而非逐条插入，减少数据库连接开销
+await db.users.createMany({ data: users });
+
+// ✅ 命名见名知意
+const isLoading = true;
+const getUserById = (id: string) => {};
+const calculateDiscount = (price: number) => {};
+```
+
+### 3.7 工作流/低代码特别规则
+
+| 原则 | 说明 |
+|------|------|
+| 工作流不嵌套过深 | 复杂逻辑拆分子流程，单层不超过 5 个节点 |
+| 变量命名规范 | 不随意定义，使用有意义的前缀如 `ctx_`、`temp_`、`result_` |
+| 节点职责单一 | 一个节点只做一件事，便于调试和复用 |
+
+### 3.8 前端性能专项
+
+#### 请求优化
 
 | 规则 | 说明 | 示例 |
 |------|------|------|
-| 禁止重复请求 | 相同参数、相同接口只发一次 | 使用缓存或状态管理 |
 | 禁止循环内请求 | 绝不在 `for/forEach/while` 里调用 API | 批量接口替代 |
 | 批量接口合并 | 多个请求合并为一个 | `/api/items?ids=1,2,3` |
-| 按需请求字段 | 只请求需要的字段，不拿多余数据 | `SELECT id, name` 而非 `SELECT *` |
+| 按需请求字段 | 只请求需要的字段 | `SELECT id, name` 而非 `SELECT *` |
 
 ```typescript
 // ❌ 错误：循环内发请求
