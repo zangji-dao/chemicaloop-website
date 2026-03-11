@@ -2033,48 +2033,70 @@ export default function AdminSPUPage() {
                       </div>
                     </div>
                     
-                    {/* 产品图 (AI 生成) */}
+                    {/* 产品图 */}
                     <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm text-slate-400">
-                          {t('spu.productImageAI')}
-                        </span>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-slate-400">{t('spu.productImage')}</span>
                         <button
                           type="button"
-                          onClick={() => handleGenerateProductImage(false)}
+                          onClick={() => handleGenerateProductImage(!!productImageUrl)}
                           disabled={generatingImage || !pubchemInfo.cid}
-                          className="text-sm text-blue-400 hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-1 text-xs text-slate-500 hover:text-blue-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           title={!pubchemInfo.cid ? t('spu.syncPubchemFirst') : ''}
                         >
                           {generatingImage ? (
-                            <Loader2 className="w-4 h-4 animate-spin inline" />
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>{t('spu.generating')}</span>
+                            </>
                           ) : (
-                            t('spu.generate')
+                            <>
+                              <RefreshCw className="w-3 h-3" />
+                              <span>{t('spu.redraw')}</span>
+                            </>
                           )}
                         </button>
-                        {productImageUrl && (
+                      </div>
+                      <div className="aspect-square bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-lg border border-slate-600/50 flex items-center justify-center overflow-hidden group relative">
+                        {productImageUrl ? (
+                          <>
+                            <img 
+                              src={productImageUrl} 
+                              alt="Product Image" 
+                              className="max-w-full max-h-full object-contain"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                              <button
+                                type="button"
+                                onClick={() => handleGenerateProductImage(true)}
+                                disabled={generatingImage}
+                                className="px-3 py-1.5 bg-white/90 text-slate-800 rounded text-xs font-medium hover:bg-white transition-colors"
+                              >
+                                {t('spu.redraw')}
+                              </button>
+                            </div>
+                          </>
+                        ) : (
                           <button
                             type="button"
-                            onClick={() => handleGenerateProductImage(true)}
-                            disabled={generatingImage}
-                            className="text-sm text-slate-500 hover:text-slate-300"
+                            onClick={() => handleGenerateProductImage(false)}
+                            disabled={generatingImage || !pubchemInfo.cid}
+                            className="flex flex-col items-center gap-2 text-slate-500 hover:text-blue-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           >
-                            {t('spu.redo')}
+                            {generatingImage ? (
+                              <>
+                                <Loader2 className="w-8 h-8 animate-spin" />
+                                <span className="text-xs">{t('spu.generating')}</span>
+                              </>
+                            ) : (
+                              <>
+                                <div className="w-12 h-12 rounded-full bg-slate-600/50 flex items-center justify-center">
+                                  <RefreshCw className="w-6 h-6" />
+                                </div>
+                                <span className="text-xs">{pubchemInfo.cid ? t('spu.clickToGenerate') : t('spu.syncPubchemFirst')}</span>
+                              </>
+                            )}
                           </button>
-                        )}
-                      </div>
-                      <div className="aspect-square bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
-                        {productImageUrl ? (
-                          <img 
-                            src={productImageUrl} 
-                            alt="Product Image" 
-                            className="max-w-full max-h-full object-contain"
-                          />
-                        ) : (
-                          <div className="text-center text-slate-500">
-                            <Database className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                            <p>{t('spu.clickToGenerate')}</p>
-                          </div>
                         )}
                       </div>
                     </div>
