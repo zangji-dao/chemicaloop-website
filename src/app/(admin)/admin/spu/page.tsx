@@ -826,6 +826,12 @@ export default function AdminSPUPage() {
       return;
     }
     
+    // 防止重复调用
+    if (syncingSingle) {
+      console.log('[Sync] Already syncing, skip duplicate call');
+      return;
+    }
+    
     // 保存同步前的数据，用于取消/退出时恢复
     setPreSyncFormData({ ...formData });
     setPreSyncSpu(editingSpu);
