@@ -146,6 +146,88 @@
 
 ---
 
+## 4.5 多语言翻译（Admin）
+
+### 核心文件
+
+| 文件 | 职责 |
+|------|------|
+| `src/lib/admin-i18n.ts` | 翻译配置，定义所有语言的翻译键 |
+| `src/contexts/AdminLocaleContext.tsx` | 语言上下文，提供 `t()` 翻译函数 |
+
+### 翻译机制
+
+```
+用户选择语言 → 存入 localStorage (admin_locale) → Context 更新 → t() 返回对应翻译
+```
+
+### 使用方式
+
+**方式一：菜单项配置（推荐）**
+
+```typescript
+// 1. 配置阶段 - 定义 labelKey（不是 label）
+const menuConfig = [
+  { icon: LayoutDashboard, path: '/admin', labelKey: 'nav.dashboard' },
+  { icon: Settings, path: '/admin/settings', labelKey: 'nav.settings' },
+];
+
+// 2. 运行阶段 - 通过 t() 获取翻译后的文本
+const menuItems = menuConfig.map(item => ({
+  ...item,
+  label: t(item.labelKey),
+}));
+
+// 3. 渲染阶段 - 使用翻译后的 label
+<span>{item.label}</span>
+```
+
+**方式二：直接使用 t() 函数**
+
+```jsx
+import { useAdminLocale } from '@/contexts/AdminLocaleContext';
+
+function MyComponent() {
+  const { t } = useAdminLocale();
+  
+  return (
+    <button title={t('nav.collapseSidebar')}>
+      {t('nav.collapseSidebar')}
+    </button>
+  );
+}
+```
+
+### 新增翻译键步骤
+
+1. 在 `src/lib/admin-i18n.ts` 中找到对应语言的 `nav` 对象
+2. 添加新的键值对，例如：
+   ```typescript
+   nav: {
+     // ... 现有翻译
+     newFeature: 'New Feature',  // 英文
+   }
+   ```
+3. **必须为所有 10 种语言添加翻译**：`en`, `zh`, `ja`, `ko`, `de`, `fr`, `es`, `pt`, `ru`, `ar`
+4. 使用时调用 `t('nav.newFeature')`
+
+### 翻译键命名规范
+
+| 前缀 | 用途 | 示例 |
+|------|------|------|
+| `nav.*` | 导航菜单 | `nav.dashboard`, `nav.users` |
+| `common.*` | 通用文本 | `common.save`, `common.cancel` |
+| `products.*` | 产品相关 | `products.title`, `products.approve` |
+| `users.*` | 用户相关 | `users.title`, `users.email` |
+
+### 注意事项
+
+- ⚠️ **禁止硬编码文字**：不要直接写 `"仪表盘"`，应使用 `t('nav.dashboard')`
+- ⚠️ **新增功能必须补全所有语言**：不能只添加英文或中文
+- ⚠️ **翻译键不存在时**：`t()` 会返回键名本身作为 fallback
+
+---
+
 ## 5. UI 设计规范
 
 ### 5.1 前端用户端（WWW）
