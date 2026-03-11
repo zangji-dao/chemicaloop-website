@@ -1880,7 +1880,7 @@ export default function AdminSPUPage() {
             {/* 头部固定 - 两行布局 */}
             <div className="flex-shrink-0 bg-slate-800 border-b border-slate-700 px-5 py-3">
               {/* 第一行：导航 + 同步操作 */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center">
                 {/* 左侧：返回按钮 + 同步按钮 */}
                 <div className="flex items-center gap-4">
                   <button
@@ -1913,29 +1913,9 @@ export default function AdminSPUPage() {
                     </span>
                   )}
                 </div>
-                
-                {/* 右侧：翻译状态 */}
-                {translating && (
-                  <span className="flex items-center gap-1.5 text-xs text-blue-400">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    {translationProgress.status === 'translating' ? (
-                      `${t('spu.translating')}: ${translationProgress.current}/${translationProgress.total} (${translationProgress.currentLang})`
-                    ) : translationProgress.status === 'completed' ? (
-                      t('spu.translationCompleteSave')
-                    ) : (
-                      `${t('spu.translating')}...`
-                    )}
-                  </span>
-                )}
-                {translationProgress.status === 'completed' && pendingTranslations && (
-                  <span className="flex items-center gap-1.5 text-xs text-green-400">
-                    <CheckCircle className="w-3 h-3" />
-                    {t('spu.newTranslationsReady')}
-                  </span>
-                )}
               </div>
               
-              {/* 第二行：标题 + 保存按钮 */}
+              {/* 第二行：标题 + 翻译状态 + 保存按钮 */}
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-700/50">
                 {/* 左侧：标题 + CAS号 */}
                 <div className="flex items-center gap-3">
@@ -1945,6 +1925,26 @@ export default function AdminSPUPage() {
                   {editingSpu && (
                     <span className="text-sm text-slate-500 font-mono">
                       CAS: {editingSpu.cas}
+                    </span>
+                  )}
+                </div>
+                
+                {/* 中间：翻译状态 */}
+                <div className="flex-1 flex justify-center">
+                  {translating && (
+                    <span className="flex items-center gap-1.5 text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      {translationProgress.status === 'translating' ? (
+                        `${t('spu.translating')}: ${translationProgress.current}/${translationProgress.total} (${translationProgress.currentLang})`
+                      ) : (
+                        `${t('spu.translating')}...`
+                      )}
+                    </span>
+                  )}
+                  {translationProgress.status === 'completed' && pendingTranslations && (
+                    <span className="flex items-center gap-1.5 text-xs text-green-400 bg-green-500/10 px-3 py-1 rounded-full">
+                      <CheckCircle className="w-3 h-3" />
+                      {t('spu.newTranslationsReady')}
                     </span>
                   )}
                 </div>
@@ -1976,17 +1976,6 @@ export default function AdminSPUPage() {
             {/* 内容区域 - 翻译/同步时禁用滚动，添加最大宽度限制居中 */}
             <div className={`flex-1 relative scrollbar-thin ${translating || syncingSingle ? 'overflow-hidden' : 'overflow-y-auto'}`}>
               <div className="max-w-4xl mx-auto p-5">
-              {/* 翻译完成提示 */}
-              {translationProgress.status === 'completed' && pendingTranslations && (
-                <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                    <span className="text-sm text-green-400">
-                      {t('spu.translationCompleteReview')}
-                    </span>
-                  </div>
-                </div>
-              )}
               
               {/* 图片展示区域 */}
               {editingSpu && (
