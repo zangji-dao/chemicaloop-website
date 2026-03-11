@@ -1021,8 +1021,30 @@ export default function AdminSPUPage() {
     return false;
   };
 
+  // 字段名友好显示映射
+  const fieldDisplayNames: Record<string, string> = {
+    name: locale === 'zh' ? '产品名称' : 'Product Name',
+    description: locale === 'zh' ? '产品描述' : 'Description',
+    boilingPoint: locale === 'zh' ? '沸点' : 'Boiling Point',
+    meltingPoint: locale === 'zh' ? '熔点' : 'Melting Point',
+    flashPoint: locale === 'zh' ? '闪点' : 'Flash Point',
+    hazardClasses: locale === 'zh' ? '危险分类' : 'Hazard Classes',
+    healthHazards: locale === 'zh' ? '健康危害' : 'Health Hazards',
+    ghsClassification: locale === 'zh' ? 'GHS分类' : 'GHS Classification',
+    firstAid: locale === 'zh' ? '急救措施' : 'First Aid',
+    storageConditions: locale === 'zh' ? '储存条件' : 'Storage Conditions',
+    incompatibleMaterials: locale === 'zh' ? '不相容物质' : 'Incompatible Materials',
+    solubility: locale === 'zh' ? '溶解性' : 'Solubility',
+    vaporPressure: locale === 'zh' ? '蒸气压' : 'Vapor Pressure',
+    refractiveIndex: locale === 'zh' ? '折射率' : 'Refractive Index',
+    physicalDescription: locale === 'zh' ? '物理描述' : 'Physical Description',
+    colorForm: locale === 'zh' ? '颜色形态' : 'Color/Form',
+    odor: locale === 'zh' ? '气味' : 'Odor',
+    density: locale === 'zh' ? '密度' : 'Density',
+  };
+
   /**
-   * 启动后台翻译（批量并行）
+   * 启动后台翻译（串行执行以正确显示进度）
    * 使用批量翻译API，一次请求翻译到多个语言
    */
   const startBackgroundTranslation = async (
@@ -1046,14 +1068,17 @@ export default function AdminSPUPage() {
       status: 'translating'
     });
     
-    // 并行翻译所有字段，每个字段使用批量翻译API
-    const translationPromises = fieldsToTranslate.map(async ({ fieldName, value }, index) => {
+    // 串行翻译每个字段，以正确显示进度
+    for (let i = 0; i < fieldsToTranslate.length; i++) {
+      const { fieldName, value } = fieldsToTranslate[i];
+      
       setTranslatingFields(prev => new Set([...prev, fieldName]));
       
-      // 更新当前正在翻译的字段
+      // 更新当前正在翻译的字段（使用友好名称）
       setTranslationProgress(prev => ({ 
         ...prev, 
-        currentField: fieldName 
+        current: i,
+        currentField: fieldDisplayNames[fieldName] || fieldName 
       }));
       
       try {
@@ -1118,16 +1143,14 @@ export default function AdminSPUPage() {
           }
         }
         
-        // 更新进度
+        // 更新完成进度
         setTranslationProgress(prev => ({ 
           ...prev, 
-          current: prev.current + 1 
+          current: i + 1
         }));
         
-        return { fieldName, success: true };
       } catch (e) {
         console.error(`Translation error for ${fieldName}:`, e);
-        return { fieldName, success: false };
       } finally {
         setTranslatingFields(prev => {
           const newSet = new Set(prev);
@@ -1135,10 +1158,7 @@ export default function AdminSPUPage() {
           return newSet;
         });
       }
-    });
-    
-    // 等待所有翻译完成
-    await Promise.all(translationPromises);
+    }
     
     // 更新临时翻译存储
     setPendingTranslations({ ...translations });
