@@ -205,29 +205,37 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             // 判断是否有子菜单
             const hasChildren = item.children && item.children.length > 0;
             
-            // 数据看板只精确匹配 /admin，其他菜单匹配前缀
+            // 数据看板只精确匹配 /admin
+            // 其他菜单：如果有子菜单，只在子菜单激活时高亮；如果没有子菜单，匹配前缀
             const isActive = item.path === '/admin' 
               ? pathname === '/admin'
-              : pathname === item.path || pathname.startsWith(item.path + '/');
+              : hasChildren 
+                ? false // 有子菜单的父级不高亮，由子菜单控制
+                : pathname === item.path || pathname.startsWith(item.path + '/');
             
-            // 判断子菜单是否有激活项
+            // 判断子菜单是否有激活项 - 精确匹配子菜单路径
             const isChildActive = item.children?.some(child => 
-              pathname === child.path || pathname.startsWith(child.path + '/')
+              pathname === child.path
             ) || false;
             
             // 是否展开子菜单
             const isExpanded = expandedMenus.includes(item.path);
             
             const handleClick = () => {
-              // 收缩状态下点击直接跳转（不展开子菜单）
+              // 收缩状态下点击，先展开侧边栏
               if (sidebarCollapsed) {
-                // 如果点击的是当前页面，触发自定义事件让页面重置状态
-                if (pathname === item.path) {
-                  window.dispatchEvent(new CustomEvent('admin-menu-click-same-path', { 
-                    detail: { path: item.path } 
-                  }));
+                setSidebarCollapsed(false);
+                localStorage.setItem('admin_sidebar_collapsed', 'false');
+                
+                // 如果有子菜单，展开子菜单
+                if (hasChildren) {
+                  setExpandedMenus(prev => 
+                    prev.includes(item.path) ? prev : [...prev, item.path]
+                  );
+                } else {
+                  // 单级菜单，跳转到对应页面
+                  router.push(item.path);
                 }
-                router.push(item.path);
                 return;
               }
               
