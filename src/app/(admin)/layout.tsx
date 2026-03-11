@@ -337,7 +337,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           : ''
       }`}>
         {/* Header */}
-        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4 lg:px-6 flex-shrink-0 z-30">
+        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-6 flex-shrink-0 z-30">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
