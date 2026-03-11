@@ -943,8 +943,21 @@ export default function AdminSPUPage() {
           syncedAt: pubchemData.pubchemSyncedAt,
         });
         
-        // 更新结构图 URL
-        if (pubchemData.structureUrl) {
+        // 更新结构图 URL - 优先使用上传到 S3 的图片
+        if (pubchemData.structureImageKey) {
+          fetch(`/api/admin/spu/image-url?key=${encodeURIComponent(pubchemData.structureImageKey)}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success && data.url) {
+                setStructureImageUrl(data.url);
+              } else {
+                setStructureImageUrl(pubchemData.structureUrl || null);
+              }
+            })
+            .catch(() => setStructureImageUrl(pubchemData.structureUrl || null));
+        } else if (pubchemData.structureUrl) {
           setStructureImageUrl(pubchemData.structureUrl);
         }
         

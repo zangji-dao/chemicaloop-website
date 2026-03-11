@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { S3Storage } from 'coze-coding-dev-sdk';
 
 // PubChem API 基础URL
 const PUBCHEM_BASE_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug';
@@ -9,6 +10,17 @@ const FETCH_TIMEOUT = 60000;
 const VIEW_TIMEOUT = 90000;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000;
+
+/**
+ * 标记无数据的字段为 "-"
+ * 用于前端区分"没有数据"和"还没有查询"
+ */
+const markEmptyField = (value: string | null | undefined): string | null => {
+  if (value === null || value === undefined || value === '') {
+    return null; // 返回 null，前端会显示为"无数据"
+  }
+  return value;
+};
 
 /**
  * 带超时和重试的 fetch 请求
@@ -529,14 +541,43 @@ async function fetchPubChemData(cas: string): Promise<PubChemData | null> {
       extractedProps = extractPubChemProperties(viewData);
     }
     
-    // 4. 获取 2D 结构图
+    // 4. 获取 2D 结构图 SVG
     let structure2dSvg: string | null = null;
     const svgResponse = await fetchWithRetry(`${PUBCHEM_BASE_URL}/compound/cid/${cid}/SVG`);
     if (svgResponse) {
       structure2dSvg = await svgResponse.text();
     }
     
-    // 5. 组装完整数据
+    // 5. 获取 PNG 结构图并上传到对象存储（避免 PubChem IP 被封）
+    let structureImageKey: string | null = null;
+    try {
+      const pngUrl = `${PUBCHEM_BASE_URL}/compound/cid/${cid}/PNG`;
+      const pngResponse = await fetchWithRetry(pngUrl, MAX_RETRIES, FETCH_TIMEOUT);
+      
+      if (pngResponse && pngResponse.ok) {
+        const pngBuffer = Buffer.from(await pngResponse.arrayBuffer());
+        
+        const storage = new S3Storage({
+          endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
+          accessKey: '',
+          secretKey: '',
+          bucketName: process.env.COZE_BUCKET_NAME,
+          region: 'cn-beijing',
+        });
+        
+        const fileName = `structure-images/${cid}_${Date.now()}.png`;
+        structureImageKey = await storage.uploadFile({
+          fileContent: pngBuffer,
+          fileName,
+          contentType: 'image/png',
+        });
+        console.log(`[FetchPubChem] Uploaded structure image for CID ${cid}: ${structureImageKey}`);
+      }
+    } catch (uploadError) {
+      console.error(`[FetchPubChem] Failed to upload structure image for CID ${cid}:`, uploadError);
+    }
+    
+    // 6. 组装完整数据（标记无数据字段为 "-"）
     const result: PubChemData = {
       cid,
       formula: props.MolecularFormula || null,
@@ -555,9 +596,31 @@ async function fetchPubChemData(cas: string): Promise<PubChemData | null> {
       rotatableBondCount: props.RotatableBondCount || null,
       heavyAtomCount: props.HeavyAtomCount || null,
       formalCharge: props.Charge || null,
-      structureUrl: `https://pubchem.ncbi.nlm.nih.gov/image/imgsrv.fcgi?cid=${cid}&t=l`,
+      structureUrl: structureImageKey ? null : `https://pubchem.ncbi.nlm.nih.gov/image/imgsrv.fcgi?cid=${cid}&t=l`,
+      structureImageKey,
       structure2dSvg,
-      ...extractedProps,
+      // 使用 markEmptyField 标记无数据字段
+      description: markEmptyField(extractedProps.description),
+      physicalDescription: markEmptyField(extractedProps.physicalDescription),
+      colorForm: markEmptyField(extractedProps.colorForm),
+      odor: markEmptyField(extractedProps.odor),
+      boilingPoint: markEmptyField(extractedProps.boilingPoint),
+      meltingPoint: markEmptyField(extractedProps.meltingPoint),
+      flashPoint: markEmptyField(extractedProps.flashPoint),
+      density: markEmptyField(extractedProps.density),
+      solubility: markEmptyField(extractedProps.solubility),
+      vaporPressure: markEmptyField(extractedProps.vaporPressure),
+      refractiveIndex: markEmptyField(extractedProps.refractiveIndex),
+      hazardClasses: markEmptyField(extractedProps.hazardClasses),
+      healthHazards: markEmptyField(extractedProps.healthHazards),
+      ghsClassification: markEmptyField(extractedProps.ghsClassification),
+      toxicitySummary: markEmptyField(extractedProps.toxicitySummary),
+      carcinogenicity: markEmptyField(extractedProps.carcinogenicity),
+      firstAid: markEmptyField(extractedProps.firstAid),
+      storageConditions: markEmptyField(extractedProps.storageConditions),
+      incompatibleMaterials: markEmptyField(extractedProps.incompatibleMaterials),
+      synonyms: extractedProps.synonyms,
+      applications: extractedProps.applications,
     };
     
     return result;
@@ -645,6 +708,7 @@ export async function POST(request: NextRequest) {
         applications: pubchemData.applications,
         // 结构图
         structureUrl: pubchemData.structureUrl,
+        structureImageKey: pubchemData.structureImageKey,
         structure2dSvg: pubchemData.structure2dSvg,
       },
     });
