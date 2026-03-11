@@ -1447,8 +1447,10 @@ export default function AdminSPUPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className={`bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white ${viewMode === 'edit' ? 'h-full' : 'min-h-screen p-6'}`}>
+      {/* 列表视图 */}
+      {viewMode === 'list' && (
+        <div className="max-w-7xl mx-auto">
         {/* 页面标题 */}
         <div className="mb-6 flex items-center justify-between">
           <div>
@@ -1728,6 +1730,7 @@ export default function AdminSPUPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* 编辑面板 - 主内容区域内 */}
       {viewMode === 'edit' && (
