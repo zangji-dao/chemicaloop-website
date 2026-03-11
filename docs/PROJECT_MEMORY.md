@@ -28,6 +28,67 @@ CHEMICALOOP 是一个 AI 驱动的化工外贸工作流平台，利用 AI 能力
 | `AGENT` | Level 4 | 平台贸易代理，上架产品、接收询盘 |
 | `USER` | Level 5 | 普通用户，浏览产品、发起询盘 |
 
+### UI 设计风格
+
+#### 前端用户端（WWW）- 明亮蓝色系
+
+| 设计元素 | 规范 |
+|----------|------|
+| **主题色** | Blue-600 (`oklch(0.45 0.18 250)`) |
+| **背景** | 白色为主，浅灰辅助 |
+| **圆角** | 0.625rem (10px) |
+| **字体** | Inter + 系统字体回退，支持中日韩文字 |
+| **布局** | 全屏 Hero Banner + 响应式卡片 |
+| **交互** | 渐变遮罩、淡入动画、轮播控制 |
+
+**核心组件风格**：
+```tsx
+// 按钮
+className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg"
+
+// 卡片
+className="bg-white rounded-xl shadow-sm border border-slate-100"
+
+// 输入框
+className="bg-white border border-slate-200 rounded-lg focus:ring-blue-500"
+```
+
+#### 管理后台（Admin）- 深色 Slate 系
+
+| 设计元素 | 规范 |
+|----------|------|
+| **主题色** | Blue-600（激活状态） |
+| **背景** | Slate-900（主背景）、Slate-800（侧边栏/头部） |
+| **文字** | 白色（主标题）、Slate-300（正文）、Slate-400（次要） |
+| **边框** | Slate-700 |
+| **圆角** | 8px (rounded-lg) |
+| **布局** | 固定侧边栏 + 可折叠子菜单 |
+
+**核心组件风格**：
+```tsx
+// 侧边栏菜单项（激活）
+className="bg-blue-600 text-white rounded-lg"
+
+// 侧边栏菜单项（未激活）
+className="text-slate-300 hover:bg-slate-700 hover:text-white rounded-lg"
+
+// Header
+className="bg-slate-800 border-b border-slate-700"
+
+// 按钮
+className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+```
+
+#### 设计一致性原则
+
+| 规则 | 说明 |
+|------|------|
+| 圆角统一 | 统一使用 `rounded-lg` (8px)，卡片可用 `rounded-xl` (12px) |
+| 间距规范 | 页面内边距 `p-4`，组件间距 `gap-4`，表单项间距 `space-y-4` |
+| 状态颜色 | 成功 `green-*`、警告 `yellow-*`、错误 `red-*`、信息 `blue-*` |
+| 过渡动画 | 统一使用 `transition-colors`，过渡时间默认 150ms |
+| 响应式 | 移动优先，断点：`sm:640px`、`md:768px`、`lg:1024px`、`xl:1280px` |
+
 ---
 
 ## 2. 项目技术架构
