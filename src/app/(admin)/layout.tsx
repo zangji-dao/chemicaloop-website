@@ -257,17 +257,13 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   className={`w-full flex items-center gap-3 rounded-lg transition-colors ${
                     sidebarCollapsed ? 'px-3 py-2.5 justify-center' : 'px-3 py-2.5'
                   } ${
-                    hasChildren && !sidebarCollapsed ? 'justify-between' : ''
-                  } ${
-                    !hasChildren && !sidebarCollapsed ? 'justify-start' : ''
-                  } ${
                     (hasChildren ? isChildActive : isActive)
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-300 hover:bg-slate-700 hover:text-white'
                   }`}
                 >
-                  <item.icon className={`h-5 w-5 flex-shrink-0 ${sidebarCollapsed ? '' : ''}`} />
-                  <span className={`whitespace-nowrap transition-all duration-200 ${
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  <span className={`whitespace-nowrap flex-1 text-left transition-all duration-200 ${
                     sidebarCollapsed ? 'hidden w-0' : ''
                   }`}>{item.label}</span>
                   {hasChildren && !sidebarCollapsed && (
