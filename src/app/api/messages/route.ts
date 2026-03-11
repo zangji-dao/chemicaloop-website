@@ -1,34 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// 辅助函数：从 JWT token 中提取用户 ID
-function getUserIdFromToken(request: NextRequest): string | null {
-  try {
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
-
-    if (!token) {
-      return null;
-    }
-
-    // 解码 JWT token（不验证签名，仅提取用户信息）
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      return null;
-    }
-
-    // 解码 payload（base64url 编码）
-    const payload = parts[1];
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const paddedBase64 = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
-    const decodedPayload = JSON.parse(Buffer.from(paddedBase64, 'base64').toString('utf-8'));
-
-    // 从 token 中提取用户 ID
-    return decodedPayload.userId || decodedPayload.sub || null;
-  } catch (error) {
-    console.error('Failed to decode token:', error);
-    return null;
-  }
-}
+import { getUserIdFromRequest } from '@/lib/auth';
 
 // 辅助函数：代理请求到后端
 async function proxyToBackend(request: NextRequest, userId: string): Promise<NextResponse> {
@@ -56,7 +27,7 @@ async function proxyToBackend(request: NextRequest, userId: string): Promise<Nex
 
 // GET /api/messages - 获取消息列表（代理到后端）
 export async function GET(request: NextRequest) {
-  const userId = getUserIdFromToken(request);
+  const userId = getUserIdFromRequest(request);
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -66,7 +37,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/messages - 创建消息（代理到后端）
 export async function POST(request: NextRequest) {
-  const userId = getUserIdFromToken(request);
+  const userId = getUserIdFromRequest(request);
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

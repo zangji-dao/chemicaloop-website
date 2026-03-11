@@ -20,6 +20,18 @@ export interface AuthError {
 export type AuthResponse = AuthResult | AuthError;
 
 /**
+ * 从请求头提取 Token（不验证）
+ * 用于需要转发 token 到后端的场景
+ */
+export function getToken(request: NextRequest): string | null {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader) return null;
+  
+  const token = authHeader.replace('Bearer ', '');
+  return token || null;
+}
+
+/**
  * 基础验证：验证 token 是否有效
  * 返回用户 ID 和角色
  */

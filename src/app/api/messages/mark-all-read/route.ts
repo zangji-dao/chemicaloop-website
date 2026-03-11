@@ -1,24 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-function getUserIdFromToken(request: NextRequest): string | null {
-  try {
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
-    if (!token) return null;
-
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-
-    const payload = parts[1];
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const paddedBase64 = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
-    const decodedPayload = JSON.parse(Buffer.from(paddedBase64, 'base64').toString('utf-8'));
-
-    return decodedPayload.userId || decodedPayload.sub || null;
-  } catch {
-    return null;
-  }
-}
+import { getUserIdFromRequest } from '@/lib/auth';
 
 async function proxyToBackend(request: NextRequest, userId: string): Promise<NextResponse> {
   const url = new URL(request.url);
@@ -51,7 +32,7 @@ async function proxyToBackend(request: NextRequest, userId: string): Promise<Nex
 
 // POST /api/messages/mark-all-read - 标记所有消息为已读
 export async function POST(request: NextRequest) {
-  const userId = getUserIdFromToken(request);
+  const userId = getUserIdFromRequest(request);
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

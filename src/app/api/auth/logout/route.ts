@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from '@/lib/auth';
 
 /**
  * 用户登出
@@ -7,9 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(request: NextRequest) {
   try {
-    // 从请求头中获取 token
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
+    const token = getToken(request);
 
     // 临时实现：不做任何处理，直接返回成功
     // TODO: 将 token 加入黑名单或清除服务器端会话

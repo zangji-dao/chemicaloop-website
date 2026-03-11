@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from '@/lib/auth';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
@@ -7,9 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { newEmail, code } = body;
     
-    // 从header获取token
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
+    const token = getToken(request);
 
     if (!token) {
       return NextResponse.json(
