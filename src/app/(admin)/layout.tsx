@@ -262,9 +262,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <div className={`${sidebarOpen ? 'lg:ml-64' : ''}`}>
+      <div className={`${sidebarOpen ? 'lg:ml-64' : ''} h-screen flex flex-col overflow-hidden`}>
         {/* Header */}
-        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4 sticky top-0 z-30">
+        <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4 flex-shrink-0 z-30">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -305,7 +305,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
 
       {/* Overlay for mobile */}
