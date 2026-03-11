@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 // Get all users
 export async function GET(request: NextRequest) {
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
     if (search) params.append('search', search);
     if (role) params.append('role', role);
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/users?${params}`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/admin/users?${params}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

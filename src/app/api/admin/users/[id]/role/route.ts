@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 export async function PUT(
   request: NextRequest,
@@ -15,7 +14,7 @@ export async function PUT(
       return NextResponse.json({ error: '未授权' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/users/${id}/role`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/admin/users/${id}/role`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

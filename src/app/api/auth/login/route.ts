@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 /**
  * 用户登录
@@ -20,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 转发请求到后端 API
-    const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 /**
  * 发送外网邮件
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 转发请求到后端
-    const response = await fetch(`${BACKEND_URL}/api/email-settings/send`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/email-settings/send`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

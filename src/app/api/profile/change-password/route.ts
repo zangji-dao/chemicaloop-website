@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 调用后端API修改密码
-    const response = await fetch(`${BACKEND_URL}/api/auth/change-password`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/change-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

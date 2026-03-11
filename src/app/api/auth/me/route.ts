@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 /**
  * 获取当前用户信息
@@ -19,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 转发请求到后端 API
-    const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/me`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

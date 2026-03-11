@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +9,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '未授权' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/stats`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/admin/stats`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

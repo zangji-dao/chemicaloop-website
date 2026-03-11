@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 调用后端登录接口
-    const response = await fetch(`${BACKEND_URL}/api/admin/login`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/admin/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),

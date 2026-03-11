@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserIdFromToken } from '@/lib/tokenUtils';
+import { API_CONFIG } from '@/config/api';
 
 // 辅助函数：代理请求到后端
 async function proxyToBackend(request: NextRequest, userId: string): Promise<NextResponse> {
   const url = new URL(request.url);
-  const backendUrl = `http://localhost:3001${url.pathname}${url.search}`;
+  const backendUrl = `${API_CONFIG.backendURL}${url.pathname}${url.search}`;
 
   // 只传递必要的 headers
   const allowedHeaders = ['content-type', 'authorization', 'x-user-id'];

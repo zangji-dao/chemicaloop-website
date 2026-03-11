@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 /**
  * 检查邮箱是否可用
@@ -12,7 +11,7 @@ export async function POST(request: NextRequest) {
     const { email } = body;
 
     // 转发请求到后端 API
-    const response = await fetch(`${BACKEND_URL}/api/auth/check-email`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/check-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

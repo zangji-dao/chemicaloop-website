@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 /**
  * 测试邮箱连接
@@ -20,7 +19,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // 转发请求到后端
-    const response = await fetch(`${BACKEND_URL}/api/email-settings/test`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/email-settings/test`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

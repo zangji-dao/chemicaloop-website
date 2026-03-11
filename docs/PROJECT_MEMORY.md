@@ -150,10 +150,26 @@ const authHeader = request.headers.get('authorization');
 const token = authHeader?.replace('Bearer ', '');
 ```
 
+#### API Route 后端地址
+- **禁止**在 API Route 中重复定义后端地址或硬编码
+- **必须**使用 `src/config/api.ts` 提供的配置：
+  - `API_CONFIG.backendURL` — 后端服务地址（不带 /api 后缀）
+  - `API_CONFIG.baseURL` — API 基础地址（带 /api 后缀）
+
+```typescript
+// ✅ 正确
+import { API_CONFIG } from '@/config/api';
+const response = await fetch(`${API_CONFIG.backendURL}/api/auth/login`, ...);
+
+// ❌ 错误（禁止重复）
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+const backendUrl = `http://localhost:3001/api/...`;
+```
+
 #### 待统一项（后续优化）
 | 问题 | 现状 | 建议 |
 |------|------|------|
-| BACKEND_URL | 18+ 处重复定义 | 使用 `src/config/api.ts` |
+| ~~BACKEND_URL~~ | ~~18+ 处重复定义~~ | ✅ 已统一使用 `API_CONFIG.backendURL` |
 | 后端角色判断 | 10 处重复 | 创建 `adminOnlyMiddleware` |
 | 前端 localStorage | 25+ 处直接访问 | 使用 `authService.getToken()` |
 

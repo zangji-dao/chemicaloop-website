@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyUser, unauthorizedResponse } from '@/lib/auth';
+import { API_CONFIG } from '@/config/api';
 
 /**
  * 发送询价站内信
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 获取当前用户信息
-    const senderResponse = await fetch(`${process.env.BACKEND_URL || 'http://localhost:3001'}/api/profile/${userId}`, {
+    const senderResponse = await fetch(`${API_CONFIG.backendURL}/api/profile/${userId}`, {
       headers: {
         'X-User-ID': userId,
       },
@@ -60,7 +61,7 @@ ${message || '无'}
     `.trim();
 
     // 代理请求到后端创建消息
-    const backendResponse = await fetch(`${process.env.BACKEND_URL || 'http://localhost:3001'}/api/messages`, {
+    const backendResponse = await fetch(`${API_CONFIG.backendURL}/api/messages`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

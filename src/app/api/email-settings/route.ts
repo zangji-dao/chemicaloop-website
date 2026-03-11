@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+import { API_CONFIG } from '@/config/api';
 
 /**
  * 获取邮箱配置
@@ -18,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 转发请求到后端
-    const response = await fetch(`${BACKEND_URL}/api/email-settings`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/email-settings`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -67,7 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 转发请求到后端
-    const response = await fetch(`${BACKEND_URL}/api/email-settings`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/email-settings`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

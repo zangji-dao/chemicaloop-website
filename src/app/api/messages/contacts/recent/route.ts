@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserIdFromToken } from '@/lib/tokenUtils';
+import { API_CONFIG } from '@/config/api';
 
 // GET /api/messages/contacts/recent - 获取最近联系人
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   const url = new URL(request.url);
   const limit = url.searchParams.get('limit') || '10';
-  const backendUrl = `http://localhost:3001/api/messages/contacts/recent?limit=${limit}`;
+  const backendUrl = `${API_CONFIG.backendURL}/api/messages/contacts/recent?limit=${limit}`;
 
   try {
     const response = await fetch(backendUrl, {

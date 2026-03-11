@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_CONFIG } from '@/config/api';
 
 /**
  * GET /api/profile/[userId]
@@ -10,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { userId } = await params;
-    const backendUrl = `http://localhost:3001/api/profile/${userId}`;
+    const backendUrl = `${API_CONFIG.backendURL}/api/profile/${userId}`;
     
     // 获取认证头
     const authHeader = request.headers.get('authorization');
