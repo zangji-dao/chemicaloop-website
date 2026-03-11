@@ -8,6 +8,7 @@ import AuthModal from '@/components/AuthModal';
 import ComposeMessage from '@/components/ComposeMessage';
 import IMContactButtons from '@/components/IMContactButtons';
 import { useAuth } from '@/hooks/useAuth';
+import { getToken } from '@/services/authService';
 import EmailSettingsContent from './email-settings-content';
 import {
   Inbox,
@@ -209,7 +210,7 @@ export default function MessagesPage() {
       if (!isLoggedIn || !user?.id) return;
       
       try {
-        const token = localStorage.getItem('auth_token');
+        const token = getToken();
         
         // 并行加载联系人和未读数量
         const [countsRes, receivedRes, sentRes, membersRes] = await Promise.all([
@@ -366,7 +367,7 @@ export default function MessagesPage() {
         }, 300);
         
         try {
-          const token = localStorage.getItem('auth_token');
+          const token = getToken();
           const folder = activeTab === 'inbox' ? 'inbox' : 'sent';
           
           // 调用批量同步API
@@ -411,7 +412,7 @@ export default function MessagesPage() {
         setRefreshProgress(20);
         
         // 加载联系人请求和成员
-        const token = localStorage.getItem('auth_token');
+        const token = getToken();
         const [receivedRes, sentRes, membersRes] = await Promise.all([
           fetch('/api/contact-requests?role=receiver&status=pending', {
             headers: { 'Authorization': `Bearer ${token}` },
@@ -528,7 +529,7 @@ export default function MessagesPage() {
 
   // 辅助函数：带认证的 fetch 请求
   const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    const token = localStorage.getItem('auth_token');
+    const token = getToken();
 
     // 如果 token 已经包含 "Bearer " 前缀，则不再添加
     const authHeader = token?.startsWith('Bearer ')
@@ -943,7 +944,7 @@ export default function MessagesPage() {
     }
 
     console.log('[markAsRead] Starting for message:', messageId);
-    const token = localStorage.getItem('auth_token');
+    const token = getToken();
     console.log('[markAsRead] Token exists:', !!token);
 
     try {
@@ -1049,7 +1050,7 @@ export default function MessagesPage() {
   // 加载最近联系人
   const loadRecentContacts = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch('/api/messages/contacts/recent?limit=20', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1067,7 +1068,7 @@ export default function MessagesPage() {
   // 加载邮箱账户列表
   const loadEmailAccounts = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch('/api/email-settings', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1181,7 +1182,7 @@ export default function MessagesPage() {
     if (!confirmed) return;
     
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch(`/api/contact-requests?id=${request.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
@@ -1786,7 +1787,7 @@ export default function MessagesPage() {
         const bccEmails = composeBcc.split(/[;,]/).map(e => e.trim()).filter(e => e);
 
         try {
-          const token = localStorage.getItem('auth_token');
+          const token = getToken();
           const response = await fetch('/api/email-settings/send', {
             method: 'POST',
             headers: {
@@ -2546,7 +2547,7 @@ export default function MessagesPage() {
                             <button
                               onClick={async () => {
                                 try {
-                                  const token = localStorage.getItem('auth_token');
+                                  const token = getToken();
                                   const response = await fetch(`/api/contact-requests?id=${request.id}&action=accept`, {
                                     method: 'PUT',
                                     headers: { 'Authorization': `Bearer ${token}` },
@@ -2577,7 +2578,7 @@ export default function MessagesPage() {
                             <button
                               onClick={async () => {
                                 try {
-                                  const token = localStorage.getItem('auth_token');
+                                  const token = getToken();
                                   const response = await fetch(`/api/contact-requests?id=${request.id}&action=reject`, {
                                     method: 'PUT',
                                     headers: { 'Authorization': `Bearer ${token}` },
@@ -3330,7 +3331,7 @@ export default function MessagesPage() {
                       toast.success(t('inquirySentSuccess'));
                     } else {
                       // 外网邮件
-                      const token = localStorage.getItem('auth_token');
+                      const token = getToken();
                       const response = await fetch('/api/email-settings/send', {
                         method: 'POST',
                         headers: {

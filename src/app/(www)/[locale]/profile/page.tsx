@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import AuthModal from '@/components/AuthModal';
 import { useToast } from '@/components/ui/Toast';
 import { ContactCard } from '@/components/ContactCard';
+import { getToken } from '@/services/authService';
 import type { AddressData } from '@/components/AddressPicker';
 import { saveUser } from '@/services/authService';
 import {
@@ -292,7 +293,7 @@ function ProfileContent({ user, locale }: { user: any; locale: string }) {
 
   const loadProfile = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       if (!token) return;
 
       const response = await fetch('/api/profile', {
@@ -377,7 +378,7 @@ function ProfileContent({ user, locale }: { user: any; locale: string }) {
     setLoading(true);
     setUsernameError('');
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch('/api/profile/set-username', {
         method: 'POST',
         headers: {
@@ -444,7 +445,7 @@ function ProfileContent({ user, locale }: { user: any; locale: string }) {
     if (newAddress.formatted) {
       setLoading(true);
       try {
-        const token = localStorage.getItem('auth_token');
+        const token = getToken();
         const response = await fetch('/api/profile', {
           method: 'PUT',
           headers: {
@@ -478,7 +479,7 @@ function ProfileContent({ user, locale }: { user: any; locale: string }) {
   // 保存单个通讯方式
   const handleSaveSingleContact = async (id: string, value: string): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch('/api/profile', {
         method: 'PUT',
         headers: {
@@ -681,7 +682,7 @@ function SecurityContent({ user }: { user: any }) {
   
   const loadProfile = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       if (!token) return;
       
       const response = await fetch('/api/profile', {
@@ -759,7 +760,7 @@ function SecurityContent({ user }: { user: any }) {
     setEmailError('');
     
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch('/api/profile/change-email', {
         method: 'POST',
         headers: {
@@ -808,7 +809,7 @@ function SecurityContent({ user }: { user: any }) {
     setPasswordError('');
     
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch('/api/profile/change-password', {
         method: 'POST',
         headers: {
@@ -1109,7 +1110,7 @@ function AgentHallContent({ user }: { user: any }) {
   const loadAgentInfo = async () => {
     setAgentInfoLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch(`/api/profile/${user.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1147,7 +1148,7 @@ function AgentHallContent({ user }: { user: any }) {
   const saveAgentInfo = async () => {
     setAgentInfoSaving(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch('/api/agent/info', {
         method: 'PUT',
         headers: {
@@ -1175,7 +1176,7 @@ function AgentHallContent({ user }: { user: any }) {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch('/api/agent/products', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1202,7 +1203,7 @@ function AgentHallContent({ user }: { user: any }) {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const url = editingProduct 
         ? `/api/agent/products/${editingProduct.id}`
         : '/api/agent/products';
@@ -1251,7 +1252,7 @@ function AgentHallContent({ user }: { user: any }) {
     if (!confirm('确定要删除这个产品吗？')) return;
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch(`/api/agent/products/${productId}`, {
         method: 'DELETE',
         headers: {
@@ -1274,7 +1275,7 @@ function AgentHallContent({ user }: { user: any }) {
   // 切换上下架状态
   const toggleProductStatus = async (productId: string) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch(`/api/agent/products/${productId}`, {
         method: 'PATCH',
         headers: {
@@ -1295,7 +1296,7 @@ function AgentHallContent({ user }: { user: any }) {
   // 重新提交审核
   const resubmitProduct = async (productId: string) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch(`/api/agent/products/${productId}/resubmit`, {
         method: 'POST',
         headers: {
@@ -1992,7 +1993,7 @@ function AgentHallContent({ user }: { user: any }) {
 
                   setInquirySending(true);
                   try {
-                    const token = localStorage.getItem('auth_token');
+                    const token = getToken();
                     const response = await fetch('/api/inquiries/send', {
                       method: 'POST',
                       headers: {

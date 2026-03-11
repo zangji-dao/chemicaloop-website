@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getAdminToken, getAdminUser } from '@/services/adminAuthService';
 import {
   Users,
   Package,
@@ -56,16 +57,16 @@ export default function AdminDashboard() {
   const [user, setUser] = useState<AdminUser | null>(null);
 
   useEffect(() => {
-    const userData = localStorage.getItem('admin_user');
+    const userData = getAdminUser();
     if (userData) {
-      setUser(JSON.parse(userData));
+      setUser(userData);
     }
     fetchStats();
   }, []);
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const response = await fetch('/api/admin/stats', {
         headers: {
           Authorization: `Bearer ${token}`,

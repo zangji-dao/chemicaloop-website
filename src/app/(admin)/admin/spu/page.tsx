@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
+import { getAdminToken } from '@/services/adminAuthService';
 
 interface SPUItem {
   id: string;
@@ -445,7 +446,7 @@ export default function AdminSPUPage() {
   const fetchSPUList = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const params = new URLSearchParams({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
@@ -616,7 +617,7 @@ export default function AdminSPUPage() {
     // 设置图片 URL - 优先使用存储的结构图
     if (spu.structure_image_key) {
       // 有存储的结构图，获取签名 URL
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       fetch(`/api/admin/spu/image-url?key=${encodeURIComponent(spu.structure_image_key)}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -640,7 +641,7 @@ export default function AdminSPUPage() {
     
     // 如果有产品图，获取签名 URL
     if (spu.product_image_key) {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       fetch(`/api/admin/spu/image-url?key=${encodeURIComponent(spu.product_image_key)}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -680,7 +681,7 @@ export default function AdminSPUPage() {
     
     setGeneratingImage(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const response = await fetch('/api/admin/products/generate-image', {
         method: 'POST',
         headers: {
@@ -847,7 +848,7 @@ export default function AdminSPUPage() {
     });
     
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       
       // 步骤1：检测 PubChem 连接
       const connectionResponse = await fetch('/api/admin/spu/check-pubchem-connection', {
@@ -1244,7 +1245,7 @@ export default function AdminSPUPage() {
     const allLanguages = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'ru', 'pt', 'ar'];
     const currentLang = allLanguages.includes(locale) ? locale : 'en';
     const targetLanguages = allLanguages.filter(l => l !== currentLang);
-    const token = localStorage.getItem('admin_token');
+    const token = getAdminToken();
 
     // 可翻译字段列表
     const translatableFields = [
@@ -1494,7 +1495,7 @@ export default function AdminSPUPage() {
       confirmMsg,
       async () => {
         try {
-          const token = localStorage.getItem('admin_token');
+          const token = getAdminToken();
           const response = await fetch(`/api/admin/spu?id=${spu.id}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
@@ -1526,7 +1527,7 @@ export default function AdminSPUPage() {
     
     showConfirm(confirmTitle, confirmMsg, async () => {
       try {
-        const token = localStorage.getItem('admin_token');
+        const token = getAdminToken();
         const response = await fetch('/api/admin/spu', {
           method: 'PUT',
           headers: {

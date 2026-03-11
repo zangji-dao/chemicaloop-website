@@ -190,13 +190,42 @@ router.get('/users', authMiddleware, async (req, res) => {
 });
 ```
 
+#### 前端 Token 管理
+- **禁止**在前端组件中直接访问 localStorage 获取 token
+- **必须**使用统一的服务：
+  - 前端用户系统：`src/services/authService.ts`
+    - `getToken()` — 获取用户 token
+    - `saveToken(token)` — 保存 token
+    - `getUser()` — 获取用户信息
+    - `saveUser(user)` — 保存用户信息
+    - `clearAuth()` — 清除认证信息
+  - 管理后台系统：`src/services/adminAuthService.ts`
+    - `getAdminToken()` — 获取管理员 token
+    - `getAdminUser()` — 获取管理员信息
+    - `saveAdminAuth(token, user)` — 保存认证信息
+    - `clearAdminAuth()` — 清除认证信息
+
+```typescript
+// ✅ 正确（前端用户系统）
+import { getToken } from '@/services/authService';
+const token = getToken();
+
+// ✅ 正确（管理后台）
+import { getAdminToken } from '@/services/adminAuthService';
+const token = getAdminToken();
+
+// ❌ 错误（禁止直接访问）
+const token = localStorage.getItem('auth_token');
+const token = localStorage.getItem('admin_token');
+```
+
 #### 已统一项
 
 | 问题 | 现状 | 建议 |
 |------|------|------|
 | ~~BACKEND_URL~~ | ~~18+ 处重复定义~~ | ✅ 已统一使用 `API_CONFIG.backendURL` |
 | ~~后端角色判断~~ | ~~10 处重复~~ | ✅ 已创建 `adminOnlyMiddleware` |
-| 前端 localStorage | 25+ 处直接访问 | 使用 `authService.getToken()` |
+| ~~前端 localStorage~~ | ~~25+ 处直接访问~~ | ✅ 已统一使用 authService/adminAuthService |
 
 ---
 

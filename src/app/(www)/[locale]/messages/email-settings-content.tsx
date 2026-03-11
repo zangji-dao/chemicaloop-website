@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { getToken } from '@/services/authService';
 import {
   Mail,
   Lock,
@@ -136,7 +137,7 @@ export default function EmailSettingsContent({ locale, t }: EmailSettingsContent
   const loadEmailAccounts = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       if (!token) {
         setIsLoading(false);
         return;
@@ -244,7 +245,7 @@ export default function EmailSettingsContent({ locale, t }: EmailSettingsContent
     setSaveSuccess(false);
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const url = editingAccountId 
         ? `/api/email-settings/${editingAccountId}`
         : '/api/email-settings';
@@ -315,7 +316,7 @@ export default function EmailSettingsContent({ locale, t }: EmailSettingsContent
     setTestResult(null);
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       
       // 如果是编辑模式，使用该账户ID进行测试
       const url = editingAccountId 
@@ -362,7 +363,7 @@ export default function EmailSettingsContent({ locale, t }: EmailSettingsContent
     if (!confirm(t('emailSettings.confirmDelete'))) return;
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch(`/api/email-settings/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
@@ -382,7 +383,7 @@ export default function EmailSettingsContent({ locale, t }: EmailSettingsContent
 
   const handleSetDefault = async (id: string) => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch(`/api/email-settings/${id}/set-default`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
@@ -405,7 +406,7 @@ export default function EmailSettingsContent({ locale, t }: EmailSettingsContent
     setSyncResults(prev => ({ ...prev, [id]: { success: false, message: '' } }));
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const response = await fetch(`/api/email-settings/${id}/sync`, {
         method: 'POST',
         headers: {

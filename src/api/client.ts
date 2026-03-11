@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { API_CONFIG } from '@/config/api';
+import { getToken, clearAuth } from '@/services/authService';
 
 export const apiClient = axios.create({
   baseURL: API_CONFIG.baseURL,
@@ -10,7 +11,7 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token');
+  const token = getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -21,7 +22,7 @@ apiClient.interceptors.response.use(
   (response) => response.data,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token');
+      clearAuth();
       if (typeof window !== 'undefined') {
         window.location.href = '/auth/login';
       }

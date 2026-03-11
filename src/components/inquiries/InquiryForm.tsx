@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Send, X, Package, Mail, Phone, MessageSquare } from 'lucide-react';
+import { getToken } from '@/services/authService';
 
 interface InquiryFormProps {
   productId: string;
@@ -27,7 +28,7 @@ export default function InquiryForm({ productId, productName, onClose }: Inquiry
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Authorization': `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
           productId,

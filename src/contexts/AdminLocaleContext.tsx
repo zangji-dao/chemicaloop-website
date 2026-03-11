@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { AdminLocale, adminDefaultLocale, adminLocales, adminLocaleNames, adminTranslations } from '@/lib/admin-i18n';
+import { getAdminToken } from '@/services/adminAuthService';
 
 interface AdminLocaleContextType {
   locale: AdminLocale;
@@ -75,7 +76,7 @@ export function AdminLocaleProvider({ children }: { children: React.ReactNode })
   // 翻译产品字段
   const translateProduct = useCallback(async (productId: string, fields?: ('name' | 'remark' | 'origin')[]) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const response = await fetch('/api/admin/products/translate', {
         method: 'POST',
         headers: {

@@ -17,6 +17,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
+import { getAdminToken } from '@/services/adminAuthService';
 
 // 获取翻译后的字段值
 function getTranslatedField(
@@ -154,7 +155,7 @@ export default function AdminProductsPage() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('admin_token');
+        const token = getAdminToken();
         const params = new URLSearchParams({
           page: '1',
           limit: '20',
@@ -183,7 +184,7 @@ export default function AdminProductsPage() {
 
       // Fetch stats
       try {
-        const token = localStorage.getItem('admin_token');
+        const token = getAdminToken();
         const response = await fetch('/api/admin/products/stats', {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -217,7 +218,7 @@ export default function AdminProductsPage() {
 
     // 异步翻译（不阻塞UI）
     const translateProducts = async () => {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       
       // 只翻译前5个产品，避免一次性太多请求
       const toTranslate = productsNeedingTranslation.slice(0, 5);
@@ -255,7 +256,7 @@ export default function AdminProductsPage() {
   };
 
   const reloadData = async () => {
-    const token = localStorage.getItem('admin_token');
+    const token = getAdminToken();
     
     // Fetch products
     setLoading(true);
@@ -302,7 +303,7 @@ export default function AdminProductsPage() {
     setReviewDetail(null);
 
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       
       // 快速获取产品信息
       const response = await fetch(`/api/admin/products/${productId}/review`, {
@@ -389,7 +390,7 @@ export default function AdminProductsPage() {
 
     setUpdating(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const response = await fetch(`/api/admin/products/${reviewDetail.product.id}/review`, {
         method: 'POST',
         headers: {
@@ -431,7 +432,7 @@ export default function AdminProductsPage() {
     } : prev);
 
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const response = await fetch(`/api/admin/products/generate-image`, {
         method: 'POST',
         headers: {
@@ -482,7 +483,7 @@ export default function AdminProductsPage() {
   const handleUpdateStatus = async (id: string, status: string, note?: string) => {
     setUpdating(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const response = await fetch(`/api/admin/products/${id}/status`, {
         method: 'PUT',
         headers: {
@@ -516,7 +517,7 @@ export default function AdminProductsPage() {
 
     setUpdating(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const response = await fetch('/api/admin/products/batch-status', {
         method: 'PUT',
         headers: {

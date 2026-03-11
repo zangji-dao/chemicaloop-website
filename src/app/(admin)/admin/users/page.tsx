@@ -20,6 +20,7 @@ import {
   X,
   Loader2,
 } from 'lucide-react';
+import { getAdminToken } from '@/services/adminAuthService';
 
 interface UserItem {
   id: string;
@@ -74,7 +75,7 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const params = new URLSearchParams({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
@@ -110,7 +111,7 @@ export default function AdminUsersPage() {
   const handleRoleChange = async (userId: string, newRole: string) => {
     setUpdating(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const response = await fetch(`/api/admin/users/${userId}/role`, {
         method: 'PUT',
         headers: {

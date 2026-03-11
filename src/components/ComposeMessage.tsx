@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { getToken } from '@/services/authService';
 import {
   Send,
   FileText,
@@ -156,7 +157,7 @@ export default function ComposeMessage({
   useEffect(() => {
     const loadEmailAccounts = async () => {
       try {
-        const token = localStorage.getItem('auth_token');
+        const token = getToken();
         if (!token) {
           setLoadingEmailAccounts(false);
           return;
@@ -211,7 +212,7 @@ export default function ComposeMessage({
       }
 
       try {
-        const token = localStorage.getItem('auth_token');
+        const token = getToken();
         if (!token) return;
 
         // 并行获取发送者资料和联系人状态
@@ -1222,7 +1223,7 @@ export default function ComposeMessage({
 
 // 辅助函数 - 需要从外部传入或全局定义
 async function getUploadConfig() {
-  const token = localStorage.getItem('auth_token');
+  const token = getToken();
   const response = await fetch('/api/messages/upload', {
     headers: { 'Authorization': `Bearer ${token}` },
   });

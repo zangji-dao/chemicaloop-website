@@ -1,4 +1,6 @@
 // 消息服务 API
+import { getToken } from './authService';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 export type MessageFolder = 'inbox' | 'sent' | 'drafts' | 'trash' | 'archive' | 'instantMessaging' | 'settings';
@@ -94,12 +96,9 @@ export interface MessageListResponse {
   total: number;
 }
 
-// 获取认证 token
+// 获取认证 token（使用 authService 统一管理）
 const getAuthToken = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('auth_token');
-  }
-  return null;
+  return getToken();
 };
 
 // API 请求辅助函数

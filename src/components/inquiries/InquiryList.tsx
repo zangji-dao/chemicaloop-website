@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Package, Mail, Phone, Clock, CheckCircle, XCircle, Clock3 } from 'lucide-react';
+import { getToken } from '@/services/authService';
 
 interface Inquiry {
   id: string;
@@ -34,7 +35,7 @@ export default function InquiryList() {
     try {
       const response = await fetch(`/api/inquiries?status=${filter}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Authorization': `Bearer ${getToken()}`,
         },
       });
       const data = await response.json();

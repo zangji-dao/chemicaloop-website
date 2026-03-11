@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
 import { useToast } from '@/components/ui/Toast';
+import { getAdminToken, getAdminUser } from '@/services/adminAuthService';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -102,7 +103,7 @@ export default function AdminSPURequestsPage() {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       const params = new URLSearchParams({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
@@ -145,8 +146,14 @@ export default function AdminSPURequestsPage() {
     
     setProcessing(true);
     try {
-      const token = localStorage.getItem('admin_token');
-      const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+      const token = getAdminToken();
+      const adminUser = getAdminUser();
+      
+      if (!adminUser) {
+        showToast('User not authenticated', 'error');
+        setProcessing(false);
+        return;
+      }
       
       const response = await fetch('/api/spu-requests', {
         method: 'PUT',
@@ -197,8 +204,14 @@ export default function AdminSPURequestsPage() {
 
     setProcessing(true);
     try {
-      const token = localStorage.getItem('admin_token');
-      const adminUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+      const token = getAdminToken();
+      const adminUser = getAdminUser();
+      
+      if (!adminUser) {
+        showToast('User not authenticated', 'error');
+        setProcessing(false);
+        return;
+      }
       
       const response = await fetch('/api/spu-requests', {
         method: 'PUT',

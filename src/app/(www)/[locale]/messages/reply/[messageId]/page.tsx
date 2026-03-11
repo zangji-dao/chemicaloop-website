@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import AuthModal from '@/components/AuthModal';
 import ComposeMessage from '@/components/ComposeMessage';
 import { useAuth } from '@/hooks/useAuth';
+import { getToken } from '@/services/authService';
 import {
   createMessage,
   saveDraft,
@@ -78,7 +79,7 @@ export default function ReplyMessagePage() {
         alert(t('inquirySentSuccess'));
       } else {
         // 发送外网邮件
-        const token = localStorage.getItem('auth_token');
+        const token = getToken();
         const response = await fetch('/api/email-settings/send', {
           method: 'POST',
           headers: {

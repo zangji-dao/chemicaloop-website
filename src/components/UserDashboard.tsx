@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { Mail, LogOut, LayoutDashboard, Package, MessageSquare, Link as LinkIcon, User, Clock, CheckCircle } from 'lucide-react';
+import { getToken } from '@/services/authService';
 
 export default function UserDashboard() {
   const { user, logout } = useAuth();
@@ -22,7 +23,7 @@ export default function UserDashboard() {
     try {
       const response = await fetch('/api/user/stats', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Authorization': `Bearer ${getToken()}`,
         },
       });
       const data = await response.json();

@@ -3,14 +3,13 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { isAdminRole, isSuperAdmin, hasRole } from '@/lib/constants/roles';
-
-interface AdminUser {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  avatar_url?: string;
-}
+import {
+  getAdminToken,
+  getAdminUser,
+  clearAdminAuth,
+  saveAdminUser,
+  AdminUser,
+} from '@/services/adminAuthService';
 
 interface AdminAuthContextType {
   user: AdminUser | null;
@@ -25,11 +24,6 @@ interface AdminAuthContextType {
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
 
-const AUTH_KEYS = {
-  TOKEN: 'admin_token',
-  USER: 'admin_user',
-};
-
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -43,34 +37,23 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const token = localStorage.getItem(AUTH_KEYS.TOKEN);
-    const userData = localStorage.getItem(AUTH_KEYS.USER);
+    const token = getAdminToken();
+    const userData = getAdminUser();
 
     if (!token || !userData) {
       router.push('/admin/login');
       return;
     }
 
-    try {
-      const parsedUser = JSON.parse(userData) as AdminUser;
-      
-      // 验证是否是管理员角色
-      if (!isAdminRole(parsedUser.role)) {
-        console.warn('[AdminAuth] User is not an admin:', parsedUser.role);
-        localStorage.removeItem(AUTH_KEYS.TOKEN);
-        localStorage.removeItem(AUTH_KEYS.USER);
-        router.push('/admin/login');
-        return;
-      }
-      
-      setUser(parsedUser);
-    } catch {
-      localStorage.removeItem(AUTH_KEYS.TOKEN);
-      localStorage.removeItem(AUTH_KEYS.USER);
+    // 验证是否是管理员角色
+    if (!isAdminRole(userData.role)) {
+      console.warn('[AdminAuth] User is not an admin:', userData.role);
+      clearAdminAuth();
       router.push('/admin/login');
       return;
     }
-
+    
+    setUser(userData);
     setIsLoading(false);
   }, [pathname, router]);
 
@@ -79,20 +62,17 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   }, [checkAuth]);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(AUTH_KEYS.TOKEN);
-    localStorage.removeItem(AUTH_KEYS.USER);
+    clearAdminAuth();
     setUser(null);
     router.push('/admin/login');
   }, [router]);
 
   const refreshUser = useCallback(() => {
-    const userData = localStorage.getItem(AUTH_KEYS.USER);
+    const userData = getAdminUser();
     if (userData) {
-      try {
-        setUser(JSON.parse(userData));
-      } catch {
-        logout();
-      }
+      setUser(userData);
+    } else {
+      logout();
     }
   }, [logout]);
 
@@ -120,29 +100,5 @@ export function useAdminAuth() {
   return context;
 }
 
-/**
- * 获取管理后台 Token
- */
-export function getAdminToken(): string | null {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(AUTH_KEYS.TOKEN);
-  }
-  return null;
-}
-
-/**
- * 获取管理后台用户信息
- */
-export function getAdminUser(): AdminUser | null {
-  if (typeof window !== 'undefined') {
-    const userData = localStorage.getItem(AUTH_KEYS.USER);
-    if (userData) {
-      try {
-        return JSON.parse(userData);
-      } catch {
-        return null;
-      }
-    }
-  }
-  return null;
-}
+// 从 adminAuthService 重新导出，保持向后兼容
+export { getAdminToken, getAdminUser } from '@/services/adminAuthService';

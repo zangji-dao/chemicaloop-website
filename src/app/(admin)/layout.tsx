@@ -23,14 +23,12 @@ import FrontendSwitchButton from '@/components/FrontendSwitchButton';
 import { AdminLocaleProvider, useAdminLocale } from '@/contexts/AdminLocaleContext';
 import AdminLanguageSwitcher from '@/components/admin/AdminLanguageSwitcher';
 import { ToastProvider } from '@/components/ui/Toast';
-
-interface AdminUser {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  avatar_url?: string;
-}
+import {
+  getAdminToken,
+  getAdminUser,
+  clearAdminAuth,
+  AdminUser,
+} from '@/services/adminAuthService';
 
 // 菜单配置（支持子菜单）
 interface MenuItemConfig {
@@ -108,27 +106,20 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     }
 
     // 检查登录状态
-    const token = localStorage.getItem('admin_token');
-    const userData = localStorage.getItem('admin_user');
+    const token = getAdminToken();
+    const userData = getAdminUser();
 
     if (!token || !userData) {
       router.push('/admin/login');
       return;
     }
 
-    try {
-      setUser(JSON.parse(userData));
-    } catch {
-      router.push('/admin/login');
-      return;
-    }
-
+    setUser(userData);
     setLoading(false);
   }, [router, pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
+    clearAdminAuth();
     router.push('/admin/login');
   };
 

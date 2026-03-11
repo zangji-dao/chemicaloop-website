@@ -1,5 +1,6 @@
 'use client';
 
+import { getAdminToken } from '@/services/adminAuthService';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
@@ -473,7 +474,7 @@ function ProductUploadContent() {
     const targetLanguages = ['en', 'zh', 'ja', 'ko', 'de', 'fr', 'es', 'pt', 'ru', 'ar'];
     
     // 获取 token
-    const token = localStorage.getItem('admin_token');
+    const token = getAdminToken();
 
     try {
       // Step 1: 生成产品图（必须成功）
@@ -757,7 +758,7 @@ function ProductUploadContent() {
 
     setSavingSPU(true);
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = getAdminToken();
       
       const spuData = {
         cas: formData.cas,

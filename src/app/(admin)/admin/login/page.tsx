@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { saveAdminAuth } from '@/services/adminAuthService';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -27,8 +28,7 @@ export default function AdminLoginPage() {
       const data = await response.json();
 
       if (data.success) {
-        localStorage.setItem('admin_token', data.token);
-        localStorage.setItem('admin_user', JSON.stringify(data.user));
+        saveAdminAuth(data.token, data.user);
         router.push('/admin');
       } else {
         setError(data.error || '登录失败');

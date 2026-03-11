@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { Menu, X, Search, Globe, Facebook, Twitter, Linkedin, Instagram, Youtube, User, LogOut, MessageSquare, Bell } from 'lucide-react';
 import AuthModal from './AuthModal';
 import UserCard from './UserCard';
+import { getToken } from '@/services/authService';
 import { getMessages, getUnreadCount } from '@/services/messageService';
 import { useAuth } from '@/hooks/useAuth';
 import { getUserAvatar } from '@/utils/avatar';
@@ -73,7 +74,7 @@ export default function Header() {
 
     try {
       // 检查 token 是否存在
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       console.log('Token exists:', !!token);
 
       if (!token) {
