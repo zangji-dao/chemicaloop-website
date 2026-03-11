@@ -1729,9 +1729,9 @@ export default function AdminSPUPage() {
         )}
       </div>
 
-      {/* 编辑面板 - 全屏右侧 */}
+      {/* 编辑面板 - 主内容区域内，z-20 确保在 sidebar (z-40) 和 header (z-30) 之下 */}
       {viewMode === 'edit' && (
-        <div className="fixed inset-0 bg-slate-900 z-50 flex flex-col">
+        <div className="fixed inset-0 bg-slate-900 z-20 flex flex-col overflow-hidden pt-16">
           {/* 同步中遮罩层 - 覆盖整个面板 */}
           {syncingSingle && (
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-30 rounded-xl flex flex-col items-center justify-center">
