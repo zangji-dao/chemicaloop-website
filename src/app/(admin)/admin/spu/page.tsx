@@ -1888,7 +1888,7 @@ export default function AdminSPUPage() {
             )}
             
             {/* 头部固定 - 两行布局 */}
-            <div className="flex-shrink-0 bg-slate-800 border-b border-slate-700 px-5 py-3">
+            <div className="relative flex-shrink-0 bg-slate-800 border-b border-slate-700 px-5 py-3">
               {/* 第一行：导航 + 同步操作 */}
               <div className="flex items-center">
                 {/* 左侧：返回按钮 + 同步按钮 */}
@@ -1925,66 +1925,70 @@ export default function AdminSPUPage() {
                 </div>
               </div>
               
-              {/* 第二行：标题 + 翻译状态 + 保存按钮 */}
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-700/50">
-                {/* 左侧：标题 + CAS号 */}
-                <div className="flex items-center gap-3">
-                  <h2 className="text-lg font-semibold">
-                    {editingSpu ? t('spu.editSpu') : t('spu.newSpu')}
-                  </h2>
-                  {editingSpu && (
-                    <span className="text-sm text-slate-500 font-mono">
-                      CAS: {editingSpu.cas}
-                    </span>
-                  )}
-                </div>
-                
-                {/* 中间：翻译状态 */}
-                <div className="flex-1 flex justify-center">
-                  {translating && (
-                    <span className="flex items-center gap-2 text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      <span>{t('spu.translating')}</span>
-                      <span className="text-blue-300">
-                        {translationProgress.current}/{translationProgress.total}
+              {/* 第二行：标题 + 翻译状态 + 保存按钮 - 与内容区域同宽居中 */}
+              <div className="max-w-4xl mx-auto w-full">
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-700/50">
+                  {/* 左侧：标题 + CAS号 */}
+                  <div className="flex items-center gap-3 w-[calc(50%-1.5rem)]">
+                    <h2 className="text-lg font-semibold">
+                      {editingSpu ? t('spu.editSpu') : t('spu.newSpu')}
+                    </h2>
+                    {editingSpu && (
+                      <span className="text-sm text-slate-500 font-mono">
+                        CAS: {editingSpu.cas}
                       </span>
-                      {translatingFields.size > 0 && (
-                        <span className="text-blue-300/70 text-[10px]">
-                          {Array.from(translatingFields).map(f => fieldDisplayNames[f] || f).slice(0, 2).join(', ')}
-                          {translatingFields.size > 2 && `+${translatingFields.size - 2}`}
+                    )}
+                  </div>
+                  
+                  {/* 中间：翻译状态 - 绝对定位到中线 */}
+                  <div className="absolute left-1/2 -translate-x-1/2">
+                    {translating && (
+                      <span className="flex items-center gap-2 text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>{t('spu.translating')}</span>
+                        <span className="text-blue-300">
+                          {translationProgress.current}/{translationProgress.total}
                         </span>
+                        {translatingFields.size > 0 && (
+                          <span className="text-blue-300/70 text-[10px]">
+                            {Array.from(translatingFields).map(f => fieldDisplayNames[f] || f).slice(0, 2).join(', ')}
+                            {translatingFields.size > 2 && `+${translatingFields.size - 2}`}
+                          </span>
+                        )}
+                      </span>
+                    )}
+                    {translationProgress.status === 'completed' && pendingTranslations && !saving && (
+                      <span className="flex items-center gap-2 text-xs text-emerald-400 bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/30 px-3 py-1.5 rounded-full shadow-sm whitespace-nowrap">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>{t('spu.translationDoneClickSave')}</span>
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* 右侧：保存按钮 */}
+                  <div className="w-[calc(50%-1.5rem)] flex justify-end">
+                    <button
+                      onClick={handleSave}
+                      disabled={saving || translating || syncingSingle}
+                      className={`flex items-center gap-2 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 ${
+                        justSynced 
+                          ? 'bg-amber-600 hover:bg-amber-700' 
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      }`}
+                    >
+                      {saving ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : translating ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4" />
                       )}
-                    </span>
-                  )}
-                  {translationProgress.status === 'completed' && pendingTranslations && !saving && (
-                    <span className="flex items-center gap-2 text-xs text-emerald-400 bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/30 px-3 py-1.5 rounded-full shadow-sm">
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      <span>{t('spu.translationCompleted')}</span>
-                    </span>
-                  )}
+                      <span>
+                        {justSynced ? t('spu.translateAndSave') : t('spu.saveAndExit')}
+                      </span>
+                    </button>
+                  </div>
                 </div>
-                
-                {/* 右侧：保存按钮 */}
-                <button
-                  onClick={handleSave}
-                  disabled={saving || translating || syncingSingle}
-                  className={`flex items-center gap-2 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 ${
-                    justSynced 
-                      ? 'bg-amber-600 hover:bg-amber-700' 
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
-                >
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : translating ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  <span>
-                    {justSynced ? t('spu.translateAndSave') : t('spu.saveAndExit')}
-                  </span>
-                </button>
               </div>
             </div>
 
