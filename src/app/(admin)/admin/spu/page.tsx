@@ -1879,10 +1879,10 @@ export default function AdminSPUPage() {
             
             {/* 头部固定 - 两行布局 */}
             <div className="flex-shrink-0 bg-slate-800 border-b border-slate-700 px-5 py-3">
-              {/* 第一行：核心操作 */}
+              {/* 第一行：导航 + 同步操作 */}
               <div className="flex items-center justify-between">
-                {/* 左侧：返回按钮、标题、CAS号 */}
-                <div className="flex items-center gap-3">
+                {/* 左侧：返回按钮 + 同步按钮 */}
+                <div className="flex items-center gap-4">
                   <button
                     onClick={handleCloseEditModal}
                     className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
@@ -1890,8 +1890,56 @@ export default function AdminSPUPage() {
                     <ArrowLeft className="w-4 h-4" />
                     <span className="text-sm">{t('common.backToList')}</span>
                   </button>
+                  
                   <div className="w-px h-5 bg-slate-600" />
-                  <h2 className="text-base font-semibold">
+                  
+                  <button
+                    type="button"
+                    onClick={handleSyncSinglePubChem}
+                    disabled={syncingSingle || saving || translating}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-sm transition-colors disabled:opacity-50"
+                  >
+                    {syncingSingle ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4 text-purple-400" />
+                    )}
+                    <span>{t('spu.syncPubchem')}</span>
+                  </button>
+                  
+                  {pubchemInfo.syncedAt && (
+                    <span className="text-xs text-slate-500">
+                      {t('spu.lastSync')}: {new Date(pubchemInfo.syncedAt).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+                
+                {/* 右侧：翻译状态 */}
+                {translating && (
+                  <span className="flex items-center gap-1.5 text-xs text-blue-400">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    {translationProgress.status === 'translating' ? (
+                      `${t('spu.translating')}: ${translationProgress.current}/${translationProgress.total} (${translationProgress.currentLang})`
+                    ) : translationProgress.status === 'completed' ? (
+                      t('spu.translationCompleteSave')
+                    ) : (
+                      `${t('spu.translating')}...`
+                    )}
+                  </span>
+                )}
+                {translationProgress.status === 'completed' && pendingTranslations && (
+                  <span className="flex items-center gap-1.5 text-xs text-green-400">
+                    <CheckCircle className="w-3 h-3" />
+                    {t('spu.newTranslationsReady')}
+                  </span>
+                )}
+              </div>
+              
+              {/* 第二行：标题 + 保存按钮 */}
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-700/50">
+                {/* 左侧：标题 + CAS号 */}
+                <div className="flex items-center gap-3">
+                  <h2 className="text-lg font-semibold">
                     {editingSpu ? t('spu.editSpu') : t('spu.newSpu')}
                   </h2>
                   {editingSpu && (
@@ -1923,51 +1971,6 @@ export default function AdminSPUPage() {
                       {justSynced ? t('spu.translateAndSave') : t('spu.confirmSave')}
                     </span>
                   </button>
-                )}
-              </div>
-              
-              {/* 第二行：辅助操作和状态 */}
-              <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-700/50">
-                {/* 左侧：同步按钮和时间 */}
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={handleSyncSinglePubChem}
-                    disabled={syncingSingle || saving || translating}
-                    className="flex items-center gap-2 px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-sm transition-colors disabled:opacity-50"
-                  >
-                    {syncingSingle ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
-                    ) : (
-                      <RefreshCw className="w-4 h-4 text-purple-400" />
-                    )}
-                    <span className="text-slate-300">{t('spu.syncPubchem')}</span>
-                  </button>
-                  {pubchemInfo.syncedAt && (
-                    <span className="text-xs text-slate-500">
-                      {t('spu.lastSync')}: {new Date(pubchemInfo.syncedAt).toLocaleString()}
-                    </span>
-                  )}
-                </div>
-                
-                {/* 右侧：翻译状态 */}
-                {translating && (
-                  <span className="flex items-center gap-1.5 text-xs text-blue-400">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    {translationProgress.status === 'translating' ? (
-                      `${t('spu.translating')}: ${translationProgress.current}/${translationProgress.total} (${translationProgress.currentLang})`
-                    ) : translationProgress.status === 'completed' ? (
-                      t('spu.translationCompleteSave')
-                    ) : (
-                      `${t('spu.translating')}...`
-                    )}
-                  </span>
-                )}
-                {translationProgress.status === 'completed' && pendingTranslations && (
-                  <span className="flex items-center gap-1.5 text-xs text-green-400">
-                    <CheckCircle className="w-3 h-3" />
-                    {t('spu.newTranslationsReady')}
-                  </span>
                 )}
               </div>
             </div>
