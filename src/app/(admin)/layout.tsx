@@ -209,6 +209,12 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                     : [...prev, item.path]
                 );
               } else {
+                // 如果点击的是当前页面，触发自定义事件让页面重置状态
+                if (pathname === item.path) {
+                  window.dispatchEvent(new CustomEvent('admin-menu-click-same-path', { 
+                    detail: { path: item.path } 
+                  }));
+                }
                 router.push(item.path);
               }
             };
@@ -242,7 +248,15 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                       return (
                         <button
                           key={child.path}
-                          onClick={() => router.push(child.path)}
+                          onClick={() => {
+                            // 如果点击的是当前页面，触发自定义事件让页面重置状态
+                            if (pathname === child.path) {
+                              window.dispatchEvent(new CustomEvent('admin-menu-click-same-path', { 
+                                detail: { path: child.path } 
+                              }));
+                            }
+                            router.push(child.path);
+                          }}
                           className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
                             childIsActive
                               ? 'bg-blue-600/20 text-blue-400'

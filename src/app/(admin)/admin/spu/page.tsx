@@ -265,6 +265,19 @@ export default function AdminSPUPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode]);
+
+  // 监听侧边栏菜单点击，返回列表视图
+  useEffect(() => {
+    const handleMenuClick = () => {
+      if (viewMode === 'edit') {
+        handleCloseEditModal();
+      }
+    };
+    
+    window.addEventListener('admin-menu-click-same-path', handleMenuClick);
+    return () => window.removeEventListener('admin-menu-click-same-path', handleMenuClick);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode]);
   
   // 自定义弹窗
   const [showDialog, setShowDialog] = useState(false);
