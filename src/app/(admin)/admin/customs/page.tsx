@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useDebouncedCallback } from '@/hooks/useDebounce';
 import {
   Database, Upload, RefreshCw, Loader2, Building, Globe,
   ChevronLeft, ChevronRight, Search, X, CheckCircle, AlertCircle,
@@ -72,6 +73,9 @@ export default function CustomsDataPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   
+  // 搜索触发器
+  const [searchTrigger, setSearchTrigger] = useState(0);
+  
   // 上传相关
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
@@ -83,7 +87,18 @@ export default function CustomsDataPage() {
   // 加载数据
   useEffect(() => {
     loadData();
-  }, [activeSource, page]);
+  }, [activeSource, page, searchTrigger]);
+  
+  // 防抖搜索 - 300ms 延迟
+  const debouncedSearch = useDebouncedCallback(() => {
+    setPage(1);
+    setSearchTrigger(prev => prev + 1);
+  }, 300);
+  
+  // 当搜索内容变化时触发防抖搜索
+  useEffect(() => {
+    debouncedSearch();
+  }, [search]);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -111,7 +126,7 @@ export default function CustomsDataPage() {
 
   const handleSearch = () => {
     setPage(1);
-    loadData();
+    setSearchTrigger(prev => prev + 1);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

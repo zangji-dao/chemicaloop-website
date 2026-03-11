@@ -2100,6 +2100,7 @@ export default function AdminSPUPage() {
                             src={structureImageUrl} 
                             alt="2D Structure" 
                             className="max-w-full max-h-full object-contain"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="text-center text-slate-500">
@@ -2141,6 +2142,7 @@ export default function AdminSPUPage() {
                               src={productImageUrl} 
                               alt="Product Image" 
                               className="max-w-full max-h-full object-contain"
+                              loading="lazy"
                             />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                               <button
@@ -2927,6 +2929,7 @@ export default function AdminSPUPage() {
                       src={productImageUrl!} 
                       alt="Current" 
                       className="max-w-full max-h-full object-contain"
+                      loading="lazy"
                     />
                   </div>
                 </div>
@@ -2943,6 +2946,7 @@ export default function AdminSPUPage() {
                       src={newProductImageUrl} 
                       alt="New" 
                       className="max-w-full max-h-full object-contain"
+                      loading="lazy"
                     />
                   </div>
                 </div>

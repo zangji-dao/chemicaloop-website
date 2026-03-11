@@ -110,6 +110,7 @@ export default function AdminLanguageSwitcher({
                   src={adminLocaleFlags[lang]}
                   alt={adminLocaleNames[lang]}
                   className="w-5 h-auto flex-shrink-0"
+                  loading="lazy"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';

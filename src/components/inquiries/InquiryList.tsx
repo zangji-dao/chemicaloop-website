@@ -130,6 +130,7 @@ export default function InquiryList() {
                     src={inquiry.productImageUrl}
                     alt={inquiry.productName}
                     className="w-20 h-20 object-contain rounded-lg bg-gray-100 flex-shrink-0"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">

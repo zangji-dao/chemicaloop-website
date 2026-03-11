@@ -440,6 +440,7 @@ export default function Header() {
                           src={lang.flag}
                           alt={lang.name}
                           className="w-5 h-auto sm:w-6 lg:w-7"
+                          loading="lazy"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
@@ -677,6 +678,7 @@ export default function Header() {
                           src={lang.flag}
                           alt={lang.name}
                           className="w-6 h-auto sm:w-7 2xl:w-8"
+                          loading="lazy"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';

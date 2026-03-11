@@ -1131,6 +1131,7 @@ function ProductUploadContent() {
                               alt={`${pubchemData.nameEn || pubchemData.nameZh || 'Compound'} 2D Structure`}
                               className="max-w-full h-auto rounded border border-gray-200"
                               style={{ maxHeight: '180px' }}
+                              loading="lazy"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.style.display = 'none';
@@ -1833,6 +1834,7 @@ function ProductUploadContent() {
                           src={formData.generatedImageUrl} 
                           alt="Generated product"
                           className="w-full h-40 object-contain rounded border border-gray-200 bg-white"
+                          loading="lazy"
                         />
                         <button
                           onClick={() => setFormData({ ...formData, generatedImageUrl: '' })}

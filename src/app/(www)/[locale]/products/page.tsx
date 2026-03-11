@@ -70,6 +70,7 @@ function ProductCard({
               src={spu.imageUrl}
               alt={displayName}
               className="w-3/4 h-3/4 object-contain relative z-10 group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
             />
           ) : (
             <div className="flex flex-col items-center justify-center relative z-10">

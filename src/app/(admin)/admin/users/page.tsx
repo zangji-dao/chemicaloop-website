@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useDebouncedCallback } from '@/hooks/useDebounce';
 import {
   Search,
   Filter,
@@ -67,10 +68,24 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [updating, setUpdating] = useState(false);
+  
+  // 搜索触发器（用于触发搜索）
+  const [searchTrigger, setSearchTrigger] = useState(0);
 
   useEffect(() => {
     fetchUsers();
-  }, [pagination.page, roleFilter]);
+  }, [pagination.page, roleFilter, searchTrigger]);
+  
+  // 防抖搜索 - 300ms 延迟
+  const debouncedSearch = useDebouncedCallback(() => {
+    setPagination(prev => ({ ...prev, page: 1 }));
+    setSearchTrigger(prev => prev + 1);
+  }, 300);
+  
+  // 当搜索内容变化时触发防抖搜索
+  useEffect(() => {
+    debouncedSearch();
+  }, [search]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -281,6 +296,7 @@ export default function AdminUsersPage() {
                                 src={user.avatar_url}
                                 alt={user.name}
                                 className="w-10 h-10 rounded-full"
+                                loading="lazy"
                               />
                             ) : (
                               <span className="text-white font-medium">
@@ -423,6 +439,7 @@ export default function AdminUsersPage() {
                       src={selectedUser.avatar_url}
                       alt={selectedUser.name}
                       className="w-16 h-16 rounded-full"
+                      loading="lazy"
                     />
                   ) : (
                     <span className="text-2xl text-white font-medium">

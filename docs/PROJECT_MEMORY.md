@@ -399,6 +399,44 @@ const token = localStorage.getItem('admin_token');
 | ~~后端角色判断~~ | ~~10 处重复~~ | ✅ 已创建 `adminOnlyMiddleware` |
 | ~~前端 localStorage~~ | ~~25+ 处直接访问~~ | ✅ 已统一使用 authService/adminAuthService |
 
+### 4.7 前端性能优化记录
+
+#### 2026-03 执行的优化
+
+| 优化项 | 说明 | 涉及文件 |
+|--------|------|----------|
+| P0 图片懒加载 | 为非首屏图片添加 `loading="lazy"` | users/page.tsx, spu/page.tsx, products/page.tsx, products/upload/page.tsx, products/[id]/page.tsx, news/page.tsx, InquiryList.tsx, Header.tsx, AdminLanguageSwitcher.tsx |
+| P1 循环请求改并发 | 翻译功能从串行改为并发 | productSyncService.ts |
+| P2 搜索防抖 | 添加 300ms 防抖 | users/page.tsx, customs/page.tsx, products/page.tsx |
+
+#### 防抖 Hook 使用规范
+
+项目提供了 `src/hooks/useDebounce.ts` 统一防抖能力：
+
+```typescript
+// 方式1：防抖值
+import { useDebounce } from '@/hooks/useDebounce';
+const debouncedSearch = useDebounce(search, 300);
+
+// 方式2：防抖回调
+import { useDebouncedCallback } from '@/hooks/useDebounce';
+const debouncedSearch = useDebouncedCallback(() => {
+  triggerSearch();
+}, 300);
+
+// 方式3：支持立即执行的防抖
+import { useDebouncedCallbackWithFlush } from '@/hooks/useDebounce';
+const { debounced, flush, cancel } = useDebouncedCallbackWithFlush(callback, 300);
+```
+
+#### 剩余优化项（待执行）
+
+| 优化项 | 说明 | 优先级 |
+|--------|------|--------|
+| P3 React.memo | 列表项组件 memo 优化 | 低 |
+| P4 虚拟列表 | 大数据列表优化 | 低 |
+| P5 大文件拆分 | 5 个 >50KB 文件拆分 | 低 |
+
 ---
 
 > **提示**：每次对话结束前，请更新此文档，记录新增的关键决策和已解决的问题。

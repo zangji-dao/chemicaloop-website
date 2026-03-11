@@ -482,6 +482,7 @@ export default function ProductDetailPage() {
                         src={productData.imageUrl}
                         alt={productData.nameEn}
                         className="w-64 h-64 object-contain"
+                        loading="lazy"
                       />
                     </div>
                   </div>

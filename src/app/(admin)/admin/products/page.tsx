@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useDebouncedCallback } from '@/hooks/useDebounce';
 import {
   Search,
   ChevronLeft,
@@ -145,6 +146,9 @@ export default function AdminProductsPage() {
   const [reviewNote, setReviewNote] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectId, setRejectId] = useState<string | null>(null);
+  
+  // 搜索触发器（用于触发防抖后的搜索）
+  const [searchTrigger, setSearchTrigger] = useState(0);
 
   // 审核详情弹窗状态
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -201,7 +205,17 @@ export default function AdminProductsPage() {
     };
 
     loadData();
-  }, [activeTab, search]);
+  }, [activeTab, searchTrigger]);
+  
+  // 防抖搜索 - 300ms 延迟
+  const debouncedSearch = useDebouncedCallback(() => {
+    setSearchTrigger(prev => prev + 1);
+  }, 300);
+  
+  // 当搜索内容变化时触发防抖搜索
+  useEffect(() => {
+    debouncedSearch();
+  }, [search]);
 
   // 语言切换时触发翻译
   useEffect(() => {
@@ -252,7 +266,8 @@ export default function AdminProductsPage() {
   }, [locale, products.length]);
 
   const handleSearch = () => {
-    // 搜索会通过 useEffect 重新触发
+    // 立即触发搜索（清除防抖等待）
+    setSearchTrigger(prev => prev + 1);
   };
 
   const reloadData = async () => {
@@ -1040,6 +1055,7 @@ export default function AdminProductsPage() {
                         src={reviewDetail.catalog.imageUrl}
                         alt={t('products.productName')}
                         className="w-full max-h-64 object-contain rounded-lg bg-slate-600/30"
+                        loading="lazy"
                       />
                       {reviewDetail.catalog.isNew && (
                         <span className="absolute top-2 right-2 px-2 py-1 bg-yellow-500 text-black text-xs rounded-full flex items-center gap-1">

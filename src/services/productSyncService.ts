@@ -44,11 +44,46 @@ export async function translateText(
 }
 
 /**
- * 批量翻译文本到所有支持的语言
+ * 并发控制：限制并发请求数量
+ */
+async function limitConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  handler: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = [];
+  const executing: Promise<void>[] = [];
+  
+  for (const item of items) {
+    const promise = handler(item).then(result => {
+      results.push(result);
+    });
+    executing.push(promise);
+    
+    if (executing.length >= limit) {
+      await Promise.race(executing);
+      // 移除已完成的 promise
+      const completedIndex = executing.findIndex(p => 
+        // @ts-ignore - 检查 promise 是否已完成
+        p.status === 'fulfilled' || p.status === 'rejected'
+      );
+      if (completedIndex > -1) {
+        executing.splice(completedIndex, 1);
+      }
+    }
+  }
+  
+  await Promise.all(executing);
+  return results;
+}
+
+/**
+ * 批量翻译文本到所有支持的语言（并发优化版）
  */
 export async function translateToAllLanguages(
   text: string,
-  sourceLang: string = 'en'
+  sourceLang: string = 'en',
+  concurrency: number = 3
 ): Promise<Record<string, string>> {
   const results: Record<string, string> = {};
   
@@ -57,23 +92,34 @@ export async function translateToAllLanguages(
     results['en'] = text;
   }
   
-  // 翻译到其他语言
-  for (const lang of SUPPORTED_LANGUAGES) {
-    if (results[lang]) continue; // 跳过已有翻译
-    
-    const translated = await translateText(text, lang);
+  // 需要翻译的语言列表
+  const langsToTranslate = SUPPORTED_LANGUAGES.filter(lang => !results[lang]);
+  
+  // 并发翻译，限制并发数为 3
+  const translations = await Promise.all(
+    langsToTranslate.map(async lang => {
+      try {
+        const translated = await translateText(text, lang);
+        return { lang, translated };
+      } catch (error) {
+        console.error(`[Translate] Error translating to ${lang}:`, error);
+        return { lang, translated: null };
+      }
+    })
+  );
+  
+  // 收集结果
+  for (const { lang, translated } of translations) {
     if (translated) {
       results[lang] = translated;
     }
-    // 避免请求过快
-    await sleep(200);
   }
   
   return results;
 }
 
 /**
- * 翻译数组到所有支持的语言
+ * 翻译数组到所有支持的语言（并发优化版）
  */
 export async function translateArrayToAllLanguages(
   items: string[],
@@ -85,16 +131,30 @@ export async function translateArrayToAllLanguages(
   // 英文原文
   results['en'] = toTranslate;
   
-  // 翻译到其他语言
-  for (const lang of SUPPORTED_LANGUAGES) {
-    if (lang === 'en') continue;
-    
-    const translated: string[] = [];
-    for (const item of toTranslate) {
-      const translatedItem = await translateText(item, lang);
-      translated.push(translatedItem || item);
-      await sleep(200);
-    }
+  // 需要翻译的语言列表
+  const langsToTranslate = SUPPORTED_LANGUAGES.filter(lang => lang !== 'en');
+  
+  // 并发翻译每种语言
+  const translations = await Promise.all(
+    langsToTranslate.map(async lang => {
+      // 对每种语言，并发翻译所有 items
+      const translatedItems = await Promise.all(
+        toTranslate.map(async item => {
+          try {
+            const translatedItem = await translateText(item, lang);
+            return translatedItem || item;
+          } catch (error) {
+            console.error(`[Translate] Error translating item to ${lang}:`, error);
+            return item;
+          }
+        })
+      );
+      return { lang, translated: translatedItems };
+    })
+  );
+  
+  // 收集结果
+  for (const { lang, translated } of translations) {
     results[lang] = translated;
   }
   
@@ -414,8 +474,4 @@ function extractPhysicochemicalProperties(data: any): {
   }
   
   return result;
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
