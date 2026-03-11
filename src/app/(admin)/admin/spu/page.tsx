@@ -1956,35 +1956,38 @@ export default function AdminSPUPage() {
                       )}
                     </span>
                   )}
-                  {translationProgress.status === 'completed' && pendingTranslations && (
-                    <span className="flex items-center gap-1.5 text-xs text-green-400 bg-green-500/10 px-3 py-1 rounded-full">
-                      <CheckCircle className="w-3 h-3" />
-                      {t('spu.newTranslationsReady')}
-                    </span>
-                  )}
                 </div>
                 
                 {/* 右侧：保存按钮 */}
-                <button
-                  onClick={handleSave}
-                  disabled={saving || translating || syncingSingle}
-                  className={`flex items-center gap-2 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 ${
-                    justSynced 
-                      ? 'bg-amber-600 hover:bg-amber-700' 
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
-                >
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : translating ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
+                <div className="relative">
+                  <button
+                    onClick={handleSave}
+                    disabled={saving || translating || syncingSingle}
+                    className={`flex items-center gap-2 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 ${
+                      justSynced 
+                        ? 'bg-amber-600 hover:bg-amber-700' 
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {saving ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : translating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    <span>
+                      {justSynced ? t('spu.translateAndSave') : t('spu.saveAndExit')}
+                    </span>
+                  </button>
+                  {/* 新翻译待保存徽章 */}
+                  {translationProgress.status === 'completed' && pendingTranslations && !saving && (
+                    <span className="absolute -top-1.5 -right-1.5 flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </span>
                   )}
-                  <span>
-                    {justSynced ? t('spu.translateAndSave') : t('spu.saveAndExit')}
-                  </span>
-                </button>
+                </div>
               </div>
             </div>
 
