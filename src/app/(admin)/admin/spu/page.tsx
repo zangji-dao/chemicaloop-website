@@ -1847,13 +1847,13 @@ export default function AdminSPUPage() {
                     {translationProgress.status === 'translating' && (
                       <>
                         {/* 当前正在翻译的字段 */}
-                        {translationProgress.currentField && (
+                        {translatingFields.size > 0 && (
                           <div className="mb-3 p-2 bg-slate-700/50 rounded-lg">
                             <p className="text-xs text-slate-400 mb-1">
                               {t('spu.currentField')}
                             </p>
                             <p className="text-sm text-blue-400 font-medium">
-                              {translationProgress.currentField}
+                              {Array.from(translatingFields).map(f => fieldDisplayNames[f] || f).join(', ')}
                             </p>
                           </div>
                         )}
