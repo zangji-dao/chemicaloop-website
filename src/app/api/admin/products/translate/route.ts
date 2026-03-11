@@ -3,6 +3,7 @@ import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
 import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
+import { API_CONFIG } from '@/config/api';
 
 interface TranslationRequest {
   productId: string;
@@ -73,8 +74,7 @@ async function translateProductsTable(
   // 解析现有翻译
   const existingTranslations = product.translations as Record<string, any> || {};
   const translations = { ...existingTranslations };
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
-    (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
+  const baseUrl = API_CONFIG.backendURL;
 
   // 翻译描述
   if (fieldsToTranslate.includes('description') && product.description) {
@@ -204,8 +204,7 @@ async function translateAgentProductsTable(
       if (!fieldValue) return null;
 
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
-          (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
+        const baseUrl = API_CONFIG.backendURL;
         const response = await fetch(`${baseUrl}/api/ai/translate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

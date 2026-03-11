@@ -3,6 +3,7 @@ import { getDb, S3Storage } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
 import { generateChemicalSVG, validateSVG } from '@/lib/chemical-svg-generator';
+import { API_CONFIG } from '@/config/api';
 
 /**
  * GET /api/spu-requests
@@ -319,7 +320,7 @@ export async function PUT(request: NextRequest) {
         try {
           // 调用 PubChem 同步接口获取数据
           const syncResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/pubchem?cas=${spuRequest.cas}`
+            `${API_CONFIG.backendURL}/api/pubchem?cas=${spuRequest.cas}`
           );
           const syncData = await syncResponse.json();
           
@@ -361,7 +362,7 @@ export async function PUT(request: NextRequest) {
                 
                 // 同步 PubChem 结构图
                 await fetch(
-                  `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/admin/spu/sync-pubchem`,
+                  `${API_CONFIG.backendURL}/api/admin/spu/sync-pubchem`,
                   {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

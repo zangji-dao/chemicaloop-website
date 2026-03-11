@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb, S3Storage } from 'coze-coding-dev-sdk';
 import { sql, eq } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
+import { API_CONFIG } from '@/config/api';
 
 // PubChem API 基础URL
 const PUBCHEM_BASE_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug';
@@ -18,7 +19,7 @@ const RETRY_DELAY = 2000;
  */
 async function translateText(text: string, targetLang: string): Promise<string> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/ai/translate`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/ai/translate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, targetLanguage: targetLang }),

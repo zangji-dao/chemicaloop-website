@@ -7,6 +7,7 @@
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
+import { API_CONFIG } from '@/config/api';
 
 // 支持的语言列表
 export const SUPPORTED_LANGUAGES = ['en', 'zh', 'ja', 'ko', 'de', 'fr', 'es', 'pt', 'ru', 'ar'] as const;
@@ -24,7 +25,7 @@ const VIEW_TIMEOUT = 90000;
 export async function translateText(
   text: string, 
   targetLang: string,
-  baseUrl: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+  baseUrl: string = API_CONFIG.backendURL
 ): Promise<string | null> {
   try {
     const response = await fetch(`${baseUrl}/api/ai/translate`, {

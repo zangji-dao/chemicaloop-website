@@ -3,6 +3,7 @@ import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
 import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
+import { API_CONFIG } from '@/config/api';
 
 interface BatchTranslateRequest {
   targetLanguage: string;
@@ -28,8 +29,7 @@ export async function POST(request: NextRequest) {
     const { targetLanguage = 'zh', fields = ['name', 'description', 'applications'], batchSize = 10 } = await request.json() as BatchTranslateRequest;
 
     const db = await getDb(schema);
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
-      (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
+    const baseUrl = API_CONFIG.backendURL;
 
     // 获取需要翻译的产品（translations 为空或不包含目标语言）
     const productsResult = await db.execute(sql`
