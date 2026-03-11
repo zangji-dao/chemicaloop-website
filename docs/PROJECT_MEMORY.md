@@ -163,6 +163,117 @@ className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
 - **只允许使用 pnpm**
 - 禁止使用 npm 或 yarn
 
+### 3.5 前端性能原则
+
+#### 请求与接口优化
+
+| 规则 | 说明 | 示例 |
+|------|------|------|
+| 禁止重复请求 | 相同参数、相同接口只发一次 | 使用缓存或状态管理 |
+| 禁止循环内请求 | 绝不在 `for/forEach/while` 里调用 API | 批量接口替代 |
+| 批量接口合并 | 多个请求合并为一个 | `/api/items?ids=1,2,3` |
+| 按需请求字段 | 只请求需要的字段，不拿多余数据 | `SELECT id, name` 而非 `SELECT *` |
+
+```typescript
+// ❌ 错误：循环内发请求
+for (const id of ids) {
+  await fetch(`/api/items/${id}`);
+}
+
+// ✅ 正确：批量请求
+await fetch(`/api/items?ids=${ids.join(',')}`);
+```
+
+#### 渲染与页面性能
+
+| 规则 | 说明 | 实现方式 |
+|------|------|----------|
+| 减少不必要渲染 | 数据不变不重新渲染 | `React.memo`、`useMemo`、`useCallback` |
+| 长列表优化 | 大量数据不一次性渲染 | 虚拟列表、分页加载、`react-window` |
+| DOM 操作最小化 | 不频繁增删 DOM | 批量更新、`React.Fragment` |
+
+```tsx
+// ❌ 错误：直接渲染大量数据
+{items.map(item => <Item key={item.id} {...item} />)}
+
+// ✅ 正确：虚拟列表
+import { FixedSizeList } from 'react-window';
+<FixedSizeList height={600} itemCount={items.length} itemSize={50}>
+  {({ index, style }) => <Item {...items[index]} style={style} />}
+</FixedSizeList>
+```
+
+#### 代码与逻辑优化
+
+| 规则 | 说明 |
+|------|------|
+| DRY 强制 | 相同逻辑抽成函数/工具/公共模块，禁止复制粘贴 |
+| 禁止重复计算 | 同样结果只算一次，使用 `useMemo` 缓存 |
+| 逻辑扁平化 | 少嵌套、少深度判断，代码越简单执行越快 |
+
+```tsx
+// ❌ 错误：渲染内重复计算
+function List({ items }) {
+  return items.map(item => {
+    const processed = heavyProcess(item); // 每次渲染都计算
+    return <Item key={item.id} data={processed} />;
+  });
+}
+
+// ✅ 正确：缓存计算结果
+function List({ items }) {
+  const processedItems = useMemo(
+    () => items.map(item => heavyProcess(item)),
+    [items]
+  );
+  return processedItems.map(item => <Item key={item.id} data={item} />);
+}
+```
+
+#### 资源与加载速度
+
+| 规则 | 说明 | 实现方式 |
+|------|------|----------|
+| 图片懒加载 | 看不到的内容不提前加载 | `loading="lazy"`、`IntersectionObserver` |
+| 资源体积最小化 | 不加载无用 JS/CSS、大图压缩 | Tree shaking、图片压缩 |
+| 依赖按需引入 | 不用的库/组件不引入 | 动态导入 `import()`、`next/dynamic` |
+
+```tsx
+// ❌ 错误：全量引入
+import { Button, Input, Select, ... } from 'ui-library';
+
+// ✅ 正确：按需引入
+import Button from 'ui-library/Button';
+import Input from 'ui-library/Input';
+
+// ✅ 正确：动态导入
+const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
+  loading: () => <Skeleton />,
+});
+```
+
+#### 交互流畅度
+
+| 规则 | 说明 | 实现方式 |
+|------|------|----------|
+| 避免阻塞主线程 | 大量计算不卡住页面 | Web Worker、`requestIdleCallback` |
+| 防抖/节流 | 搜索、滚动、输入高频操作 | `lodash.debounce`、`lodash.throttle` |
+| 错误不阻塞流程 | 异常捕获，不崩页面 | `try-catch`、Error Boundary |
+
+```tsx
+// ✅ 防抖示例
+import { debounce } from 'lodash';
+
+const handleSearch = debounce((value) => {
+  fetch(`/api/search?q=${value}`);
+}, 300);
+
+// ✅ Error Boundary
+<ErrorBoundary fallback={<ErrorFallback />}>
+  <Component />
+</ErrorBoundary>
+```
+
 ---
 
 ## 4. 关键业务逻辑
