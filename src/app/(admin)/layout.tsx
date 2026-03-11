@@ -257,7 +257,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   className={`w-full flex items-center gap-3 rounded-lg transition-colors ${
                     sidebarCollapsed ? 'px-3 py-2.5 justify-center' : 'px-3 py-2.5'
                   } ${
-                    (hasChildren && !sidebarCollapsed) ? 'justify-between' : ''
+                    hasChildren && !sidebarCollapsed ? 'justify-between' : ''
+                  } ${
+                    !hasChildren && !sidebarCollapsed ? 'justify-start' : ''
                   } ${
                     (hasChildren ? isChildActive : isActive)
                       ? 'bg-blue-600 text-white'
