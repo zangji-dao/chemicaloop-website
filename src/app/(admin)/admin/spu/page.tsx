@@ -2041,7 +2041,7 @@ export default function AdminSPUPage() {
                           type="button"
                           onClick={() => handleGenerateProductImage(!!productImageUrl)}
                           disabled={generatingImage || !pubchemInfo.cid}
-                          className="flex items-center gap-1 text-xs text-slate-500 hover:text-blue-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           title={!pubchemInfo.cid ? t('spu.syncPubchemFirst') : ''}
                         >
                           {generatingImage ? (
@@ -2070,8 +2070,9 @@ export default function AdminSPUPage() {
                                 type="button"
                                 onClick={() => handleGenerateProductImage(true)}
                                 disabled={generatingImage}
-                                className="px-3 py-1.5 bg-white/90 text-slate-800 rounded text-xs font-medium hover:bg-white transition-colors"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/90 text-white rounded text-xs font-medium hover:bg-blue-500 transition-colors"
                               >
+                                <RefreshCw className="w-3 h-3" />
                                 {t('spu.redraw')}
                               </button>
                             </div>
