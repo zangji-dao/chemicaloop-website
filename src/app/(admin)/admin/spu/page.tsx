@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
   Search,
   ChevronLeft,
@@ -354,6 +354,20 @@ export default function AdminSPUPage() {
   const [originalFormData, setOriginalFormData] = useState<typeof formData | null>(null);
   // 原始 translations 对象（用于保存时合并）- 可能包含不同类型的翻译值
   const [originalTranslations, setOriginalTranslations] = useState<Record<string, Record<string, string | string[]>> | null>(null);
+  
+  // 检测表单是否有修改
+  const hasFormChanges = useMemo(() => {
+    if (!originalFormData) return true; // 新建时默认显示保存按钮
+    return Object.keys(formData).some(key => {
+      const current = formData[key as keyof typeof formData];
+      const original = originalFormData[key as keyof typeof originalFormData];
+      // 处理数组类型
+      if (Array.isArray(current) && Array.isArray(original)) {
+        return JSON.stringify(current) !== JSON.stringify(original);
+      }
+      return current !== original;
+    });
+  }, [formData, originalFormData]);
   
   // PubChem 信息（只读）
   const [pubchemInfo, setPubchemInfo] = useState<{
@@ -1887,27 +1901,29 @@ export default function AdminSPUPage() {
                   )}
                 </div>
                 
-                {/* 右侧：保存按钮 */}
-                <button
-                  onClick={handleSave}
-                  disabled={saving || translating || syncingSingle}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm transition-colors disabled:opacity-50 ${
-                    justSynced 
-                      ? 'bg-amber-600 hover:bg-amber-700' 
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
-                >
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : translating ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  <span>
-                    {justSynced ? t('spu.translateAndSave') : t('spu.confirmSave')}
-                  </span>
-                </button>
+                {/* 右侧：保存按钮（有修改时显示） */}
+                {hasFormChanges && (
+                  <button
+                    onClick={handleSave}
+                    disabled={saving || translating || syncingSingle}
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm transition-colors disabled:opacity-50 ${
+                      justSynced 
+                        ? 'bg-amber-600 hover:bg-amber-700' 
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {saving ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : translating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    <span>
+                      {justSynced ? t('spu.translateAndSave') : t('spu.confirmSave')}
+                    </span>
+                  </button>
+                )}
               </div>
               
               {/* 第二行：辅助操作和状态 */}
