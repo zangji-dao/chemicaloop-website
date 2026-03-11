@@ -20,6 +20,7 @@ import {
   ArrowDownCircle,
   ArrowLeft,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
 
 interface SPUItem {
@@ -239,6 +240,15 @@ export default function AdminSPUPage() {
   const [generatingImage, setGeneratingImage] = useState(false); // 生成产品图中
   const [newProductImageUrl, setNewProductImageUrl] = useState<string | null>(null); // 新生成的产品图 URL（用于对比）
   const [showImageCompareModal, setShowImageCompareModal] = useState(false); // 图片对比弹窗
+  
+  // AbortController 管理 - 用于取消请求
+  const syncAbortControllerRef = useRef<AbortController | null>(null);
+  const translateAbortControllerRef = useRef<AbortController | null>(null);
+  
+  // 退出确认弹窗状态
+  const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
+  const [exitConfirmMessage, setExitConfirmMessage] = useState('');
+  const [pendingExitAction, setPendingExitAction] = useState<(() => void) | null>(null);
   
   // 自动调整 textarea 高度的辅助函数
   const autoResizeTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -735,6 +745,56 @@ export default function AdminSPUPage() {
 
   // 关闭编辑弹窗
   const handleCloseEditModal = () => {
+    // 如果正在同步或翻译，显示确认弹窗
+    if (syncingSingle || translating) {
+      const action = syncingSingle 
+        ? (locale === 'zh' ? '同步' : 'syncing')
+        : (locale === 'zh' ? '翻译' : 'translating');
+      const message = locale === 'zh'
+        ? `正在${action}中，退出将取消操作并丢弃更改，确定退出吗？`
+        : `Currently ${action}, exiting will cancel the operation and discard changes. Are you sure?`;
+      
+      setExitConfirmMessage(message);
+      setPendingExitAction(() => () => {
+        // 取消所有请求
+        if (syncAbortControllerRef.current) {
+          syncAbortControllerRef.current.abort();
+          syncAbortControllerRef.current = null;
+        }
+        if (translateAbortControllerRef.current) {
+          translateAbortControllerRef.current.abort();
+          translateAbortControllerRef.current = null;
+        }
+        
+        // 如果刚同步了数据但没保存，恢复原始数据
+        if (justSynced && preSyncFormData && preSyncSpu) {
+          setFormData(preSyncFormData);
+          setEditingSpu(preSyncSpu);
+          setPubchemInfo({
+            cid: preSyncSpu.pubchem_cid,
+            syncedAt: preSyncSpu.pubchem_synced_at,
+          });
+        }
+        
+        // 终止所有进行中的任务
+        setSyncingSingle(false);
+        setTranslating(false);
+        setTranslatingFields(new Set());
+        // 重置所有状态
+        setJustSynced(false);
+        setSyncedFields(new Set());
+        setPreSyncFormData(null);
+        setPreSyncSpu(null);
+        setPendingTranslations(null);
+        setTranslationProgress({ current: 0, total: 0, currentLang: '', currentField: '', status: 'idle' });
+        setViewMode('list');
+        setEditingSpu(null);
+        setShowExitConfirmModal(false);
+      });
+      setShowExitConfirmModal(true);
+      return;
+    }
+    
     // 如果刚同步了数据但没保存，恢复原始数据
     if (justSynced && preSyncFormData && preSyncSpu) {
       setFormData(preSyncFormData);
@@ -770,6 +830,10 @@ export default function AdminSPUPage() {
     setPreSyncFormData({ ...formData });
     setPreSyncSpu(editingSpu);
     
+    // 创建 AbortController 用于取消请求
+    const abortController = new AbortController();
+    syncAbortControllerRef.current = abortController;
+    
     setSyncingSingle(true);
     setSyncProgress({ 
       step: 'connecting', 
@@ -780,7 +844,9 @@ export default function AdminSPUPage() {
       const token = localStorage.getItem('admin_token');
       
       // 步骤1：真实检测 PubChem 连接
-      const connectionResponse = await fetch('/api/admin/spu/check-pubchem-connection');
+      const connectionResponse = await fetch('/api/admin/spu/check-pubchem-connection', {
+        signal: abortController.signal,
+      });
       const connectionData = await connectionResponse.json();
       
       if (!connectionData.connected) {
@@ -790,6 +856,7 @@ export default function AdminSPUPage() {
         alert(locale === 'zh' 
           ? `PubChem 连接失败: ${connectionData.message}` 
           : `PubChem connection failed: ${connectionData.message}`);
+        syncAbortControllerRef.current = null;
         return;
       }
       
@@ -809,6 +876,7 @@ export default function AdminSPUPage() {
           casList: [editingSpu.cas],
           forceUpdate: true 
         }),
+        signal: abortController.signal,
       });
 
       const data = await response.json();
@@ -978,6 +1046,17 @@ export default function AdminSPUPage() {
         );
       }
     } catch (error) {
+      // 检查是否是被取消的请求
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Sync aborted by user');
+        // 恢复到同步前的数据
+        if (preSyncFormData) setFormData(preSyncFormData);
+        if (preSyncSpu) setEditingSpu(preSyncSpu);
+        setSyncingSingle(false);
+        setSyncProgress({ step: 'connecting', message: '' });
+        return;
+      }
+      
       console.error('Sync PubChem error:', error);
       showConfirm(
         locale === 'zh' ? '同步失败' : 'Sync Error', 
@@ -987,8 +1066,11 @@ export default function AdminSPUPage() {
         },
         'error'
       );
+    } finally {
+      // 清理 AbortController
+      syncAbortControllerRef.current = null;
     }
-    // 移除 finally，改为在用户确认后关闭遮罩层
+    // 移除移除 finally，改为在用户确认后关闭遮罩层
   };
 
   /**
@@ -1059,6 +1141,10 @@ export default function AdminSPUPage() {
     const allLanguages = [currentLang, ...targetLanguages];
     const translations = { ...existingTranslations };
     
+    // 创建 AbortController 用于取消翻译
+    const abortController = new AbortController();
+    translateAbortControllerRef.current = abortController;
+    
     setTranslating(true);
     setTranslationProgress({
       current: 0,
@@ -1083,6 +1169,7 @@ export default function AdminSPUPage() {
             text: value, 
             targetLanguages: allLanguages 
           }),
+          signal: abortController.signal,
         });
         const data = await res.json();
         
@@ -1139,6 +1226,11 @@ export default function AdminSPUPage() {
         
         return { fieldName, success: true };
       } catch (e) {
+        // 检查是否是被取消的请求
+        if (e instanceof Error && e.name === 'AbortError') {
+          console.log(`Translation aborted for ${fieldName}`);
+          return { fieldName, success: false, aborted: true };
+        }
         console.error(`Translation error for ${fieldName}:`, e);
         return { fieldName, success: false };
       } finally {
@@ -1151,6 +1243,9 @@ export default function AdminSPUPage() {
     });
     
     await Promise.all(translationPromises);
+    
+    // 清理 AbortController
+    translateAbortControllerRef.current = null;
     
     setPendingTranslations({ ...translations });
     setTranslationProgress(prev => ({ ...prev, status: 'completed' }));
@@ -2874,6 +2969,44 @@ export default function AdminSPUPage() {
               <div className="mt-3 text-center text-xs text-slate-500">
                 {locale === 'zh' ? '点击图片可直接选择' : 'Click image to select directly'}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* 退出确认弹窗 */}
+      {showExitConfirmModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-md p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertCircle className="w-6 h-6 text-orange-500" />
+              <h3 className="text-lg font-semibold text-white">
+                {locale === 'zh' ? '确认退出' : 'Confirm Exit'}
+              </h3>
+            </div>
+            <p className="text-slate-300 mb-6">
+              {exitConfirmMessage}
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowExitConfirmModal(false);
+                  setPendingExitAction(null);
+                }}
+              >
+                {locale === 'zh' ? '取消' : 'Cancel'}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (pendingExitAction) {
+                    pendingExitAction();
+                  }
+                }}
+              >
+                {locale === 'zh' ? '确认退出' : 'Exit'}
+              </Button>
             </div>
           </div>
         </div>
