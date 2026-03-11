@@ -174,45 +174,33 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="min-h-screen bg-slate-900">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen transition-all duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 z-40 h-screen transition-all duration-300 ease-in-out flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } bg-slate-800 border-r border-slate-700 ${
           sidebarCollapsed ? 'w-16' : 'w-64'
         }`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700 flex-shrink-0">
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
               <Shield className="h-5 w-5 text-white" />
             </div>
-            <span className={`text-white font-bold whitespace-nowrap transition-opacity duration-200 ${
-              sidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100'
+            <span className={`text-white font-bold whitespace-nowrap transition-all duration-300 ${
+              sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 ml-0'
             }`}>{t('common.siteName')}</span>
           </div>
-          {/* 收缩按钮 - 桌面端显示 */}
-          <button
-            onClick={toggleSidebarCollapse}
-            className="hidden lg:flex text-slate-400 hover:text-white transition-colors flex-shrink-0"
-            title={sidebarCollapsed ? (t('nav.expandSidebar') || '展开侧栏') : (t('nav.collapseSidebar') || '收起侧栏')}
-          >
-            {sidebarCollapsed ? (
-              <ChevronRightSquare className="h-5 w-5" />
-            ) : (
-              <ChevronLeftSquare className="h-5 w-5" />
-            )}
-          </button>
           {/* 关闭按钮 - 移动端显示 */}
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-slate-400 hover:text-white"
+            className="lg:hidden text-slate-400 hover:text-white flex-shrink-0"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className={`flex-1 overflow-y-auto ${sidebarCollapsed ? 'p-2' : 'p-4'} space-y-1`}>
           {menuItems.map((item) => {
             // 判断是否有子菜单
             const hasChildren = item.children && item.children.length > 0;
@@ -266,18 +254,18 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                 <button
                   onClick={handleClick}
                   title={sidebarCollapsed ? item.label : undefined}
-                  className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                  className={`w-full flex items-center gap-3 rounded-lg transition-colors ${
+                    sidebarCollapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5 justify-between'
+                  } ${
                     (hasChildren ? isChildActive : isActive)
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                  } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                  }`}
                 >
-                  <div className={`flex items-center ${sidebarCollapsed ? '' : 'gap-3'}`}>
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
-                    <span className={`whitespace-nowrap transition-all duration-200 ${
-                      sidebarCollapsed ? 'hidden' : ''
-                    }`}>{item.label}</span>
-                  </div>
+                  <item.icon className={`h-5 w-5 flex-shrink-0 ${sidebarCollapsed ? '' : ''}`} />
+                  <span className={`whitespace-nowrap transition-all duration-200 ${
+                    sidebarCollapsed ? 'hidden w-0' : ''
+                  }`}>{item.label}</span>
                   {hasChildren && !sidebarCollapsed && (
                     isExpanded 
                       ? <ChevronDown className="h-4 w-4 flex-shrink-0" />
@@ -318,6 +306,26 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+
+        {/* 底部收缩按钮 */}
+        <div className="flex-shrink-0 border-t border-slate-700 p-2">
+          <button
+            onClick={toggleSidebarCollapse}
+            className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors ${
+              sidebarCollapsed ? 'justify-center' : ''
+            }`}
+            title={sidebarCollapsed ? (t('nav.expandSidebar') || '展开侧栏') : (t('nav.collapseSidebar') || '收起侧栏')}
+          >
+            {sidebarCollapsed ? (
+              <ChevronRightSquare className="h-5 w-5 flex-shrink-0" />
+            ) : (
+              <>
+                <ChevronLeftSquare className="h-5 w-5 flex-shrink-0" />
+                <span className="text-sm">{t('nav.collapseSidebar') || '收起侧栏'}</span>
+              </>
+            )}
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
