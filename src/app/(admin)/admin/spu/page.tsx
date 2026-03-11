@@ -865,19 +865,22 @@ export default function AdminSPUPage() {
         return;
       }
       
-      // 步骤2：获取 PubChem 数据（不写入数据库）
+      // 步骤2：获取 PubChem 数据（preview 模式，不写入数据库）
       setSyncProgress({ 
         step: 'fetching', 
         message: locale === 'zh' ? `正在获取 ${editingSpu.cas} 数据...` : `Fetching data for ${editingSpu.cas}...` 
       });
       
-      const response = await fetch('/api/admin/spu/fetch-pubchem', {
+      const response = await fetch('/api/admin/spu/sync-pubchem', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ cas: editingSpu.cas }),
+        body: JSON.stringify({ 
+          preview: true,
+          cas: editingSpu.cas,
+        }),
         signal: abortController.signal,
       });
 

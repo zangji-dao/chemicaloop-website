@@ -887,17 +887,97 @@ async function fetchPubChemData(cas: string): Promise<PubChemData | null> {
 /**
  * POST /api/admin/spu/sync-pubchem
  * 批量同步 SPU 的 PubChem 数据
+ * 
+ * 参数：
+ * - preview: boolean - 如果为 true，只获取数据不写入数据库（用于前端预览）
+ * - cas: string - preview 模式下必填，单个 CAS 号
+ * - forceUpdate: boolean - 强制更新已有数据的 SPU
+ * - limit: number - 批量模式下限制数量
+ * - casList: string[] - 批量模式下指定 CAS 列表
  */
 export async function POST(request: NextRequest) {
   try {
-    const db = await getDb(schema);
     const body = await request.json().catch(() => ({}));
     
     const { 
+      preview = false,
+      cas,
       forceUpdate = false,
       limit = 10,
       casList = null
     } = body;
+    
+    // ========== 预览模式：只获取数据，不写入数据库 ==========
+    if (preview && cas) {
+      console.log(`[Sync-PubChem] Preview mode for CAS: ${cas}`);
+      
+      const pubchemData = await fetchPubChemData(cas.trim());
+      
+      if (!pubchemData) {
+        return NextResponse.json({
+          success: false,
+          error: 'PubChem data not found for this CAS number',
+        });
+      }
+      
+      // 返回数据，不写入数据库
+      return NextResponse.json({
+        success: true,
+        data: {
+          pubchemCid: pubchemData.cid,
+          pubchemSyncedAt: new Date().toISOString(),
+          // 基本信息
+          formula: pubchemData.formula,
+          molecularWeight: pubchemData.molecularWeight,
+          exactMass: pubchemData.exactMass,
+          smiles: pubchemData.smiles,
+          smilesCanonical: pubchemData.smilesCanonical,
+          smilesIsomeric: pubchemData.smilesIsomeric,
+          inchi: pubchemData.inchi,
+          inchiKey: pubchemData.inchiKey,
+          // 计算属性
+          xlogp: pubchemData.xlogp,
+          tpsa: pubchemData.tpsa,
+          complexity: pubchemData.complexity,
+          hBondDonorCount: pubchemData.hBondDonorCount,
+          hBondAcceptorCount: pubchemData.hBondAcceptorCount,
+          rotatableBondCount: pubchemData.rotatableBondCount,
+          heavyAtomCount: pubchemData.heavyAtomCount,
+          formalCharge: pubchemData.formalCharge,
+          // 物理化学性质
+          description: pubchemData.description,
+          physicalDescription: pubchemData.physicalDescription,
+          colorForm: pubchemData.colorForm,
+          odor: pubchemData.odor,
+          boilingPoint: pubchemData.boilingPoint,
+          meltingPoint: pubchemData.meltingPoint,
+          flashPoint: pubchemData.flashPoint,
+          density: pubchemData.density,
+          solubility: pubchemData.solubility,
+          vaporPressure: pubchemData.vaporPressure,
+          refractiveIndex: pubchemData.refractiveIndex,
+          // 安全信息
+          hazardClasses: pubchemData.hazardClasses,
+          healthHazards: pubchemData.healthHazards,
+          ghsClassification: pubchemData.ghsClassification,
+          toxicitySummary: pubchemData.toxicitySummary,
+          carcinogenicity: pubchemData.carcinogenicity,
+          firstAid: pubchemData.firstAid,
+          storageConditions: pubchemData.storageConditions,
+          incompatibleMaterials: pubchemData.incompatibleMaterials,
+          // 同义词和应用
+          synonyms: pubchemData.synonyms,
+          applications: pubchemData.applications,
+          // 结构图
+          structureUrl: pubchemData.structureUrl,
+          structureImageKey: pubchemData.structureImageKey,
+          structure2dSvg: pubchemData.structure2dSvg,
+        },
+      });
+    }
+    
+    // ========== 批量同步模式：写入数据库 ==========
+    const db = await getDb(schema);
     
     // 查询需要更新的 SPU
     let queryText: string;
