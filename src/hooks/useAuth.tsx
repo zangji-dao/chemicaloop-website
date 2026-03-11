@@ -1,14 +1,21 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { User, login, register, getCurrentUser, logout, saveUser, getToken, clearAuth, getUser } from '@/services/authService';
+import { hasRole, isAgentOrAbove, isAdminRole, isSuperAdmin } from '@/lib/constants/roles';
 
 interface AuthContextType {
   user: User | null;
-  userRole: 'USER' | 'AGENT' | 'ADMIN' | null;
+  userRole: string | null;
   isLoggedIn: boolean;
   isLoading: boolean;
   error: string | null;
+  // 权限判断
+  isAgent: boolean;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  hasPermission: (requiredRole: string) => boolean;
+  // 原有方法
   login: (email: string, password: string) => Promise<void>;
   register: (
     email: string,
@@ -31,6 +38,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 计算权限
+  const permissions = useMemo(() => {
+    const role = user?.role || null;
+    return {
+      userRole: role,
+      isAgent: isAgentOrAbove(role),
+      isAdmin: isAdminRole(role),
+      isSuperAdmin: isSuperAdmin(role),
+      hasPermission: (requiredRole: string) => hasRole(role, requiredRole),
+    };
+  }, [user?.role]);
 
   // 初始化时检查认证状态（仅在无缓存用户时验证 token）
   useEffect(() => {
@@ -179,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value: AuthContextType = {
     user,
-    userRole: user?.role || null,
+    ...permissions,
     isLoggedIn,
     isLoading,
     error,

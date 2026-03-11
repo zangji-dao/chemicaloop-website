@@ -2,26 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
-import jwt from 'jsonwebtoken';
-
-// 从 token 中解析用户 ID
-function getUserIdFromToken(request: NextRequest): string | null {
-  const headerUserId = request.headers.get('x-user-id');
-  if (headerUserId) return headerUserId;
-
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) return null;
-
-  const token = authHeader.replace('Bearer ', '');
-  if (!token) return null;
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: string };
-    return decoded.userId;
-  } catch (error) {
-    return null;
-  }
-}
+import { verifyAgent, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
 
 /**
  * 重新提交审核
@@ -32,12 +13,14 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = getUserIdFromToken(request);
-    
-    if (!userId) {
-      return NextResponse.json({ success: false, error: '未授权' }, { status: 401 });
+    const auth = verifyAgent(request);
+    if (!auth.success) {
+      return auth.status === 401 
+        ? unauthorizedResponse(auth.error)
+        : forbiddenResponse(auth.error);
     }
 
+    const userId = auth.userId;
     const { id } = await params;
     const db = await getDb(schema);
 

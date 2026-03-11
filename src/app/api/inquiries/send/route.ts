@@ -1,24 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-
-// 辅助函数：从请求中获取用户 ID
-function getUserIdFromRequest(request: NextRequest): string | null {
-  const headerUserId = request.headers.get('x-user-id');
-  if (headerUserId) return headerUserId;
-
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) return null;
-
-  const token = authHeader.replace('Bearer ', '');
-  if (!token) return null;
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: string };
-    return decoded.userId;
-  } catch (error) {
-    return null;
-  }
-}
+import { verifyUser, unauthorizedResponse } from '@/lib/auth';
 
 /**
  * 发送询价站内信
@@ -26,12 +7,12 @@ function getUserIdFromRequest(request: NextRequest): string | null {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = getUserIdFromRequest(request);
-    
-    if (!userId) {
-      return NextResponse.json({ success: false, error: '未授权' }, { status: 401 });
+    const auth = verifyUser(request);
+    if (!auth.success) {
+      return unauthorizedResponse(auth.error);
     }
 
+    const userId = auth.userId;
     const body = await request.json();
     const {
       toUserId,

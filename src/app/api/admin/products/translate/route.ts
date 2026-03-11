@@ -2,23 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
-import jwt from 'jsonwebtoken';
-
-// 验证管理员权限
-async function verifyAdmin(request: NextRequest): Promise<{ userId: string; token: string } | null> {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) return null;
-
-  const token = authHeader.replace('Bearer ', '');
-  if (!token) return null;
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: string };
-    return { userId: decoded.userId, token };
-  } catch (error) {
-    return null;
-  }
-}
+import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
 
 interface TranslationRequest {
   productId: string;
@@ -33,9 +17,11 @@ interface TranslationRequest {
  */
 export async function POST(request: NextRequest) {
   try {
-    const auth = await verifyAdmin(request);
-    if (!auth) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = verifyAdmin(request);
+    if (!auth.success) {
+      return auth.status === 401 
+        ? unauthorizedResponse(auth.error)
+        : forbiddenResponse(auth.error);
     }
 
     const { productId, targetLanguage, fields, table = 'agent_products' } = await request.json() as TranslationRequest;

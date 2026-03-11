@@ -2,26 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
-import jwt from 'jsonwebtoken';
-
-// 从 token 中解析用户 ID
-function getUserIdFromToken(request: NextRequest): string | null {
-  const headerUserId = request.headers.get('x-user-id');
-  if (headerUserId) return headerUserId;
-
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) return null;
-
-  const token = authHeader.replace('Bearer ', '');
-  if (!token) return null;
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as { userId: string };
-    return decoded.userId;
-  } catch (error) {
-    return null;
-  }
-}
+import { verifyAgent, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
 
 /**
  * 获取代理商的产品列表
@@ -29,22 +10,15 @@ function getUserIdFromToken(request: NextRequest): string | null {
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = getUserIdFromToken(request);
-    
-    if (!userId) {
-      return NextResponse.json({ success: false, error: '未授权' }, { status: 401 });
+    const auth = verifyAgent(request);
+    if (!auth.success) {
+      return auth.status === 401 
+        ? unauthorizedResponse(auth.error)
+        : forbiddenResponse(auth.error);
     }
 
+    const userId = auth.userId;
     const db = await getDb(schema);
-
-    // 验证是否为代理商
-    const userResult = await db.execute(sql`
-      SELECT role FROM users WHERE id = ${userId}
-    `);
-
-    if (userResult.rows.length === 0 || (userResult.rows[0] as any).role !== 'AGENT') {
-      return NextResponse.json({ success: false, error: '您不是代理商' }, { status: 403 });
-    }
 
     // 获取搜索参数
     const { searchParams } = new URL(request.url);
@@ -114,22 +88,15 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = getUserIdFromToken(request);
-    
-    if (!userId) {
-      return NextResponse.json({ success: false, error: '未授权' }, { status: 401 });
+    const auth = verifyAgent(request);
+    if (!auth.success) {
+      return auth.status === 401 
+        ? unauthorizedResponse(auth.error)
+        : forbiddenResponse(auth.error);
     }
 
+    const userId = auth.userId;
     const db = await getDb(schema);
-
-    // 验证是否为代理商
-    const userResult = await db.execute(sql`
-      SELECT role FROM users WHERE id = ${userId}
-    `);
-
-    if (userResult.rows.length === 0 || (userResult.rows[0] as any).role !== 'AGENT') {
-      return NextResponse.json({ success: false, error: '您不是代理商' }, { status: 403 });
-    }
 
     const body = await request.json();
     const { cas, name, purity, packageSpec, price, minOrder, stock, stockPublic, origin, remark } = body;
