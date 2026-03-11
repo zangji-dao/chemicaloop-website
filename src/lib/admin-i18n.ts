@@ -81,6 +81,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       settings: 'Settings',
       logout: 'Logout',
       backToFrontend: 'Back to Frontend',
+      collapseSidebar: 'Collapse Sidebar',
+      expandSidebar: 'Expand Sidebar',
     },
     // 产品审核
     products: {
@@ -440,6 +442,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       settings: '设置',
       logout: '退出登录',
       backToFrontend: '返回前台',
+      collapseSidebar: '收起侧栏',
+      expandSidebar: '展开侧栏',
     },
     // 产品审核
     products: {
@@ -798,6 +802,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       settings: '設定',
       logout: 'ログアウト',
       backToFrontend: 'フロントエンドへ',
+      collapseSidebar: 'サイドバーを縮小',
+      expandSidebar: 'サイドバーを展開',
     },
     // 製品審査
     products: {
@@ -1116,6 +1122,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       settings: '설정',
       logout: '로그아웃',
       backToFrontend: '프론트엔드로',
+      collapseSidebar: '사이드바 접기',
+      expandSidebar: '사이드바 펼치기',
     },
     products: {
       title: '제품 관리',
@@ -1428,6 +1436,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       settings: 'Einstellungen',
       logout: 'Abmelden',
       backToFrontend: 'Zurück zur Webseite',
+      collapseSidebar: 'Seitenleiste einklappen',
+      expandSidebar: 'Seitenleiste ausklappen',
     },
     products: {
       title: 'Produktverwaltung',
@@ -1740,6 +1750,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       settings: 'Paramètres',
       logout: 'Déconnexion',
       backToFrontend: 'Retour au site',
+      collapseSidebar: 'Réduire la barre latérale',
+      expandSidebar: 'Étendre la barre latérale',
     },
     products: {
       title: 'Gestion des produits',
@@ -2052,6 +2064,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       settings: 'Configuración',
       logout: 'Cerrar sesión',
       backToFrontend: 'Volver al sitio',
+      collapseSidebar: 'Contraer barra lateral',
+      expandSidebar: 'Expandir barra lateral',
     },
     products: {
       title: 'Gestión de productos',
@@ -2364,6 +2378,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       settings: 'Configurações',
       logout: 'Sair',
       backToFrontend: 'Voltar ao site',
+      collapseSidebar: 'Recolher barra lateral',
+      expandSidebar: 'Expandir barra lateral',
     },
     products: {
       title: 'Gestão de produtos',
@@ -2676,6 +2692,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       settings: 'Настройки',
       logout: 'Выход',
       backToFrontend: 'Вернуться на сайт',
+      collapseSidebar: 'Свернуть боковую панель',
+      expandSidebar: 'Развернуть боковую панель',
     },
     products: {
       title: 'Управление продуктами',
@@ -2988,6 +3006,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       settings: 'الإعدادات',
       logout: 'تسجيل الخروج',
       backToFrontend: 'العودة للموقع',
+      collapseSidebar: 'طي الشريط الجانبي',
+      expandSidebar: 'توسيع الشريط الجانبي',
     },
     products: {
       title: 'إدارة المنتجات',

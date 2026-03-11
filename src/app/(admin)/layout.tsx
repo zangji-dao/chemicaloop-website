@@ -255,7 +255,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   onClick={handleClick}
                   title={sidebarCollapsed ? item.label : undefined}
                   className={`w-full flex items-center gap-3 rounded-lg transition-colors ${
-                    sidebarCollapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5 justify-between'
+                    sidebarCollapsed ? 'px-3 py-2.5 justify-center' : 'px-3 py-2.5'
+                  } ${
+                    (hasChildren && !sidebarCollapsed) ? 'justify-between' : ''
                   } ${
                     (hasChildren ? isChildActive : isActive)
                       ? 'bg-blue-600 text-white'
@@ -312,9 +314,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           <button
             onClick={toggleSidebarCollapse}
             className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors ${
-              sidebarCollapsed ? 'justify-center' : ''
+              sidebarCollapsed ? 'justify-center' : 'justify-start'
             }`}
-            title={sidebarCollapsed ? (t('nav.expandSidebar') || '展开侧栏') : (t('nav.collapseSidebar') || '收起侧栏')}
+            title={sidebarCollapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
           >
             {sidebarCollapsed ? (
               <ChevronRightSquare className="h-5 w-5 flex-shrink-0" />
