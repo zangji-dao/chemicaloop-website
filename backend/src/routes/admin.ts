@@ -2,7 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../db/db';
-import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { authMiddleware, AuthRequest, adminOnlyMiddleware } from '../middleware/auth';
 
 const router = Router();
 
@@ -62,12 +62,8 @@ router.post('/login', async (req, res) => {
 });
 
 // Verify admin token
-router.get('/verify', authMiddleware, async (req: AuthRequest, res) => {
+router.get('/verify', authMiddleware, adminOnlyMiddleware, async (req: AuthRequest, res) => {
   try {
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ error: '无权访问' });
-    }
-
     res.json({
       success: true,
       user: {
@@ -82,12 +78,8 @@ router.get('/verify', authMiddleware, async (req: AuthRequest, res) => {
 });
 
 // Get all users (admin only)
-router.get('/users', authMiddleware, async (req: AuthRequest, res) => {
+router.get('/users', authMiddleware, adminOnlyMiddleware, async (req: AuthRequest, res) => {
   try {
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ error: '无权访问' });
-    }
-
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const search = req.query.search as string || '';
@@ -160,12 +152,8 @@ router.get('/users', authMiddleware, async (req: AuthRequest, res) => {
 });
 
 // Get user details
-router.get('/users/:id', authMiddleware, async (req: AuthRequest, res) => {
+router.get('/users/:id', authMiddleware, adminOnlyMiddleware, async (req: AuthRequest, res) => {
   try {
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ error: '无权访问' });
-    }
-
     const { id } = req.params;
 
     const userResult = await pool.query(
@@ -211,12 +199,8 @@ router.get('/users/:id', authMiddleware, async (req: AuthRequest, res) => {
 });
 
 // Update user role
-router.put('/users/:id/role', authMiddleware, async (req: AuthRequest, res) => {
+router.put('/users/:id/role', authMiddleware, adminOnlyMiddleware, async (req: AuthRequest, res) => {
   try {
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ error: '无权访问' });
-    }
-
     const { id } = req.params;
     const { role } = req.body;
 
@@ -237,12 +221,8 @@ router.put('/users/:id/role', authMiddleware, async (req: AuthRequest, res) => {
 });
 
 // Update user verified status
-router.put('/users/:id/verified', authMiddleware, async (req: AuthRequest, res) => {
+router.put('/users/:id/verified', authMiddleware, adminOnlyMiddleware, async (req: AuthRequest, res) => {
   try {
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ error: '无权访问' });
-    }
-
     const { id } = req.params;
     const { verified } = req.body;
 
@@ -259,12 +239,8 @@ router.put('/users/:id/verified', authMiddleware, async (req: AuthRequest, res) 
 });
 
 // Get dashboard stats
-router.get('/stats', authMiddleware, async (req: AuthRequest, res) => {
+router.get('/stats', authMiddleware, adminOnlyMiddleware, async (req: AuthRequest, res) => {
   try {
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ error: '无权访问' });
-    }
-
     // 获取总用户数
     const totalUsersResult = await pool.query('SELECT COUNT(*) FROM users');
     const totalUsers = parseInt(totalUsersResult.rows[0].count);
@@ -312,12 +288,8 @@ router.get('/stats', authMiddleware, async (req: AuthRequest, res) => {
 // ==================== 产品管理 ====================
 
 // Get all agent products (admin only)
-router.get('/products', authMiddleware, async (req: AuthRequest, res) => {
+router.get('/products', authMiddleware, adminOnlyMiddleware, async (req: AuthRequest, res) => {
   try {
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ error: '无权访问' });
-    }
-
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const status = req.query.status as string || '';
@@ -397,12 +369,8 @@ router.get('/products', authMiddleware, async (req: AuthRequest, res) => {
 });
 
 // Get product stats by status
-router.get('/products/stats', authMiddleware, async (req: AuthRequest, res) => {
+router.get('/products/stats', authMiddleware, adminOnlyMiddleware, async (req: AuthRequest, res) => {
   try {
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ error: '无权访问' });
-    }
-
     const result = await pool.query(`
       SELECT status, COUNT(*) as count
       FROM agent_products
@@ -429,12 +397,8 @@ router.get('/products/stats', authMiddleware, async (req: AuthRequest, res) => {
 });
 
 // Update product status (review/approve/reject/activate/deactivate)
-router.put('/products/:id/status', authMiddleware, async (req: AuthRequest, res) => {
+router.put('/products/:id/status', authMiddleware, adminOnlyMiddleware, async (req: AuthRequest, res) => {
   try {
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ error: '无权访问' });
-    }
-
     const { id } = req.params;
     const { status, review_note } = req.body;
 
@@ -463,12 +427,8 @@ router.put('/products/:id/status', authMiddleware, async (req: AuthRequest, res)
 });
 
 // Batch update product status
-router.put('/products/batch-status', authMiddleware, async (req: AuthRequest, res) => {
+router.put('/products/batch-status', authMiddleware, adminOnlyMiddleware, async (req: AuthRequest, res) => {
   try {
-    if (req.userRole !== 'admin') {
-      return res.status(403).json({ error: '无权访问' });
-    }
-
     const { ids, status, review_note } = req.body;
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {

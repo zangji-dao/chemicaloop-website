@@ -166,11 +166,36 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 const backendUrl = `http://localhost:3001/api/...`;
 ```
 
-#### 待统一项（后续优化）
+#### 后端权限中间件
+- **禁止**在 Express 路由中重复编写角色判断逻辑
+- **必须**使用 `backend/src/middleware/auth.ts` 提供的中间件：
+  - `authMiddleware` — 验证用户身份，设置 `req.userId` 和 `req.userRole`
+  - `agentOnlyMiddleware` — 仅允许代理商及以上角色
+  - `adminOnlyMiddleware` — 仅允许管理员角色
+  - `superAdminOnlyMiddleware` — 仅允许超级管理员（可扩展）
+
+```typescript
+// ✅ 正确
+import { authMiddleware, adminOnlyMiddleware } from '../middleware/auth';
+router.get('/users', authMiddleware, adminOnlyMiddleware, async (req, res) => {
+  // 直接写业务逻辑
+});
+
+// ❌ 错误（禁止重复）
+router.get('/users', authMiddleware, async (req, res) => {
+  if (req.userRole !== 'admin') {
+    return res.status(403).json({ error: '无权访问' });
+  }
+  // 业务逻辑
+});
+```
+
+#### 已统一项
+
 | 问题 | 现状 | 建议 |
 |------|------|------|
 | ~~BACKEND_URL~~ | ~~18+ 处重复定义~~ | ✅ 已统一使用 `API_CONFIG.backendURL` |
-| 后端角色判断 | 10 处重复 | 创建 `adminOnlyMiddleware` |
+| ~~后端角色判断~~ | ~~10 处重复~~ | ✅ 已创建 `adminOnlyMiddleware` |
 | 前端 localStorage | 25+ 处直接访问 | 使用 `authService.getToken()` |
 
 ---

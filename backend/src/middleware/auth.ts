@@ -65,3 +65,25 @@ export const agentOnlyMiddleware = (req: AuthRequest, res: Response, next: NextF
   }
   next();
 };
+
+/**
+ * 管理员权限中间件
+ * 仅允许 ADMIN 角色访问
+ */
+export const adminOnlyMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (req.userRole !== 'admin') {
+    return res.status(403).json({ error: '无权访问' });
+  }
+  next();
+};
+
+/**
+ * 超级管理员权限中间件
+ * 仅允许 ADMIN 角色访问（目前等同于 adminOnlyMiddleware，可扩展为更严格的权限控制）
+ */
+export const superAdminOnlyMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (req.userRole !== 'admin') {
+    return res.status(403).json({ error: '无权访问，需要超级管理员权限' });
+  }
+  next();
+};
