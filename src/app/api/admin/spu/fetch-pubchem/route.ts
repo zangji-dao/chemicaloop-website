@@ -96,6 +96,7 @@ interface PubChemData {
 
 /**
  * 从 PubChem Pug View 数据中提取完整的物理化学性质
+ * 复制自 sync-pubchem API，保持一致性
  */
 function extractPubChemProperties(data: any): Partial<PubChemData> {
   const result: Partial<PubChemData> = {};
@@ -112,6 +113,7 @@ function extractPubChemProperties(data: any): Partial<PubChemData> {
         for (const sub of section.Section || []) {
           const subHeading = sub.TOCHeading || '';
           
+          // 记录描述
           if (subHeading === 'Record Description') {
             const info = sub.Information?.[0];
             if (info?.Value?.StringWithMarkup?.[0]?.String) {
@@ -119,6 +121,7 @@ function extractPubChemProperties(data: any): Partial<PubChemData> {
             }
           }
           
+          // 同义词
           if (subHeading === 'Synonyms') {
             const synonyms: string[] = [];
             for (const info of sub.Information || []) {
@@ -138,6 +141,7 @@ function extractPubChemProperties(data: any): Partial<PubChemData> {
         for (const sub of section.Section || []) {
           const subHeading = sub.TOCHeading || '';
           
+          // 计算属性
           if (subHeading === 'Computed Properties') {
             for (const prop of sub.Section || []) {
               const propName = prop.TOCHeading || '';
@@ -155,6 +159,7 @@ function extractPubChemProperties(data: any): Partial<PubChemData> {
             }
           }
           
+          // 实验性质
           if (subHeading === 'Experimental Properties') {
             for (const prop of sub.Section || []) {
               const propName = prop.TOCHeading || '';
@@ -184,7 +189,9 @@ function extractPubChemProperties(data: any): Partial<PubChemData> {
       if (heading === 'Chemical Safety') {
         const info = section.Information?.[0];
         if (info?.Value?.StringWithMarkup?.[0]?.String) {
-          result.hazardClasses = info.Value.StringWithMarkup[0].String;
+          if (!result.description) {
+            result.description = info.Value.StringWithMarkup[0].String;
+          }
         }
       }
       
@@ -194,96 +201,186 @@ function extractPubChemProperties(data: any): Partial<PubChemData> {
           const subHeading = sub.TOCHeading || '';
           
           if (subHeading === 'Hazards Identification') {
-            for (const subSub of sub.Section || []) {
-              const subSubHeading = subSub.TOCHeading || '';
+            for (const haz of sub.Section || []) {
+              const hazHeading = haz.TOCHeading || '';
               
-              if (subSubHeading === 'GHS Classification') {
-                const ghsSet = new Set<string>();
-                for (const info of subSub.Information || []) {
-                  if (info?.Value?.StringWithMarkup?.[0]?.String) {
-                    ghsSet.add(info.Value.StringWithMarkup[0].String);
+              if (hazHeading === 'GHS Classification') {
+                const ghsStatements: string[] = [];
+                const hazardClassesSet = new Set<string>();
+                let signalWord = '';
+                
+                for (const info of haz.Information || []) {
+                  const infoName = info.Name || '';
+                  
+                  if (infoName === 'Pictogram(s)') {
+                    const markup = info?.Value?.StringWithMarkup?.[0]?.Markup;
+                    if (markup && Array.isArray(markup)) {
+                      for (const m of markup) {
+                        if (m?.Extra) {
+                          hazardClassesSet.add(m.Extra);
+                        }
+                      }
+                    }
                   }
-                }
-                if (ghsSet.size > 0) {
-                  result.ghsClassification = [...ghsSet].join('\n');
-                }
-              }
-            }
-          }
-          
-          if (subHeading === 'First Aid') {
-            const firstAidParts: string[] = [];
-            for (const subSub of sub.Section || []) {
-              const subSubHeading = subSub.TOCHeading || '';
-              for (const info of subSub.Information || []) {
-                if (info?.Value?.StringWithMarkup?.[0]?.String) {
-                  firstAidParts.push(`${subSubHeading}: ${info.Value.StringWithMarkup[0].String}`);
-                }
-              }
-            }
-            if (firstAidParts.length > 0) {
-              result.firstAid = firstAidParts.join('\n\n');
-            }
-          }
-          
-          if (subHeading === 'Exposure Controls and Personal Protection') {
-            for (const subSub of sub.Section || []) {
-              const subSubHeading = subSub.TOCHeading || '';
-              if (subSubHeading === 'Personal Precautions' || subSubHeading === 'Storage') {
-                for (const info of subSub.Information || []) {
-                  if (info?.Value?.StringWithMarkup?.[0]?.String) {
-                    if (subSubHeading === 'Storage') {
-                      result.storageConditions = info.Value.StringWithMarkup[0].String;
+                  
+                  if (infoName === 'Signal') {
+                    const signal = info?.Value?.StringWithMarkup?.[0]?.String;
+                    if (signal) {
+                      signalWord = signal;
+                    }
+                  }
+                  
+                  if (infoName === 'GHS Hazard Statements') {
+                    for (const swm of info?.Value?.StringWithMarkup || []) {
+                      if (swm.String) {
+                        ghsStatements.push(swm.String);
+                      }
                     }
                   }
                 }
+                
+                const uniqueGhsStatements = [...new Set(ghsStatements)];
+                if (uniqueGhsStatements.length > 0) {
+                  result.ghsClassification = uniqueGhsStatements.join('\n');
+                }
+                if (hazardClassesSet.size > 0) {
+                  result.hazardClasses = [...hazardClassesSet].join(', ');
+                }
+              }
+              
+              if (hazHeading === 'Hazards Identification') {
+                const info = haz.Information?.[0];
+                if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                  if (!result.hazardClasses) {
+                    result.hazardClasses = info.Value.StringWithMarkup[0].String;
+                  }
+                }
               }
             }
           }
           
-          if (subHeading === 'Stability and Reactivity') {
+          // 急救措施
+          if (subHeading === 'First Aid' || subHeading === 'First Aid Measures') {
+            const firstAidSet = new Set<string>();
+            for (const info of sub.Information || []) {
+              if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                firstAidSet.add(info.Value.StringWithMarkup[0].String);
+              }
+            }
+            for (const subSub of sub.Section || []) {
+              for (const info of subSub.Information || []) {
+                if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                  firstAidSet.add(info.Value.StringWithMarkup[0].String);
+                }
+              }
+            }
+            if (firstAidSet.size > 0) {
+              result.firstAid = [...firstAidSet].join('\n');
+            }
+          }
+          
+          // 存储条件
+          if (subHeading === 'Handling and Storage') {
+            const storageSet = new Set<string>();
             for (const subSub of sub.Section || []) {
               const subSubHeading = subSub.TOCHeading || '';
-              if (subSubHeading === 'Incompatible Materials') {
+              if (subSubHeading.includes('Storage') || subSubHeading === 'Safe Storage') {
                 for (const info of subSub.Information || []) {
                   if (info?.Value?.StringWithMarkup?.[0]?.String) {
-                    result.incompatibleMaterials = info.Value.StringWithMarkup[0].String;
+                    storageSet.add(info.Value.StringWithMarkup[0].String);
                   }
                 }
               }
+            }
+            if (storageSet.size > 0) {
+              result.storageConditions = [...storageSet].join('\n');
+            }
+          }
+          
+          // 不相容物质
+          if (subHeading === 'Stability and Reactivity') {
+            const incompatSet = new Set<string>();
+            for (const subSub of sub.Section || []) {
+              const subSubHeading = subSub.TOCHeading || '';
+              if (subSubHeading.includes('Incompatib') || subSubHeading.includes('Reactivity')) {
+                for (const info of subSub.Information || []) {
+                  if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                    incompatSet.add(info.Value.StringWithMarkup[0].String);
+                  }
+                }
+              }
+            }
+            if (incompatSet.size > 0) {
+              result.incompatibleMaterials = [...incompatSet].join('\n');
             }
           }
         }
       }
       
-      // ========== 毒理学 ==========
+      // ========== 毒性信息 ==========
       if (heading === 'Toxicity') {
         for (const sub of section.Section || []) {
           const subHeading = sub.TOCHeading || '';
           
-          if (subHeading === 'Toxicological Information') {
+          if (subHeading.includes('Toxicological Information')) {
             for (const subSub of sub.Section || []) {
               const subSubHeading = subSub.TOCHeading || '';
               
-              if (subSubHeading === 'Health Hazards' || subSubHeading === 'Adverse Effects') {
-                const hazardsSet = new Set<string>();
+              if (subSubHeading === 'Toxicity Summary') {
                 for (const info of subSub.Information || []) {
                   if (info?.Value?.StringWithMarkup?.[0]?.String) {
-                    hazardsSet.add(info.Value.StringWithMarkup[0].String);
-                  }
-                }
-                if (hazardsSet.size > 0) {
-                  if (result.healthHazards) {
-                    const existing = new Set(result.healthHazards.split('\n'));
-                    hazardsSet.forEach(item => existing.add(item));
-                    result.healthHazards = [...existing].join('\n');
-                  } else {
-                    result.healthHazards = [...hazardsSet].join('\n');
+                    result.toxicitySummary = info.Value.StringWithMarkup[0].String;
+                    break;
                   }
                 }
               }
               
-              if (subSubHeading === 'Symptoms and Signs' || subSubHeading === 'Signs and Symptoms') {
+              if (subSubHeading.includes('Evidence for Carcinogenicity') || subSubHeading === 'Carcinogen Classification') {
+                for (const info of subSub.Information || []) {
+                  if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                    result.carcinogenicity = info.Value.StringWithMarkup[0].String;
+                    break;
+                  }
+                }
+              }
+              
+              if (subSubHeading === 'Health Effects') {
+                const healthHazardsSet = new Set<string>();
+                for (const info of subSub.Information || []) {
+                  if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                    healthHazardsSet.add(info.Value.StringWithMarkup[0].String);
+                  }
+                }
+                if (healthHazardsSet.size > 0) {
+                  if (result.healthHazards) {
+                    const existing = new Set(result.healthHazards.split('\n'));
+                    healthHazardsSet.forEach(item => existing.add(item));
+                    result.healthHazards = [...existing].join('\n');
+                  } else {
+                    result.healthHazards = [...healthHazardsSet].join('\n');
+                  }
+                }
+              }
+              
+              if (subSubHeading === 'Adverse Effects') {
+                const adverseEffectsSet = new Set<string>();
+                for (const info of subSub.Information || []) {
+                  if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                    adverseEffectsSet.add(info.Value.StringWithMarkup[0].String);
+                  }
+                }
+                if (adverseEffectsSet.size > 0) {
+                  if (result.healthHazards) {
+                    const existing = new Set(result.healthHazards.split('\n'));
+                    adverseEffectsSet.forEach(item => existing.add(item));
+                    result.healthHazards = [...existing].join('\n');
+                  } else {
+                    result.healthHazards = [...adverseEffectsSet].join('\n');
+                  }
+                }
+              }
+              
+              if (subSubHeading === 'Signs and Symptoms') {
                 const symptomsSet = new Set<string>();
                 for (const info of subSub.Information || []) {
                   if (info?.Value?.StringWithMarkup?.[0]?.String) {
@@ -300,17 +397,72 @@ function extractPubChemProperties(data: any): Partial<PubChemData> {
                   }
                 }
               }
+              
+              if (subSubHeading === 'Exposure Routes') {
+                for (const info of subSub.Information || []) {
+                  if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                    const exposureRoutes = info.Value.StringWithMarkup[0].String;
+                    if (result.healthHazards) {
+                      result.healthHazards = `Exposure Routes: ${exposureRoutes}\n\n${result.healthHazards}`;
+                    } else {
+                      result.healthHazards = `Exposure Routes: ${exposureRoutes}`;
+                    }
+                    break;
+                  }
+                }
+              }
+              
+              if (subSubHeading === 'Acute Effects') {
+                const acuteEffectsSet = new Set<string>();
+                for (const info of subSub.Information || []) {
+                  if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                    acuteEffectsSet.add(info.Value.StringWithMarkup[0].String);
+                  }
+                }
+                if (acuteEffectsSet.size > 0) {
+                  if (!result.healthHazards) {
+                    result.healthHazards = [...acuteEffectsSet].join('\n');
+                  } else {
+                    const existing = new Set(result.healthHazards.split('\n'));
+                    acuteEffectsSet.forEach(item => existing.add(item));
+                    result.healthHazards = [...existing].join('\n');
+                  }
+                }
+              }
+              
+              if (subSubHeading === 'Target Organs') {
+                const targetOrgans: string[] = [];
+                for (const info of subSub.Information || []) {
+                  if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                    targetOrgans.push(info.Value.StringWithMarkup[0].String);
+                  }
+                }
+                if (targetOrgans.length > 0 && result.toxicitySummary) {
+                  result.toxicitySummary += '\n\nTarget Organs: ' + targetOrgans.join(', ');
+                }
+              }
             }
           }
         }
       }
       
-      // ========== 用途 ==========
+      // ========== 用途与制造 ==========
       if (heading === 'Use and Manufacturing') {
         for (const sub of section.Section || []) {
           const subHeading = sub.TOCHeading || '';
           
           if (subHeading === 'Uses') {
+            for (const info of sub.Information || []) {
+              if (info?.Value?.StringWithMarkup?.[0]?.String) {
+                const use = info.Value.StringWithMarkup[0].String;
+                if (use && !applications.includes(use) && use.length < 500) {
+                  applications.push(use);
+                }
+              }
+            }
+          }
+          
+          if (subHeading === 'Use Summary' || subHeading === 'Consumer Uses') {
             for (const info of sub.Information || []) {
               if (info?.Value?.StringWithMarkup?.[0]?.String) {
                 const use = info.Value.StringWithMarkup[0].String;
@@ -341,7 +493,7 @@ function extractPubChemProperties(data: any): Partial<PubChemData> {
 async function fetchPubChemData(cas: string): Promise<PubChemData | null> {
   try {
     // 1. 通过 CAS 获取 CID
-    const cidResponse = await fetchWithRetry(`${PUBCHEM_BASE_URL}/compound/name/${encodeURIComponent(cas)}/cids/JSON`);
+    const cidResponse = await fetchWithRetry(`${PUBCHEM_BASE_URL}/compound/name/${encodeURIComponent(cas.trim())}/cids/JSON`);
     if (!cidResponse) {
       console.log(`[PubChem] No CID found for CAS: ${cas}`);
       return null;
@@ -419,7 +571,6 @@ async function fetchPubChemData(cas: string): Promise<PubChemData | null> {
 /**
  * POST /api/admin/spu/fetch-pubchem
  * 仅获取 PubChem 数据，不写入数据库
- * 用于前端预览同步结果，用户确认后才保存
  */
 export async function POST(request: NextRequest) {
   try {
