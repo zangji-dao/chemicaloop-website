@@ -1974,7 +1974,7 @@ export default function AdminSPUPage() {
             </div>
 
             {/* 内容区域 - 翻译/同步时禁用滚动，添加最大宽度限制居中 */}
-            <div className={`flex-1 relative ${translating || syncingSingle ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+            <div className={`flex-1 relative scrollbar-thin ${translating || syncingSingle ? 'overflow-hidden' : 'overflow-y-auto'}`}>
               <div className="max-w-4xl mx-auto p-5">
               {/* 翻译完成提示 */}
               {translationProgress.status === 'completed' && pendingTranslations && (
@@ -2772,7 +2772,7 @@ export default function AdminSPUPage() {
       {/* 图片对比弹窗 */}
       {showImageCompareModal && newProductImageUrl && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-4xl max-h-[90vh] overflow-y-auto scrollbar-thin">
             <div className="sticky top-0 bg-slate-800 border-b border-slate-700 px-5 py-3 flex items-center justify-between">
               <h2 className="text-base font-semibold">
                 {locale === 'zh' ? '图片对比 - 选择要使用的图片' : 'Image Comparison - Choose Image'}

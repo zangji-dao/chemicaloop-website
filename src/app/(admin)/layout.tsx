@@ -319,7 +319,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 scrollbar-thin">{children}</main>
       </div>
 
       {/* Overlay for mobile */}
