@@ -1942,20 +1942,17 @@ export default function AdminSPUPage() {
                 {/* 中间：翻译状态 */}
                 <div className="flex-1 flex justify-center">
                   {translating && (
-                    <span className="flex items-center gap-1.5 text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
+                    <span className="flex items-center gap-2 text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
                       <Loader2 className="w-3 h-3 animate-spin" />
-                      {translationProgress.status === 'translating' ? (
-                        <>
-                          {t('spu.translating')}: {translationProgress.current}/{translationProgress.total}
-                          {translatingFields.size > 0 && (
-                            <span className="text-blue-300 ml-1">
-                              ({Array.from(translatingFields).map(f => fieldDisplayNames[f] || f).slice(0, 3).join(', ')}
-                              {translatingFields.size > 3 && ` +${translatingFields.size - 3}`})
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        `${t('spu.translating')}...`
+                      <span>{t('spu.translating')}</span>
+                      <span className="text-blue-300">
+                        {translationProgress.current}/{translationProgress.total}
+                      </span>
+                      {translatingFields.size > 0 && (
+                        <span className="text-blue-300/70 text-[10px]">
+                          {Array.from(translatingFields).map(f => fieldDisplayNames[f] || f).slice(0, 2).join(', ')}
+                          {translatingFields.size > 2 && `+${translatingFields.size - 2}`}
+                        </span>
                       )}
                     </span>
                   )}
