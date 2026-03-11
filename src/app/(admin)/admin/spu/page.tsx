@@ -1956,38 +1956,35 @@ export default function AdminSPUPage() {
                       )}
                     </span>
                   )}
-                </div>
-                
-                {/* 右侧：保存按钮 */}
-                <div className="relative">
-                  <button
-                    onClick={handleSave}
-                    disabled={saving || translating || syncingSingle}
-                    className={`flex items-center gap-2 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 ${
-                      justSynced 
-                        ? 'bg-amber-600 hover:bg-amber-700' 
-                        : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
-                  >
-                    {saving ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : translating ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4" />
-                    )}
-                    <span>
-                      {justSynced ? t('spu.translateAndSave') : t('spu.saveAndExit')}
-                    </span>
-                  </button>
-                  {/* 新翻译待保存徽章 */}
                   {translationProgress.status === 'completed' && pendingTranslations && !saving && (
-                    <span className="absolute -top-1.5 -right-1.5 flex h-3 w-3">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    <span className="flex items-center gap-2 text-xs text-emerald-400 bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/30 px-3 py-1.5 rounded-full shadow-sm">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>{t('spu.translationCompleted')}</span>
                     </span>
                   )}
                 </div>
+                
+                {/* 右侧：保存按钮 */}
+                <button
+                  onClick={handleSave}
+                  disabled={saving || translating || syncingSingle}
+                  className={`flex items-center gap-2 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 ${
+                    justSynced 
+                      ? 'bg-amber-600 hover:bg-amber-700' 
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                >
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : translating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  <span>
+                    {justSynced ? t('spu.translateAndSave') : t('spu.saveAndExit')}
+                  </span>
+                </button>
               </div>
             </div>
 
