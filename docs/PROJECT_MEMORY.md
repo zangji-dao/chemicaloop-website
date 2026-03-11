@@ -128,6 +128,35 @@ CHEMICALOOP 是一个 AI 驱动的化工外贸工作流平台，利用 AI 能力
 - Express 后端运行在 **3001** 端口
 - 禁止使用 9000 端口（系统保留）
 
+### 4.6 代码复用规范
+
+#### API Route Token 提取
+- **禁止**在 API Route 中重复编写 Token 提取逻辑
+- **必须**使用 `src/lib/auth.ts` 提供的工具函数：
+  - `getToken(request)` — 仅提取 token，不验证
+  - `getUserIdFromRequest(request)` — 提取用户 ID
+  - `verifyToken(request)` — 验证 token 并返回用户信息
+  - `verifyUser(request)` — 验证普通用户
+  - `verifyAgent(request)` — 验证代理商权限
+  - `verifyAdmin(request)` — 验证管理员权限
+
+```typescript
+// ✅ 正确
+import { getToken } from '@/lib/auth';
+const token = getToken(request);
+
+// ❌ 错误（禁止重复）
+const authHeader = request.headers.get('authorization');
+const token = authHeader?.replace('Bearer ', '');
+```
+
+#### 待统一项（后续优化）
+| 问题 | 现状 | 建议 |
+|------|------|------|
+| BACKEND_URL | 18+ 处重复定义 | 使用 `src/config/api.ts` |
+| 后端角色判断 | 10 处重复 | 创建 `adminOnlyMiddleware` |
+| 前端 localStorage | 25+ 处直接访问 | 使用 `authService.getToken()` |
+
 ---
 
 > **提示**：每次对话结束前，请更新此文档，记录新增的关键决策和已解决的问题。
