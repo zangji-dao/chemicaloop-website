@@ -819,14 +819,14 @@ export default function AdminSPUPage() {
     setEditingSpu(null); // 返回列表时清空编辑中的SPU
   };
 
-  // 同步单个产品的 PubChem 数据
+  // 同步单个产品的 PubChem 数据（仅预览，不写入数据库）
   const handleSyncSinglePubChem = async () => {
     if (!editingSpu?.cas) {
       showNotification(locale === 'zh' ? '错误' : 'Error', 'CAS number is required', 'error');
       return;
     }
     
-    // 保存同步前的数据，用于取消时恢复
+    // 保存同步前的数据，用于取消/退出时恢复
     setPreSyncFormData({ ...formData });
     setPreSyncSpu(editingSpu);
     
@@ -843,14 +843,13 @@ export default function AdminSPUPage() {
     try {
       const token = localStorage.getItem('admin_token');
       
-      // 步骤1：真实检测 PubChem 连接
+      // 步骤1：检测 PubChem 连接
       const connectionResponse = await fetch('/api/admin/spu/check-pubchem-connection', {
         signal: abortController.signal,
       });
       const connectionData = await connectionResponse.json();
       
       if (!connectionData.connected) {
-        // 连接失败，显示错误
         setSyncingSingle(false);
         setSyncProgress({ step: 'connecting', message: '' });
         alert(locale === 'zh' 
@@ -860,185 +859,146 @@ export default function AdminSPUPage() {
         return;
       }
       
-      // 连接成功，进入获取数据步骤
+      // 步骤2：获取 PubChem 数据（不写入数据库）
       setSyncProgress({ 
         step: 'fetching', 
         message: locale === 'zh' ? `正在获取 ${editingSpu.cas} 数据...` : `Fetching data for ${editingSpu.cas}...` 
       });
       
-      const response = await fetch('/api/admin/spu/sync-pubchem', {
+      const response = await fetch('/api/admin/spu/fetch-pubchem', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          casList: [editingSpu.cas],
-          forceUpdate: true 
-        }),
+        body: JSON.stringify({ cas: editingSpu.cas }),
         signal: abortController.signal,
       });
 
       const data = await response.json();
-      if (data.success) {
+      
+      if (data.success && data.data) {
         setSyncProgress({ 
-          step: 'parsing', 
-          message: locale === 'zh' ? '正在解析数据...' : 'Parsing data...' 
+          step: 'updating', 
+          message: locale === 'zh' ? '正在更新表单...' : 'Updating form...' 
         });
         
-        // 重新获取产品信息
-        const spuResponse = await fetch(`/api/admin/spu?id=${editingSpu.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const spuData = await spuResponse.json();
+        const pubchemData = data.data;
         
-        if (spuData.success && spuData.data) {
-          const spu = spuData.data;
-          
-          setSyncProgress({ 
-            step: 'updating', 
-            message: locale === 'zh' ? '正在更新表单...' : 'Updating form...' 
-          });
-          // 更新表单数据（直接使用 PubChem 英文数据，让用户看到更新内容）
-          
-          setFormData(prev => ({
-            ...prev,
-            name: spu.name || prev.name, // 使用英文名称
-            nameEn: spu.name_en || prev.nameEn,
-            formula: spu.formula || prev.formula,
-            molecularWeight: spu.molecular_weight || prev.molecularWeight,
-            exactMass: spu.exact_mass || prev.exactMass,
-            description: spu.description || prev.description, // 使用英文描述
-            applications: spu.applications || prev.applications,
-            synonyms: spu.synonyms || prev.synonyms,
-            // PubChem 化学信息
-            smiles: spu.smiles || prev.smiles,
-            smilesCanonical: spu.smiles_canonical || prev.smilesCanonical,
-            smilesIsomeric: spu.smiles_isomeric || prev.smilesIsomeric,
-            inchi: spu.inchi || prev.inchi,
-            inchiKey: spu.inchi_key || prev.inchiKey,
-            // 计算属性
-            xlogp: spu.xlogp || prev.xlogp,
-            tpsa: spu.tpsa || prev.tpsa,
-            complexity: spu.complexity?.toString() || prev.complexity,
-            hBondDonorCount: spu.h_bond_donor_count?.toString() || prev.hBondDonorCount,
-            hBondAcceptorCount: spu.h_bond_acceptor_count?.toString() || prev.hBondAcceptorCount,
-            rotatableBondCount: spu.rotatable_bond_count?.toString() || prev.rotatableBondCount,
-            heavyAtomCount: spu.heavy_atom_count?.toString() || prev.heavyAtomCount,
-            formalCharge: spu.formal_charge?.toString() || prev.formalCharge,
-            // 物理化学性质 - 直接使用 PubChem 英文数据
-            physicalDescription: spu.physical_description || prev.physicalDescription,
-            colorForm: spu.color_form || prev.colorForm,
-            odor: spu.odor || prev.odor,
-            boilingPoint: spu.boiling_point || prev.boilingPoint,
-            meltingPoint: spu.melting_point || prev.meltingPoint,
-            flashPoint: spu.flash_point || prev.flashPoint,
-            density: spu.density || prev.density,
-            solubility: spu.solubility || prev.solubility,
-            vaporPressure: spu.vapor_pressure || prev.vaporPressure,
-            refractiveIndex: spu.refractive_index || prev.refractiveIndex,
-            // 安全与毒性 - 直接使用 PubChem 英文数据
-            hazardClasses: spu.hazard_classes || prev.hazardClasses,
-            healthHazards: spu.health_hazards || prev.healthHazards,
-            ghsClassification: spu.ghs_classification || prev.ghsClassification,
-            toxicitySummary: spu.toxicity_summary || prev.toxicitySummary,
-            carcinogenicity: spu.carcinogenicity || prev.carcinogenicity,
-            firstAid: spu.first_aid || prev.firstAid,
-            storageConditions: spu.storage_conditions || prev.storageConditions,
-            incompatibleMaterials: spu.incompatible_materials || prev.incompatibleMaterials,
-          }));
-          // 更新 PubChem 信息
-          setPubchemInfo({
-            cid: spu.pubchem_cid,
-            syncedAt: spu.pubchem_synced_at,
-          });
-          // 更新 2D 结构图 URL - 优先使用存储的结构图
-          if (spu.structure_image_key) {
-            fetch(`/api/admin/spu/image-url?key=${encodeURIComponent(spu.structure_image_key)}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            })
-              .then(res => res.json())
-              .then(data => {
-                if (data.success && data.url) {
-                  setStructureImageUrl(data.url);
-                } else {
-                  setStructureImageUrl(spu.structure_url || null);
-                }
-              })
-              .catch(() => setStructureImageUrl(spu.structure_url || null));
-          } else {
-            setStructureImageUrl(spu.structure_url || null);
-          }
-          
-          // 更新原始数据
-          setEditingSpu(spu);
-          
-          // 检测需要翻译的字段（同步后所有有值的字段都需要翻译）
-          const translatableFields = [
-            { key: 'description', value: spu.description },
-            { key: 'physicalDescription', value: spu.physical_description },
-            { key: 'colorForm', value: spu.color_form },
-            { key: 'odor', value: spu.odor },
-            { key: 'density', value: spu.density },
-            { key: 'boilingPoint', value: spu.boiling_point },
-            { key: 'meltingPoint', value: spu.melting_point },
-            { key: 'flashPoint', value: spu.flash_point },
-            { key: 'hazardClasses', value: spu.hazard_classes },
-            { key: 'healthHazards', value: spu.health_hazards },
-            { key: 'ghsClassification', value: spu.ghs_classification },
-            { key: 'firstAid', value: spu.first_aid },
-            { key: 'storageConditions', value: spu.storage_conditions },
-            { key: 'incompatibleMaterials', value: spu.incompatible_materials },
-            { key: 'solubility', value: spu.solubility },
-            { key: 'vaporPressure', value: spu.vapor_pressure },
-            { key: 'refractiveIndex', value: spu.refractive_index },
-          ];
-          
-          const fieldsToTranslate = translatableFields
-            .filter(({ value }) => value) // 只要有值就需要翻译
-            .map(({ key }) => key);
-          
-          // 标记为刚同步完成，记录需要翻译的字段
-          if (fieldsToTranslate.length > 0) {
-            setJustSynced(true);
-            setSyncedFields(new Set(fieldsToTranslate));
-            setPendingTranslations(spu.translations || {});
-            // 使用确认弹窗，用户点击确认后才关闭遮罩层
-            showConfirm(
-              t('spu.syncSuccess'),
-              locale === 'zh' 
-                ? `PubChem 数据已同步，${fieldsToTranslate.length} 个字段需要翻译，点击"翻译并保存"按钮开始翻译` 
-                : `PubChem data synced, ${fieldsToTranslate.length} fields need translation. Click "Translate & Save" to start`,
-              () => {
-                // 用户确认后关闭遮罩层
-                setSyncingSingle(false);
-              },
-              'success'
-            );
-          } else {
-            showConfirm(
-              t('spu.syncSuccess'),
-              t('spu.syncSuccessNoTranslation'),
-              () => {
-                setSyncingSingle(false);
-              },
-              'success'
-            );
-          }
-        } else {
+        // 更新表单数据（仅前端状态，不写入数据库）
+        setFormData(prev => ({
+          ...prev,
+          formula: pubchemData.formula || prev.formula,
+          molecularWeight: pubchemData.molecularWeight || prev.molecularWeight,
+          exactMass: pubchemData.exactMass || prev.exactMass,
+          description: pubchemData.description || prev.description,
+          applications: pubchemData.applications || prev.applications,
+          synonyms: pubchemData.synonyms || prev.synonyms,
+          // PubChem 化学信息
+          smiles: pubchemData.smiles || prev.smiles,
+          smilesCanonical: pubchemData.smilesCanonical || prev.smilesCanonical,
+          smilesIsomeric: pubchemData.smilesIsomeric || prev.smilesIsomeric,
+          inchi: pubchemData.inchi || prev.inchi,
+          inchiKey: pubchemData.inchiKey || prev.inchiKey,
+          // 计算属性
+          xlogp: pubchemData.xlogp || prev.xlogp,
+          tpsa: pubchemData.tpsa || prev.tpsa,
+          complexity: pubchemData.complexity?.toString() || prev.complexity,
+          hBondDonorCount: pubchemData.hBondDonorCount?.toString() || prev.hBondDonorCount,
+          hBondAcceptorCount: pubchemData.hBondAcceptorCount?.toString() || prev.hBondAcceptorCount,
+          rotatableBondCount: pubchemData.rotatableBondCount?.toString() || prev.rotatableBondCount,
+          heavyAtomCount: pubchemData.heavyAtomCount?.toString() || prev.heavyAtomCount,
+          formalCharge: pubchemData.formalCharge?.toString() || prev.formalCharge,
+          // 物理化学性质
+          physicalDescription: pubchemData.physicalDescription || prev.physicalDescription,
+          colorForm: pubchemData.colorForm || prev.colorForm,
+          odor: pubchemData.odor || prev.odor,
+          boilingPoint: pubchemData.boilingPoint || prev.boilingPoint,
+          meltingPoint: pubchemData.meltingPoint || prev.meltingPoint,
+          flashPoint: pubchemData.flashPoint || prev.flashPoint,
+          density: pubchemData.density || prev.density,
+          solubility: pubchemData.solubility || prev.solubility,
+          vaporPressure: pubchemData.vaporPressure || prev.vaporPressure,
+          refractiveIndex: pubchemData.refractiveIndex || prev.refractiveIndex,
+          // 安全与毒性
+          hazardClasses: pubchemData.hazardClasses || prev.hazardClasses,
+          healthHazards: pubchemData.healthHazards || prev.healthHazards,
+          ghsClassification: pubchemData.ghsClassification || prev.ghsClassification,
+          toxicitySummary: pubchemData.toxicitySummary || prev.toxicitySummary,
+          carcinogenicity: pubchemData.carcinogenicity || prev.carcinogenicity,
+          firstAid: pubchemData.firstAid || prev.firstAid,
+          storageConditions: pubchemData.storageConditions || prev.storageConditions,
+          incompatibleMaterials: pubchemData.incompatibleMaterials || prev.incompatibleMaterials,
+        }));
+        
+        // 更新 PubChem 信息（仅前端状态）
+        setPubchemInfo({
+          cid: pubchemData.pubchemCid,
+          syncedAt: pubchemData.pubchemSyncedAt,
+        });
+        
+        // 更新结构图 URL
+        if (pubchemData.structureUrl) {
+          setStructureImageUrl(pubchemData.structureUrl);
+        }
+        
+        // 检测需要翻译的字段
+        const translatableFields = [
+          { key: 'description', value: pubchemData.description },
+          { key: 'physicalDescription', value: pubchemData.physicalDescription },
+          { key: 'colorForm', value: pubchemData.colorForm },
+          { key: 'odor', value: pubchemData.odor },
+          { key: 'density', value: pubchemData.density },
+          { key: 'boilingPoint', value: pubchemData.boilingPoint },
+          { key: 'meltingPoint', value: pubchemData.meltingPoint },
+          { key: 'flashPoint', value: pubchemData.flashPoint },
+          { key: 'hazardClasses', value: pubchemData.hazardClasses },
+          { key: 'healthHazards', value: pubchemData.healthHazards },
+          { key: 'ghsClassification', value: pubchemData.ghsClassification },
+          { key: 'firstAid', value: pubchemData.firstAid },
+          { key: 'storageConditions', value: pubchemData.storageConditions },
+          { key: 'incompatibleMaterials', value: pubchemData.incompatibleMaterials },
+          { key: 'solubility', value: pubchemData.solubility },
+          { key: 'vaporPressure', value: pubchemData.vaporPressure },
+          { key: 'refractiveIndex', value: pubchemData.refractiveIndex },
+        ];
+        
+        const fieldsToTranslate = translatableFields
+          .filter(({ value }) => value)
+          .map(({ key }) => key);
+        
+        // 标记为刚同步完成（数据仅在内存中，未保存到数据库）
+        if (fieldsToTranslate.length > 0) {
+          setJustSynced(true);
+          setSyncedFields(new Set(fieldsToTranslate));
+          setPendingTranslations(editingSpu.translations || {});
           showConfirm(
-            t('spu.syncError'), 
-            data.error || 'Sync failed',
+            t('spu.syncSuccess'),
+            locale === 'zh' 
+              ? `PubChem 数据已获取，${fieldsToTranslate.length} 个字段需要翻译。点击"翻译并保存"按钮开始翻译，或直接点击"保存并退出"保存数据。` 
+              : `PubChem data fetched, ${fieldsToTranslate.length} fields need translation. Click "Translate & Save" or "Save & Exit" to save.`,
             () => {
               setSyncingSingle(false);
             },
-            'error'
+            'success'
+          );
+        } else {
+          setJustSynced(true);
+          showConfirm(
+            t('spu.syncSuccess'),
+            locale === 'zh' 
+              ? 'PubChem 数据已获取，点击"保存并退出"保存数据。' 
+              : 'PubChem data fetched. Click "Save & Exit" to save.',
+            () => {
+              setSyncingSingle(false);
+            },
+            'success'
           );
         }
       } else {
         showConfirm(
           locale === 'zh' ? '同步失败' : 'Sync Error', 
-          data.error || 'Sync failed',
+          data.error || 'Failed to fetch PubChem data',
           () => {
             setSyncingSingle(false);
           },
@@ -1070,7 +1030,6 @@ export default function AdminSPUPage() {
       // 清理 AbortController
       syncAbortControllerRef.current = null;
     }
-    // 移除移除 finally，改为在用户确认后关闭遮罩层
   };
 
   /**
