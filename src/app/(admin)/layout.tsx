@@ -18,6 +18,8 @@ import {
   ChevronDown,
   ChevronRight,
   ExternalLink,
+  ChevronLeftSquare,
+  ChevronRightSquare,
 } from 'lucide-react';
 import FrontendSwitchButton from '@/components/FrontendSwitchButton';
 import { AdminLocaleProvider, useAdminLocale } from '@/contexts/AdminLocaleContext';
@@ -70,9 +72,29 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { t } = useAdminLocale();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
+
+  // 从 localStorage 读取收缩状态
+  useEffect(() => {
+    const savedCollapsed = localStorage.getItem('admin_sidebar_collapsed');
+    if (savedCollapsed === 'true') {
+      setSidebarCollapsed(true);
+    }
+  }, []);
+
+  // 切换收缩状态
+  const toggleSidebarCollapse = () => {
+    const newCollapsed = !sidebarCollapsed;
+    setSidebarCollapsed(newCollapsed);
+    localStorage.setItem('admin_sidebar_collapsed', String(newCollapsed));
+    // 收缩时关闭所有展开的子菜单
+    if (newCollapsed) {
+      setExpandedMenus([]);
+    }
+  };
 
   // 获取翻译后的菜单项
   const menuItems = menuConfig.map(item => ({
@@ -152,18 +174,35 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="min-h-screen bg-slate-900">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen transition-transform ${
+        className={`fixed top-0 left-0 z-40 h-screen transition-all duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } bg-slate-800 border-r border-slate-700 w-64`}
+        } bg-slate-800 border-r border-slate-700 ${
+          sidebarCollapsed ? 'w-16' : 'w-64'
+        }`}
       >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
               <Shield className="h-5 w-5 text-white" />
             </div>
-            <span className="text-white font-bold">{t('common.siteName')}</span>
+            <span className={`text-white font-bold whitespace-nowrap transition-opacity duration-200 ${
+              sidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100'
+            }`}>{t('common.siteName')}</span>
           </div>
+          {/* 收缩按钮 - 桌面端显示 */}
+          <button
+            onClick={toggleSidebarCollapse}
+            className="hidden lg:flex text-slate-400 hover:text-white transition-colors flex-shrink-0"
+            title={sidebarCollapsed ? (t('nav.expandSidebar') || '展开侧栏') : (t('nav.collapseSidebar') || '收起侧栏')}
+          >
+            {sidebarCollapsed ? (
+              <ChevronRightSquare className="h-5 w-5" />
+            ) : (
+              <ChevronLeftSquare className="h-5 w-5" />
+            )}
+          </button>
+          {/* 关闭按钮 - 移动端显示 */}
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-slate-400 hover:text-white"
@@ -192,6 +231,18 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             const isExpanded = expandedMenus.includes(item.path);
             
             const handleClick = () => {
+              // 收缩状态下点击直接跳转（不展开子菜单）
+              if (sidebarCollapsed) {
+                // 如果点击的是当前页面，触发自定义事件让页面重置状态
+                if (pathname === item.path) {
+                  window.dispatchEvent(new CustomEvent('admin-menu-click-same-path', { 
+                    detail: { path: item.path } 
+                  }));
+                }
+                router.push(item.path);
+                return;
+              }
+              
               if (hasChildren) {
                 // 切换展开状态
                 setExpandedMenus(prev => 
@@ -211,28 +262,31 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             };
             
             return (
-              <div key={item.path}>
+              <div key={item.path} className="relative">
                 <button
                   onClick={handleClick}
+                  title={sidebarCollapsed ? item.label : undefined}
                   className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                     (hasChildren ? isChildActive : isActive)
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                  }`}
+                  } ${sidebarCollapsed ? 'justify-center' : ''}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.label}</span>
+                  <div className={`flex items-center ${sidebarCollapsed ? '' : 'gap-3'}`}>
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <span className={`whitespace-nowrap transition-all duration-200 ${
+                      sidebarCollapsed ? 'hidden' : ''
+                    }`}>{item.label}</span>
                   </div>
-                  {hasChildren && (
+                  {hasChildren && !sidebarCollapsed && (
                     isExpanded 
-                      ? <ChevronDown className="h-4 w-4" />
-                      : <ChevronRight className="h-4 w-4" />
+                      ? <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                      : <ChevronRight className="h-4 w-4 flex-shrink-0" />
                   )}
                 </button>
                 
-                {/* 子菜单 */}
-                {hasChildren && isExpanded && (
+                {/* 子菜单 - 收缩时不显示 */}
+                {hasChildren && isExpanded && !sidebarCollapsed && (
                   <div className="mt-1 ml-4 pl-4 border-l border-slate-600 space-y-1">
                     {item.children!.map((child) => {
                       const childIsActive = pathname === child.path || pathname.startsWith(child.path + '/');
@@ -267,7 +321,13 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <div className={`${sidebarOpen ? 'lg:ml-64' : ''} h-screen flex flex-col overflow-hidden`}>
+      <div className={`h-screen flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${
+        sidebarOpen 
+          ? sidebarCollapsed 
+            ? 'lg:ml-16' 
+            : 'lg:ml-64'
+          : ''
+      }`}>
         {/* Header */}
         <header className="h-16 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4 flex-shrink-0 z-30">
           <div className="flex items-center gap-4">
