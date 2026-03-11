@@ -1863,46 +1863,93 @@ export default function AdminSPUPage() {
               </div>
             )}
             
-            {/* 头部固定 - 带返回按钮 */}
-            <div className="flex-shrink-0 bg-slate-800 border-b border-slate-700 px-5 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {/* 返回列表按钮 */}
-                <button
-                  onClick={handleCloseEditModal}
-                  className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span className="text-sm">{t('common.backToList')}</span>
-                </button>
-                <div className="w-px h-5 bg-slate-600" />
-                <h2 className="text-base font-semibold">
-                  {editingSpu ? t('spu.editSpu') : t('spu.newSpu')}
-                </h2>
-                {translating && (
-                  <span className="flex items-center gap-1.5 text-xs text-blue-400">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    {translationProgress.status === 'translating' ? (
-                      `${t('spu.translating')}: ${translationProgress.current}/${translationProgress.total} (${translationProgress.currentLang})`
-                    ) : translationProgress.status === 'completed' ? (
-                      t('spu.translationCompleteSave')
-                    ) : (
-                      `${t('spu.translating')}...`
-                    )}
-                  </span>
-                )}
-                {translationProgress.status === 'completed' && pendingTranslations && (
-                  <span className="flex items-center gap-1.5 text-xs text-green-400">
-                    <CheckCircle className="w-3 h-3" />
-                    {t('spu.newTranslationsReady')}
-                  </span>
-                )}
-              </div>
-              {/* CAS号显示（编辑模式） */}
-              {editingSpu && (
-                <div className="text-sm text-slate-400 font-mono">
-                  CAS: {editingSpu.cas}
+            {/* 头部固定 - 带返回按钮和操作按钮 */}
+            <div className="flex-shrink-0 bg-slate-800 border-b border-slate-700 px-5 py-3">
+              <div className="flex items-center justify-between">
+                {/* 左侧：返回按钮、标题 */}
+                <div className="flex items-center gap-3">
+                  {/* 返回列表按钮 */}
+                  <button
+                    onClick={handleCloseEditModal}
+                    className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span className="text-sm">{t('common.backToList')}</span>
+                  </button>
+                  <div className="w-px h-5 bg-slate-600" />
+                  <h2 className="text-base font-semibold">
+                    {editingSpu ? t('spu.editSpu') : t('spu.newSpu')}
+                  </h2>
+                  {editingSpu && (
+                    <span className="text-sm text-slate-500 font-mono">
+                      CAS: {editingSpu.cas}
+                    </span>
+                  )}
+                  {translating && (
+                    <span className="flex items-center gap-1.5 text-xs text-blue-400">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      {translationProgress.status === 'translating' ? (
+                        `${t('spu.translating')}: ${translationProgress.current}/${translationProgress.total} (${translationProgress.currentLang})`
+                      ) : translationProgress.status === 'completed' ? (
+                        t('spu.translationCompleteSave')
+                      ) : (
+                        `${t('spu.translating')}...`
+                      )}
+                    </span>
+                  )}
+                  {translationProgress.status === 'completed' && pendingTranslations && (
+                    <span className="flex items-center gap-1.5 text-xs text-green-400">
+                      <CheckCircle className="w-3 h-3" />
+                      {t('spu.newTranslationsReady')}
+                    </span>
+                  )}
                 </div>
-              )}
+                
+                {/* 右侧：操作按钮 */}
+                <div className="flex items-center gap-2">
+                  {/* 同步按钮 */}
+                  <button
+                    type="button"
+                    onClick={handleSyncSinglePubChem}
+                    disabled={syncingSingle || saving || translating}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 rounded text-sm transition-colors disabled:opacity-50"
+                  >
+                    {syncingSingle ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4" />
+                    )}
+                    <span className="hidden sm:inline">{t('spu.syncPubchem')}</span>
+                  </button>
+                  {pubchemInfo.syncedAt && (
+                    <span className="text-xs text-slate-500 hidden md:inline">
+                      {new Date(pubchemInfo.syncedAt).toLocaleString()}
+                    </span>
+                  )}
+                  
+                  {/* 保存按钮 */}
+                  <button
+                    onClick={handleSave}
+                    disabled={saving || translating || syncingSingle}
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm transition-colors disabled:opacity-50 ${
+                      justSynced 
+                        ? 'bg-amber-600 hover:bg-amber-700' 
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {saving ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : translating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {justSynced ? t('spu.translateAndSave') : t('spu.confirmSave')}
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* 内容区域 - 翻译/同步时禁用滚动，添加最大宽度限制居中 */}
@@ -2636,68 +2683,6 @@ export default function AdminSPUPage() {
                   className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
                   style={{ height: 'auto' }}
                 />
-              </div>
-            </div>
-
-            {/* 底部操作栏 - 固定在底部 */}
-            <div className="flex-shrink-0 bg-slate-800 border-t border-slate-700 px-5 py-3 flex justify-between items-center">
-              {/* 左侧：同步按钮和同步时间 */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleSyncSinglePubChem}
-                  disabled={syncingSingle || saving || translating}
-                  className="flex items-center gap-2 px-4 py-1.5 bg-purple-600 hover:bg-purple-700 rounded text-sm transition-colors disabled:opacity-50"
-                >
-                  {syncingSingle ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-4 h-4" />
-                  )}
-                  {t('spu.syncPubchem')}
-                </button>
-                {pubchemInfo.syncedAt && (
-                  <span className="text-xs text-slate-500">
-                    {t('spu.lastSync')}: {new Date(pubchemInfo.syncedAt).toLocaleString()}
-                  </span>
-                )}
-              </div>
-              
-              {/* 右侧：取消和保存按钮 */}
-              <div className="flex gap-2">
-                <button
-                  onClick={handleCloseEditModal}
-                  className="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-sm transition-colors"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={saving || translating || syncingSingle}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded text-sm transition-colors disabled:opacity-50 ${
-                    justSynced 
-                      ? 'bg-amber-600 hover:bg-amber-700' 
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
-                >
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : translating ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : syncingSingle ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  {syncingSingle
-                    ? t('spu.syncing')
-                    : translating 
-                      ? `${t('spu.translating')}...` 
-                      : justSynced
-                        ? t('spu.translateAndSave')
-                        : t('spu.confirmSave')
-                  }
-                </button>
               </div>
             </div>
           </div>
