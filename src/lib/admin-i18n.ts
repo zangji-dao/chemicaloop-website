@@ -1555,6 +1555,93 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       clickToGenerate: '클릭하여 생성',
       syncedOn: '동기화 날짜',
       na: 'N/A',
+      
+      // ===== Upload Page (제품 업로드) =====
+      upload: '제품 업로드',
+      uploadSubtitle: '제품 라이브러리에서 선택 또는 수동으로 제품 정보 입력',
+      selectProduct: '제품 선택',
+      confirmData: '데이터 확인',
+      
+      // Search
+      searchProduct: '제품 검색 (CAS 번호 또는 이름)',
+      enterCas: 'CAS 번호 입력 (예: 64-17-5)',
+      systemSearchHint: '시스템이 먼저 제품 라이브러리를 검색하고, 결과가 없으면 PubChem에서 자동으로 가져옵니다',
+      searchingLibrary: '제품 라이브러리 검색 중...',
+      fetchingFromPubchem: 'PubChem에서 데이터 가져오는 중...',
+      foundProducts: '{count}개의 제품을 찾았습니다',
+      noDataFound: '해당 CAS 번호에 대한 제품 정보를 찾을 수 없습니다',
+      searchFailed: '검색 실패, 나중에 다시 시도하세요',
+      
+      // Selected SPU
+      linkedSpu: '연결된 SPU',
+      unlink: '연결 해제',
+      
+      // PubChem Data
+      fetchedFromPubchem: 'PubChem에서 가져오기 성공',
+      twoDStructure: '2D 구조',
+      structureInfo: '구조 정보',
+      physicochemicalProperties: '물리화학적 성질',
+      
+      // Auto Processing
+      aiDataProcessing: 'AI 데이터 처리',
+      processingData: '제품 데이터 처리 중...',
+      processingComplete: '처리 완료',
+      processingFailed: '처리 실패',
+      startGeneration: '생성 시작',
+      retry: '다시 생성',
+      generateProductImage: '제품 이미지 생성',
+      matchHsCode: 'HS 코드 매칭',
+      translateTenLang: '다국어 번역 (10개 언어)',
+      currentlyTranslating: '번역 중:',
+      processingDone: '완료됨',
+      
+      // Confirm Data Page
+      molecularFormula: '분자식',
+      hazardClassification: '위험 등급',
+      applications: '산업 응용',
+      synonymsAliases: '동의어/별명',
+      more: '더보기',
+      
+      // AI Generated Data
+      aiGeneratedEditable: 'AI 자동 생성 데이터 (편집 가능)',
+      noProductImage: '제품 이미지 없음',
+      imageUrlReplaceable: '이미지 URL (교체 가능)',
+      enterImageUrl: '이미지 URL 입력',
+      hsCodeForCustoms: 'HS 코드는 통관 및 무역 통계에 사용됩니다',
+      multiLangTranslations: '다국어 번역 (이름)',
+      noTranslationData: '번역 데이터 없음',
+      
+      // Buttons
+      previous: '이전',
+      next: '다음',
+      createProductWithData: '이 데이터로 제품 생성',
+      saveAsDraft: '업로드하지 않음',
+      saveToLibrary: '제품 라이브러리에 저장',
+      
+      // Messages
+      dataGeneratedClickNext: '✓ 데이터가 생성되었습니다. 아래 "다음" 버튼을 클릭하세요',
+      processingDataPleaseWait: '⏳ 데이터 처리 중, 잠시 기다려주세요...',
+      confirmThenStart: '✓ 제품 정보를 확인한 후 위의 "생성 시작" 버튼을 클릭하세요',
+      
+      // Save Messages
+      saveFailed: '저장 실패',
+      productNameRequired: '제품명 누락',
+      networkError: '네트워크 오류, 나중에 다시 시도하세요',
+      productSavedToLibrary: '제품 정보가 제품 라이브러리에 저장되었습니다!',
+      productSavedNotListed: '제품 정보가 제품 라이브러리에 저장되었습니다 (업로드 안 함)!',
+      
+      // Translating fields
+      fieldName: '이름',
+      fieldDescription: '설명',
+      fieldApplications: '응용 분야',
+      fieldPhysicalDescription: '물리적 설명',
+      fieldColorForm: '색상/형태',
+      fieldOdor: '냄새',
+      fieldHazardClasses: '위험 등급',
+      
+      // Image generation errors
+      imageGenFailed: '제품 이미지 생성 실패: {error}',
+      hsCodeMatchFailed: 'HS 코드 매칭 실패: {error}',
     },
     upload: {
       title: '제품 업로드',
@@ -1922,6 +2009,93 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       clickToGenerate: 'Klicken zum Generieren',
       syncedOn: 'Synchronisiert am',
       na: 'N/A',
+      
+      // ===== Upload Page (Produkt hochladen) =====
+      upload: 'Produkt hochladen',
+      uploadSubtitle: 'Aus Produktbibliothek auswählen oder Produktinformationen manuell eingeben',
+      selectProduct: 'Produkt auswählen',
+      confirmData: 'Daten bestätigen',
+      
+      // Search
+      searchProduct: 'Produkt suchen (CAS-Nummer oder Name)',
+      enterCas: 'CAS-Nummer eingeben, z.B. 64-17-5',
+      systemSearchHint: 'Das System durchsucht zuerst die Produktbibliothek und ruft bei fehlenden Ergebnissen automatisch von PubChem ab',
+      searchingLibrary: 'Produktbibliothek durchsuchen...',
+      fetchingFromPubchem: 'Daten von PubChem abrufen...',
+      foundProducts: '{count} Produkte gefunden',
+      noDataFound: 'Keine Produktinformationen für diese CAS-Nummer gefunden',
+      searchFailed: 'Suche fehlgeschlagen, bitte später erneut versuchen',
+      
+      // Selected SPU
+      linkedSpu: 'Verknüpfte SPU',
+      unlink: 'Verknüpfung aufheben',
+      
+      // PubChem Data
+      fetchedFromPubchem: 'Erfolgreich von PubChem abgerufen',
+      twoDStructure: '2D-Struktur',
+      structureInfo: 'Strukturinformationen',
+      physicochemicalProperties: 'Physikochemische Eigenschaften',
+      
+      // Auto Processing
+      aiDataProcessing: 'KI-Datenverarbeitung',
+      processingData: 'Produktdaten werden verarbeitet...',
+      processingComplete: 'Verarbeitung abgeschlossen',
+      processingFailed: 'Verarbeitung fehlgeschlagen',
+      startGeneration: 'Generierung starten',
+      retry: 'Erneut generieren',
+      generateProductImage: 'Produktbild generieren',
+      matchHsCode: 'HS-Code zuordnen',
+      translateTenLang: 'Mehrsprachige Übersetzung (10 Sprachen)',
+      currentlyTranslating: 'Übersetzung läuft:',
+      processingDone: 'Abgeschlossen',
+      
+      // Confirm Data Page
+      molecularFormula: 'Summenformel',
+      hazardClassification: 'Gefahrenklassifizierung',
+      applications: 'Industrielle Anwendungen',
+      synonymsAliases: 'Synonyme/Aliase',
+      more: 'Mehr',
+      
+      // AI Generated Data
+      aiGeneratedEditable: 'KI-generierte Daten (bearbeitbar)',
+      noProductImage: 'Kein Produktbild',
+      imageUrlReplaceable: 'Bild-URL (ersetzbar)',
+      enterImageUrl: 'Bild-URL eingeben',
+      hsCodeForCustoms: 'HS-Code wird für Zollabfertigung und Handelsstatistiken verwendet',
+      multiLangTranslations: 'Mehrsprachige Übersetzung (Name)',
+      noTranslationData: 'Keine Übersetzungsdaten',
+      
+      // Buttons
+      previous: 'Zurück',
+      next: 'Weiter',
+      createProductWithData: 'Produkt mit diesen Daten erstellen',
+      saveAsDraft: 'Nicht hochladen',
+      saveToLibrary: 'In Produktbibliothek speichern',
+      
+      // Messages
+      dataGeneratedClickNext: '✓ Daten wurden generiert, klicken Sie auf "Weiter"',
+      processingDataPleaseWait: '⏳ Daten werden verarbeitet, bitte warten...',
+      confirmThenStart: '✓ Bestätigen Sie die Produktinformationen und klicken Sie auf "Generierung starten"',
+      
+      // Save Messages
+      saveFailed: 'Speichern fehlgeschlagen',
+      productNameRequired: 'Produktname fehlt',
+      networkError: 'Netzwerkfehler, bitte später erneut versuchen',
+      productSavedToLibrary: 'Produktinformationen wurden in der Produktbibliothek gespeichert!',
+      productSavedNotListed: 'Produktinformationen wurden in der Produktbibliothek gespeichert (nicht hochgeladen)!',
+      
+      // Translating fields
+      fieldName: 'Name',
+      fieldDescription: 'Beschreibung',
+      fieldApplications: 'Anwendungsbereiche',
+      fieldPhysicalDescription: 'Physische Beschreibung',
+      fieldColorForm: 'Farbe/Form',
+      fieldOdor: 'Geruch',
+      fieldHazardClasses: 'Gefahrenklassen',
+      
+      // Image generation errors
+      imageGenFailed: 'Produktbild-Generierung fehlgeschlagen: {error}',
+      hsCodeMatchFailed: 'HS-Code-Zuordnung fehlgeschlagen: {error}',
     },
     upload: {
       title: 'Produkt hochladen',
@@ -2289,6 +2463,93 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       clickToGenerate: 'Cliquer pour générer',
       syncedOn: 'Synchronisé le',
       na: 'N/A',
+      
+      // ===== Upload Page (Télécharger un produit) =====
+      upload: 'Télécharger un produit',
+      uploadSubtitle: 'Sélectionner dans la bibliothèque ou saisir manuellement les informations',
+      selectProduct: 'Sélectionner un produit',
+      confirmData: 'Confirmer les données',
+      
+      // Search
+      searchProduct: 'Rechercher un produit (numéro CAS ou nom)',
+      enterCas: 'Entrer un numéro CAS, ex: 64-17-5',
+      systemSearchHint: 'Le système recherche d\'abord dans la bibliothèque, puis récupère automatiquement depuis PubChem',
+      searchingLibrary: 'Recherche dans la bibliothèque...',
+      fetchingFromPubchem: 'Récupération depuis PubChem...',
+      foundProducts: '{count} produits trouvés',
+      noDataFound: 'Aucune information produit trouvée pour ce numéro CAS',
+      searchFailed: 'Échec de la recherche, réessayez plus tard',
+      
+      // Selected SPU
+      linkedSpu: 'SPU lié',
+      unlink: 'Délier',
+      
+      // PubChem Data
+      fetchedFromPubchem: 'Récupéré avec succès depuis PubChem',
+      twoDStructure: 'Structure 2D',
+      structureInfo: 'Informations de structure',
+      physicochemicalProperties: 'Propriétés physico-chimiques',
+      
+      // Auto Processing
+      aiDataProcessing: 'Traitement IA des données',
+      processingData: 'Traitement des données produit...',
+      processingComplete: 'Traitement terminé',
+      processingFailed: 'Échec du traitement',
+      startGeneration: 'Démarrer la génération',
+      retry: 'Régénérer',
+      generateProductImage: 'Générer une image produit',
+      matchHsCode: 'Associer le code HS',
+      translateTenLang: 'Traduction multilingue (10 langues)',
+      currentlyTranslating: 'Traduction en cours:',
+      processingDone: 'Terminé',
+      
+      // Confirm Data Page
+      molecularFormula: 'Formule moléculaire',
+      hazardClassification: 'Classification des dangers',
+      applications: 'Applications industrielles',
+      synonymsAliases: 'Synonymes/Alias',
+      more: 'Plus',
+      
+      // AI Generated Data
+      aiGeneratedEditable: 'Données générées par IA (modifiables)',
+      noProductImage: 'Pas d\'image produit',
+      imageUrlReplaceable: 'URL de l\'image (remplaçable)',
+      enterImageUrl: 'Entrer l\'URL de l\'image',
+      hsCodeForCustoms: 'Le code HS est utilisé pour le dédouanement et les statistiques commerciales',
+      multiLangTranslations: 'Traduction multilingue (nom)',
+      noTranslationData: 'Pas de données de traduction',
+      
+      // Buttons
+      previous: 'Précédent',
+      next: 'Suivant',
+      createProductWithData: 'Créer un produit avec ces données',
+      saveAsDraft: 'Ne pas télécharger',
+      saveToLibrary: 'Enregistrer dans la bibliothèque',
+      
+      // Messages
+      dataGeneratedClickNext: '✓ Données générées, cliquez sur "Suivant"',
+      processingDataPleaseWait: '⏳ Traitement des données en cours, veuillez patienter...',
+      confirmThenStart: '✓ Confirmez les informations produit et cliquez sur "Démarrer la génération"',
+      
+      // Save Messages
+      saveFailed: 'Échec de l\'enregistrement',
+      productNameRequired: 'Nom du produit manquant',
+      networkError: 'Erreur réseau, réessayez plus tard',
+      productSavedToLibrary: 'Informations produit enregistrées dans la bibliothèque !',
+      productSavedNotListed: 'Informations produit enregistrées (non téléchargées) !',
+      
+      // Translating fields
+      fieldName: 'Nom',
+      fieldDescription: 'Description',
+      fieldApplications: 'Domaines d\'application',
+      fieldPhysicalDescription: 'Description physique',
+      fieldColorForm: 'Couleur/Forme',
+      fieldOdor: 'Odeur',
+      fieldHazardClasses: 'Classes de danger',
+      
+      // Image generation errors
+      imageGenFailed: 'Échec de la génération d\'image: {error}',
+      hsCodeMatchFailed: 'Échec de l\'association du code HS: {error}',
     },
     upload: {
       title: 'Télécharger un produit',
@@ -2656,6 +2917,93 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       clickToGenerate: 'Clic para generar',
       syncedOn: 'Sincronizado el',
       na: 'N/A',
+      
+      // ===== Upload Page (Subir producto) =====
+      upload: 'Subir producto',
+      uploadSubtitle: 'Seleccionar de la biblioteca o ingresar información manualmente',
+      selectProduct: 'Seleccionar producto',
+      confirmData: 'Confirmar datos',
+      
+      // Search
+      searchProduct: 'Buscar producto (número CAS o nombre)',
+      enterCas: 'Ingresar número CAS, ej: 64-17-5',
+      systemSearchHint: 'El sistema busca primero en la biblioteca, luego recupera automáticamente de PubChem',
+      searchingLibrary: 'Buscando en la biblioteca...',
+      fetchingFromPubchem: 'Recuperando datos de PubChem...',
+      foundProducts: '{count} productos encontrados',
+      noDataFound: 'No se encontró información del producto para este número CAS',
+      searchFailed: 'Búsqueda fallida, intente más tarde',
+      
+      // Selected SPU
+      linkedSpu: 'SPU vinculado',
+      unlink: 'Desvincular',
+      
+      // PubChem Data
+      fetchedFromPubchem: 'Recuperado exitosamente de PubChem',
+      twoDStructure: 'Estructura 2D',
+      structureInfo: 'Información de estructura',
+      physicochemicalProperties: 'Propiedades fisicoquímicas',
+      
+      // Auto Processing
+      aiDataProcessing: 'Procesamiento de datos IA',
+      processingData: 'Procesando datos del producto...',
+      processingComplete: 'Procesamiento completado',
+      processingFailed: 'Procesamiento fallido',
+      startGeneration: 'Iniciar generación',
+      retry: 'Regenerar',
+      generateProductImage: 'Generar imagen del producto',
+      matchHsCode: 'Asociar código HS',
+      translateTenLang: 'Traducción multilingüe (10 idiomas)',
+      currentlyTranslating: 'Traduciendo:',
+      processingDone: 'Completado',
+      
+      // Confirm Data Page
+      molecularFormula: 'Fórmula molecular',
+      hazardClassification: 'Clasificación de peligros',
+      applications: 'Aplicaciones industriales',
+      synonymsAliases: 'Sinónimos/Alias',
+      more: 'Más',
+      
+      // AI Generated Data
+      aiGeneratedEditable: 'Datos generados por IA (editables)',
+      noProductImage: 'Sin imagen del producto',
+      imageUrlReplaceable: 'URL de imagen (reemplazable)',
+      enterImageUrl: 'Ingresar URL de imagen',
+      hsCodeForCustoms: 'El código HS se usa para aduanas y estadísticas comerciales',
+      multiLangTranslations: 'Traducción multilingüe (nombre)',
+      noTranslationData: 'Sin datos de traducción',
+      
+      // Buttons
+      previous: 'Anterior',
+      next: 'Siguiente',
+      createProductWithData: 'Crear producto con estos datos',
+      saveAsDraft: 'No subir',
+      saveToLibrary: 'Guardar en biblioteca',
+      
+      // Messages
+      dataGeneratedClickNext: '✓ Datos generados, haga clic en "Siguiente"',
+      processingDataPleaseWait: '⏳ Procesando datos, espere...',
+      confirmThenStart: '✓ Confirme la información del producto y haga clic en "Iniciar generación"',
+      
+      // Save Messages
+      saveFailed: 'Error al guardar',
+      productNameRequired: 'Falta el nombre del producto',
+      networkError: 'Error de red, intente más tarde',
+      productSavedToLibrary: '¡Información del producto guardada en la biblioteca!',
+      productSavedNotListed: '¡Información del producto guardada (no subida)!',
+      
+      // Translating fields
+      fieldName: 'Nombre',
+      fieldDescription: 'Descripción',
+      fieldApplications: 'Áreas de aplicación',
+      fieldPhysicalDescription: 'Descripción física',
+      fieldColorForm: 'Color/Forma',
+      fieldOdor: 'Olor',
+      fieldHazardClasses: 'Clases de peligro',
+      
+      // Image generation errors
+      imageGenFailed: 'Fallo en la generación de imagen: {error}',
+      hsCodeMatchFailed: 'Fallo en la asociación del código HS: {error}',
     },
     upload: {
       title: 'Subir producto',
@@ -3023,6 +3371,93 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       clickToGenerate: 'Clique para gerar',
       syncedOn: 'Sincronizado em',
       na: 'N/A',
+      
+      // ===== Upload Page (Carregar produto) =====
+      upload: 'Carregar produto',
+      uploadSubtitle: 'Selecionar da biblioteca ou inserir informações manualmente',
+      selectProduct: 'Selecionar produto',
+      confirmData: 'Confirmar dados',
+      
+      // Search
+      searchProduct: 'Pesquisar produto (número CAS ou nome)',
+      enterCas: 'Digitar número CAS, ex: 64-17-5',
+      systemSearchHint: 'O sistema pesquisa primeiro na biblioteca, depois recupera automaticamente do PubChem',
+      searchingLibrary: 'Pesquisando na biblioteca...',
+      fetchingFromPubchem: 'Recuperando dados do PubChem...',
+      foundProducts: '{count} produtos encontrados',
+      noDataFound: 'Nenhuma informação de produto encontrada para este número CAS',
+      searchFailed: 'Pesquisa falhou, tente mais tarde',
+      
+      // Selected SPU
+      linkedSpu: 'SPU vinculado',
+      unlink: 'Desvincular',
+      
+      // PubChem Data
+      fetchedFromPubchem: 'Recuperado com sucesso do PubChem',
+      twoDStructure: 'Estrutura 2D',
+      structureInfo: 'Informações de estrutura',
+      physicochemicalProperties: 'Propriedades fisicoquímicas',
+      
+      // Auto Processing
+      aiDataProcessing: 'Processamento de dados IA',
+      processingData: 'Processando dados do produto...',
+      processingComplete: 'Processamento concluído',
+      processingFailed: 'Processamento falhou',
+      startGeneration: 'Iniciar geração',
+      retry: 'Regenerar',
+      generateProductImage: 'Gerar imagem do produto',
+      matchHsCode: 'Associar código HS',
+      translateTenLang: 'Tradução multilíngue (10 idiomas)',
+      currentlyTranslating: 'Traduzindo:',
+      processingDone: 'Concluído',
+      
+      // Confirm Data Page
+      molecularFormula: 'Fórmula molecular',
+      hazardClassification: 'Classificação de perigos',
+      applications: 'Aplicações industriais',
+      synonymsAliases: 'Sinônimos/Apelidos',
+      more: 'Mais',
+      
+      // AI Generated Data
+      aiGeneratedEditable: 'Dados gerados por IA (editáveis)',
+      noProductImage: 'Sem imagem do produto',
+      imageUrlReplaceable: 'URL da imagem (substituível)',
+      enterImageUrl: 'Digitar URL da imagem',
+      hsCodeForCustoms: 'O código HS é usado para alfândega e estatísticas comerciais',
+      multiLangTranslations: 'Tradução multilíngue (nome)',
+      noTranslationData: 'Sem dados de tradução',
+      
+      // Buttons
+      previous: 'Anterior',
+      next: 'Próximo',
+      createProductWithData: 'Criar produto com estes dados',
+      saveAsDraft: 'Não carregar',
+      saveToLibrary: 'Salvar na biblioteca',
+      
+      // Messages
+      dataGeneratedClickNext: '✓ Dados gerados, clique em "Próximo"',
+      processingDataPleaseWait: '⏳ Processando dados, aguarde...',
+      confirmThenStart: '✓ Confirme as informações do produto e clique em "Iniciar geração"',
+      
+      // Save Messages
+      saveFailed: 'Falha ao salvar',
+      productNameRequired: 'Nome do produto ausente',
+      networkError: 'Erro de rede, tente mais tarde',
+      productSavedToLibrary: 'Informações do produto salvas na biblioteca!',
+      productSavedNotListed: 'Informações do produto salvas (não carregadas)!',
+      
+      // Translating fields
+      fieldName: 'Nome',
+      fieldDescription: 'Descrição',
+      fieldApplications: 'Áreas de aplicação',
+      fieldPhysicalDescription: 'Descrição física',
+      fieldColorForm: 'Cor/Forma',
+      fieldOdor: 'Odor',
+      fieldHazardClasses: 'Classes de perigo',
+      
+      // Image generation errors
+      imageGenFailed: 'Falha na geração de imagem: {error}',
+      hsCodeMatchFailed: 'Falha na associação do código HS: {error}',
     },
     upload: {
       title: 'Carregar produto',
@@ -3390,6 +3825,93 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       clickToGenerate: 'Нажмите для генерации',
       syncedOn: 'Синхронизировано',
       na: 'Н/Д',
+      
+      // ===== Upload Page (Загрузить продукт) =====
+      upload: 'Загрузить продукт',
+      uploadSubtitle: 'Выбрать из библиотеки или ввести информацию вручную',
+      selectProduct: 'Выбрать продукт',
+      confirmData: 'Подтвердить данные',
+      
+      // Search
+      searchProduct: 'Поиск продукта (номер CAS или название)',
+      enterCas: 'Введите номер CAS, напр: 64-17-5',
+      systemSearchHint: 'Система сначала ищет в библиотеке, затем автоматически получает из PubChem',
+      searchingLibrary: 'Поиск в библиотеке...',
+      fetchingFromPubchem: 'Получение данных из PubChem...',
+      foundProducts: 'Найдено продуктов: {count}',
+      noDataFound: 'Информация о продукте для этого номера CAS не найдена',
+      searchFailed: 'Поиск не удался, попробуйте позже',
+      
+      // Selected SPU
+      linkedSpu: 'Связанный SPU',
+      unlink: 'Отвязать',
+      
+      // PubChem Data
+      fetchedFromPubchem: 'Успешно получено из PubChem',
+      twoDStructure: '2D структура',
+      structureInfo: 'Информация о структуре',
+      physicochemicalProperties: 'Физико-химические свойства',
+      
+      // Auto Processing
+      aiDataProcessing: 'ИИ обработка данных',
+      processingData: 'Обработка данных продукта...',
+      processingComplete: 'Обработка завершена',
+      processingFailed: 'Ошибка обработки',
+      startGeneration: 'Начать генерацию',
+      retry: 'Перегенерировать',
+      generateProductImage: 'Сгенерировать изображение продукта',
+      matchHsCode: 'Сопоставить код HS',
+      translateTenLang: 'Многоязычный перевод (10 языков)',
+      currentlyTranslating: 'Перевод:',
+      processingDone: 'Завершено',
+      
+      // Confirm Data Page
+      molecularFormula: 'Молекулярная формула',
+      hazardClassification: 'Классификация опасности',
+      applications: 'Промышленное применение',
+      synonymsAliases: 'Синонимы/Псевдонимы',
+      more: 'Ещё',
+      
+      // AI Generated Data
+      aiGeneratedEditable: 'Данные, сгенерированные ИИ (редактируемые)',
+      noProductImage: 'Нет изображения продукта',
+      imageUrlReplaceable: 'URL изображения (заменяемый)',
+      enterImageUrl: 'Введите URL изображения',
+      hsCodeForCustoms: 'Код HS используется для таможенного оформления и торговой статистики',
+      multiLangTranslations: 'Многоязычный перевод (название)',
+      noTranslationData: 'Нет данных перевода',
+      
+      // Buttons
+      previous: 'Назад',
+      next: 'Далее',
+      createProductWithData: 'Создать продукт с этими данными',
+      saveAsDraft: 'Не загружать',
+      saveToLibrary: 'Сохранить в библиотеку',
+      
+      // Messages
+      dataGeneratedClickNext: '✓ Данные сгенерированы, нажмите "Далее"',
+      processingDataPleaseWait: '⏳ Обработка данных, подождите...',
+      confirmThenStart: '✓ Подтвердите информацию о продукте и нажмите "Начать генерацию"',
+      
+      // Save Messages
+      saveFailed: 'Ошибка сохранения',
+      productNameRequired: 'Отсутствует название продукта',
+      networkError: 'Сетевая ошибка, попробуйте позже',
+      productSavedToLibrary: 'Информация о продукте сохранена в библиотеке!',
+      productSavedNotListed: 'Информация о продукте сохранена (не загружена)!',
+      
+      // Translating fields
+      fieldName: 'Название',
+      fieldDescription: 'Описание',
+      fieldApplications: 'Области применения',
+      fieldPhysicalDescription: 'Физическое описание',
+      fieldColorForm: 'Цвет/Форма',
+      fieldOdor: 'Запах',
+      fieldHazardClasses: 'Классы опасности',
+      
+      // Image generation errors
+      imageGenFailed: 'Ошибка генерации изображения: {error}',
+      hsCodeMatchFailed: 'Ошибка сопоставления кода HS: {error}',
     },
     upload: {
       title: 'Загрузить продукт',
@@ -3757,6 +4279,93 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       clickToGenerate: 'انقر للتوليد',
       syncedOn: 'تمت المزامنة في',
       na: 'غير متوفر',
+      
+      // ===== Upload Page (تحميل منتج) =====
+      upload: 'تحميل منتج',
+      uploadSubtitle: 'اختيار من المكتبة أو إدخال المعلومات يدوياً',
+      selectProduct: 'اختيار المنتج',
+      confirmData: 'تأكيد البيانات',
+      
+      // Search
+      searchProduct: 'البحث عن منتج (رقم CAS أو الاسم)',
+      enterCas: 'أدخل رقم CAS، مثال: 64-17-5',
+      systemSearchHint: 'يبحث النظام أولاً في المكتبة، ثم يجلب تلقائياً من PubChem',
+      searchingLibrary: 'جاري البحث في المكتبة...',
+      fetchingFromPubchem: 'جاري جلب البيانات من PubChem...',
+      foundProducts: 'تم العثور على {count} منتج',
+      noDataFound: 'لم يتم العثور على معلومات المنتج لرقم CAS هذا',
+      searchFailed: 'فشل البحث، حاول لاحقاً',
+      
+      // Selected SPU
+      linkedSpu: 'SPU مرتبط',
+      unlink: 'إلغاء الربط',
+      
+      // PubChem Data
+      fetchedFromPubchem: 'تم الجلب بنجاح من PubChem',
+      twoDStructure: 'بنية ثنائية الأبعاد',
+      structureInfo: 'معلومات البنية',
+      physicochemicalProperties: 'الخصائص الفيزيائية والكيميائية',
+      
+      // Auto Processing
+      aiDataProcessing: 'معالجة البيانات بالذكاء الاصطناعي',
+      processingData: 'جاري معالجة بيانات المنتج...',
+      processingComplete: 'اكتملت المعالجة',
+      processingFailed: 'فشلت المعالجة',
+      startGeneration: 'بدء التوليد',
+      retry: 'إعادة التوليد',
+      generateProductImage: 'توليد صورة المنتج',
+      matchHsCode: 'مطابقة رمز HS',
+      translateTenLang: 'ترجمة متعددة اللغات (10 لغات)',
+      currentlyTranslating: 'جاري الترجمة:',
+      processingDone: 'مكتمل',
+      
+      // Confirm Data Page
+      molecularFormula: 'الصيغة الجزيئية',
+      hazardClassification: 'تصنيف المخاطر',
+      applications: 'التطبيقات الصناعية',
+      synonymsAliases: 'المرادفات/الأسماء المستعارة',
+      more: 'المزيد',
+      
+      // AI Generated Data
+      aiGeneratedEditable: 'بيانات مولدة بالذكاء الاصطناعي (قابلة للتعديل)',
+      noProductImage: 'لا توجد صورة للمنتج',
+      imageUrlReplaceable: 'رابط الصورة (قابل للاستبدال)',
+      enterImageUrl: 'أدخل رابط الصورة',
+      hsCodeForCustoms: 'يستخدم رمز HS للجمارك والإحصاءات التجارية',
+      multiLangTranslations: 'ترجمة متعددة اللغات (الاسم)',
+      noTranslationData: 'لا توجد بيانات ترجمة',
+      
+      // Buttons
+      previous: 'السابق',
+      next: 'التالي',
+      createProductWithData: 'إنشاء منتج بهذه البيانات',
+      saveAsDraft: 'عدم التحميل',
+      saveToLibrary: 'حفظ في المكتبة',
+      
+      // Messages
+      dataGeneratedClickNext: '✓ تم توليد البيانات، انقر على "التالي"',
+      processingDataPleaseWait: '⏳ جاري معالجة البيانات، انتظر...',
+      confirmThenStart: '✓ أكد معلومات المنتج وانقر على "بدء التوليد"',
+      
+      // Save Messages
+      saveFailed: 'فشل الحفظ',
+      productNameRequired: 'اسم المنتج مفقود',
+      networkError: 'خطأ في الشبكة، حاول لاحقاً',
+      productSavedToLibrary: 'تم حفظ معلومات المنتج في المكتبة!',
+      productSavedNotListed: 'تم حفظ معلومات المنتج (غير محمل)!',
+      
+      // Translating fields
+      fieldName: 'الاسم',
+      fieldDescription: 'الوصف',
+      fieldApplications: 'مجالات التطبيق',
+      fieldPhysicalDescription: 'الوصف الفيزيائي',
+      fieldColorForm: 'اللون/الشكل',
+      fieldOdor: 'الرائحة',
+      fieldHazardClasses: 'فئات المخاطر',
+      
+      // Image generation errors
+      imageGenFailed: 'فشل توليد الصورة: {error}',
+      hsCodeMatchFailed: 'فشل مطابقة رمز HS: {error}',
     },
     upload: {
       title: 'تحميل منتج',
