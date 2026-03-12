@@ -1901,15 +1901,19 @@ function ProductUploadContent() {
           )}
 
           {/* 导航按钮 */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
-            <button
-              onClick={handlePrevious}
-              disabled={currentStep === 0}
-              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              {t('spu.previous')}
-            </button>
+          <div className="flex justify-between mt-8 pt-6 border-t border-slate-700">
+            {/* 第一步时不显示上一步按钮 */}
+            {currentStep > 0 ? (
+              <button
+                onClick={handlePrevious}
+                className="px-6 py-3 bg-slate-700 text-white rounded-lg transition-colors flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                {t('spu.previous')}
+              </button>
+            ) : (
+              <div></div>
+            )}
 
             {currentStep === 0 ? (
               // 第一步：下一步按钮
@@ -1918,8 +1922,8 @@ function ProductUploadContent() {
                 disabled={autoProcessing || savingSPU || !(pubchemData || selectedSPU)}
                 className={`px-6 py-3 text-white rounded-lg transition-colors flex items-center gap-2 ${
                   (pubchemData || selectedSPU) && processingStep !== 'done' 
-                    ? 'bg-green-600 hover:bg-green-700' 
-                    : 'bg-blue-600 hover:bg-blue-700'
+                    ? 'bg-green-600' 
+                    : 'bg-blue-600'
                 } disabled:opacity-50`}
               >
                 {autoProcessing ? (
@@ -1945,7 +1949,7 @@ function ProductUploadContent() {
                 <button
                   onClick={handleSaveOnly}
                   disabled={savingSPU}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-3 bg-slate-700 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
                   {savingSPU ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -1957,7 +1961,7 @@ function ProductUploadContent() {
                 <button
                   onClick={handleNext}
                   disabled={savingSPU}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
                   {savingSPU ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
