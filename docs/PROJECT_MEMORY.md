@@ -106,9 +106,106 @@
 
 ---
 
-## 4. 编程规范（精简版）
+## 4. API 目录规范
 
-### 4.1 代码质量
+### 4.1 目录结构
+
+```
+src/app/api/
+├── public/              # 公开 API（无需认证）
+│   ├── admin/           # 管理员前端公开接口
+│   │   └── login/       # 管理员登录
+│   └── www/             # 用户前端公开接口
+│       ├── auth/        # 登录、注册、发送验证码
+│       ├── products/    # 产品列表、详情
+│       └── trade-data/  # 贸易数据
+│
+├── private/             # 私有 API（需要认证）
+│   ├── admin/           # 管理员前端私有接口
+│   │   ├── products/    # 产品审核、状态管理
+│   │   ├── users/       # 用户管理
+│   │   ├── spu/         # SPU 管理
+│   │   ├── data-sync/   # 数据同步
+│   │   └── ...
+│   └── www/             # 用户前端私有接口
+│       ├── auth/        # 登出、获取用户信息
+│       ├── profile/     # 个人资料
+│       ├── messages/    # 消息系统
+│       ├── agent/       # 代理商功能
+│       └── ...
+│
+└── shared/              # 公用 API（多端共用）
+    ├── ai/              # AI 翻译、润色
+    └── inquiries/       # 询价
+```
+
+### 4.2 创建新 API 的判断流程
+
+```
+新 API 需求
+    │
+    ▼
+需要认证？ ────────────── 否 ──→ public/
+    │                              │
+   是                              ▼
+    │                         管理员用？── 是 ──→ public/admin/
+    │                              │
+   否（用户用）                     └──────→ public/www/
+    ▼
+private/
+    │
+    ▼
+管理员用？── 是 ──→ private/admin/
+    │
+   否
+    │
+    ▼
+用户用？── 是 ──→ private/www/
+    │
+   多端共用
+    │
+    ▼
+shared/
+```
+
+### 4.3 分类维度
+
+| 维度 | 选项 | 判断标准 |
+|------|------|----------|
+| 访问权限 | `public` vs `private` | 是否需要 token 认证 |
+| 使用端 | `admin` vs `www` | 谁在调用？管理员还是用户 |
+| 共享性 | 端内独占 vs `shared` | 是否被多端同时调用 |
+
+### 4.4 示例
+
+| API 功能 | 路径 | 原因 |
+|----------|------|------|
+| 用户登录 | `/public/www/auth/login` | 无需认证，用户使用 |
+| 管理员登录 | `/public/admin/login` | 无需认证，管理员使用 |
+| 获取用户信息 | `/private/www/auth/me` | 需要认证，用户使用 |
+| 产品审核 | `/private/admin/products/[id]/review` | 需要认证，管理员使用 |
+| AI 翻译 | `/shared/ai/translate` | 多端共用 |
+
+### 4.5 前端调用规范
+
+```typescript
+// 用户前端调用
+fetch('/api/public/www/auth/login', ...)    // 登录
+fetch('/api/private/www/profile', ...)      // 获取个人资料（需带 token）
+
+// 管理后台调用
+fetch('/api/public/admin/login', ...)       // 管理员登录
+fetch('/api/private/admin/products', ...)   // 产品列表（需带 admin_token）
+
+// 多端共用
+fetch('/api/shared/ai/translate', ...)      // AI 翻译
+```
+
+---
+
+## 5. 编程规范（精简版）
+
+### 5.1 代码质量
 
 | 原则 | 说明 |
 |------|------|
@@ -117,7 +214,7 @@
 | 单一职责 | 一个函数只做一件事 |
 | 拒绝魔法值 | 常量命名，不写无意义数字 |
 
-### 4.2 性能原则
+### 5.2 性能原则
 
 | 规则 | 说明 |
 |------|------|
@@ -127,7 +224,7 @@
 | 图片懒加载 | `loading="lazy"` |
 | 搜索防抖 | 300ms 延迟 |
 
-### 4.3 安全原则
+### 5.3 安全原则
 
 | 规则 | 说明 |
 |------|------|
@@ -136,7 +233,7 @@
 | 防越权 | 校验资源归属 |
 | 敏感数据 | 不明文、不暴露 |
 
-### 4.4 健壮性
+### 5.4 健壮性
 
 | 规则 | 说明 |
 |------|------|
@@ -146,7 +243,7 @@
 
 ---
 
-## 4.5 多语言翻译（Admin）
+### 5.5 多语言翻译（Admin）
 
 ### 核心文件
 
@@ -228,9 +325,9 @@ function MyComponent() {
 
 ---
 
-## 5. UI 设计规范
+## 6. UI 设计规范
 
-### 5.1 前端用户端（WWW）
+### 6.1 前端用户端（WWW）
 
 | 元素 | 规范 |
 |------|------|
@@ -238,7 +335,7 @@ function MyComponent() {
 | 背景 | 白色 |
 | 圆角 | rounded-lg (8px) |
 
-### 5.2 管理后台（Admin）
+### 6.2 管理后台（Admin）
 
 | 元素 | 规范 |
 |------|------|
@@ -247,7 +344,7 @@ function MyComponent() {
 | 文字 | 白色/Slate-300 |
 | 边框 | Slate-700 |
 
-### 5.3 通用规范
+### 6.3 通用规范
 
 - 圆角：`rounded-lg`（卡片用 `rounded-xl`）
 - 间距：`p-4`、`gap-4`
@@ -255,9 +352,9 @@ function MyComponent() {
 
 ---
 
-## 6. 常见陷阱与已解决问题
+## 7. 常见陷阱与已解决问题
 
-### 6.1 已统一项
+### 7.1 已统一项
 
 | 问题 | 解决方案 |
 |------|----------|
@@ -266,7 +363,7 @@ function MyComponent() {
 | 角色判断重复 10 处 | `adminOnlyMiddleware` |
 | localStorage 直接访问 25+ 处 | `adminAuthService.ts` |
 
-### 6.2 常见错误
+### 7.2 常见错误
 
 | 错误 | 原因 | 解决 |
 |------|------|------|
@@ -277,9 +374,9 @@ function MyComponent() {
 
 ---
 
-## 7. 工具函数速查
+## 8. 工具函数速查
 
-### 7.1 防抖 Hook
+### 8.1 防抖 Hook
 
 ```typescript
 import { useDebouncedCallback } from '@/hooks/useDebounce';
@@ -289,7 +386,7 @@ const debouncedSearch = useDebouncedCallback(() => {
 }, 300);
 ```
 
-### 7.2 权限验证
+### 8.2 权限验证
 
 ```typescript
 // BFF 层
@@ -299,7 +396,7 @@ import { verifyAdmin, getToken } from '@/lib/auth';
 import { adminOnlyMiddleware } from '../middleware/auth';
 ```
 
-### 7.3 Token 管理
+### 8.3 Token 管理
 
 ```typescript
 // 前端用户
