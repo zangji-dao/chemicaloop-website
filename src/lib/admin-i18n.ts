@@ -401,7 +401,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       
       // ===== Upload Page (SPU上架页面) =====
       upload: 'Upload SPU',
-      uploadSubtitle: 'Select from product library or enter manually',
+      uploadSubtitle: 'Select from SPU library or enter manually',
       selectProduct: 'Select Product',
       confirmData: 'Confirm Data',
       
@@ -860,7 +860,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       
       // ===== Upload Page (SPU上架页面) =====
       upload: 'SPU上架',
-      uploadSubtitle: '从产品库选择或手动录入产品信息',
+      uploadSubtitle: '从SPU库选择或手动录入SPU信息',
       selectProduct: '选择产品',
       confirmData: '确认数据',
       
@@ -1205,9 +1205,9 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncedOn: '同期日',
       na: 'N/A',
       
-      // ===== Upload Page (製品アップロード) =====
-      upload: '製品アップロード',
-      uploadSubtitle: '製品ライブラリから選択または手動入力',
+      // ===== Upload Page (SPUアップロード) =====
+      upload: 'SPUアップロード',
+      uploadSubtitle: 'SPUライブラリから選択または手動入力',
       selectProduct: '製品を選択',
       confirmData: 'データを確認',
       searchProduct: '製品を検索 (CAS または名称)',
@@ -1600,9 +1600,9 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncedOn: '동기화 날짜',
       na: 'N/A',
       
-      // ===== Upload Page (제품 업로드) =====
-      upload: '제품 업로드',
-      uploadSubtitle: '제품 라이브러리에서 선택 또는 수동으로 제품 정보 입력',
+      // ===== Upload Page (SPU 업로드) =====
+      upload: 'SPU 업로드',
+      uploadSubtitle: 'SPU 라이브러리에서 선택 또는 수동으로 SPU 정보 입력',
       selectProduct: '제품 선택',
       confirmData: '데이터 확인',
       
@@ -2065,9 +2065,9 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncedOn: 'Synchronisiert am',
       na: 'N/A',
       
-      // ===== Upload Page (Produkt hochladen) =====
-      upload: 'Produkt hochladen',
-      uploadSubtitle: 'Aus Produktbibliothek auswählen oder Produktinformationen manuell eingeben',
+      // ===== Upload Page (SPU hochladen) =====
+      upload: 'SPU hochladen',
+      uploadSubtitle: 'Aus SPU-Bibliothek auswählen oder SPU-Informationen manuell eingeben',
       selectProduct: 'Produkt auswählen',
       confirmData: 'Daten bestätigen',
       
@@ -2530,9 +2530,9 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncedOn: 'Synchronisé le',
       na: 'N/A',
       
-      // ===== Upload Page (Télécharger un produit) =====
-      upload: 'Télécharger un produit',
-      uploadSubtitle: 'Sélectionner dans la bibliothèque ou saisir manuellement les informations',
+      // ===== Upload Page (Télécharger un SPU) =====
+      upload: 'Télécharger un SPU',
+      uploadSubtitle: 'Sélectionner dans la bibliothèque SPU ou saisir manuellement les informations SPU',
       selectProduct: 'Sélectionner un produit',
       confirmData: 'Confirmer les données',
       
@@ -2995,9 +2995,9 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncedOn: 'Sincronizado el',
       na: 'N/A',
       
-      // ===== Upload Page (Subir producto) =====
-      upload: 'Subir producto',
-      uploadSubtitle: 'Seleccionar de la biblioteca o ingresar información manualmente',
+      // ===== Upload Page (Subir SPU) =====
+      upload: 'Subir SPU',
+      uploadSubtitle: 'Seleccionar de la biblioteca SPU o ingresar información SPU manualmente',
       selectProduct: 'Seleccionar producto',
       confirmData: 'Confirmar datos',
       
@@ -3460,9 +3460,9 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncedOn: 'Sincronizado em',
       na: 'N/A',
       
-      // ===== Upload Page (Carregar produto) =====
-      upload: 'Carregar produto',
-      uploadSubtitle: 'Selecionar da biblioteca ou inserir informações manualmente',
+      // ===== Upload Page (Carregar SPU) =====
+      upload: 'Carregar SPU',
+      uploadSubtitle: 'Selecionar da biblioteca SPU ou inserir informações SPU manualmente',
       selectProduct: 'Selecionar produto',
       confirmData: 'Confirmar dados',
       
@@ -3925,9 +3925,9 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncedOn: 'Синхронизировано',
       na: 'Н/Д',
       
-      // ===== Upload Page (Загрузить продукт) =====
-      upload: 'Загрузить продукт',
-      uploadSubtitle: 'Выбрать из библиотеки или ввести информацию вручную',
+      // ===== Upload Page (Загрузить SPU) =====
+      upload: 'Загрузить SPU',
+      uploadSubtitle: 'Выбрать из библиотеки SPU или ввести информацию SPU вручную',
       selectProduct: 'Выбрать продукт',
       confirmData: 'Подтвердить данные',
       
@@ -4390,9 +4390,9 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       syncedOn: 'تمت المزامنة في',
       na: 'غير متوفر',
       
-      // ===== Upload Page (تحميل منتج) =====
-      upload: 'تحميل منتج',
-      uploadSubtitle: 'اختيار من المكتبة أو إدخال المعلومات يدوياً',
+      // ===== Upload Page (تحميل SPU) =====
+      upload: 'تحميل SPU',
+      uploadSubtitle: 'اختيار من مكتبة SPU أو إدخال معلومات SPU يدوياً',
       selectProduct: 'اختيار المنتج',
       confirmData: 'تأكيد البيانات',
       
