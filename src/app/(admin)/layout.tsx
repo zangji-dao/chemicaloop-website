@@ -56,9 +56,9 @@ const menuConfig: MenuItemConfig[] = [
     path: '/admin/spu', 
     labelKey: 'nav.spu',
     children: [
-      { path: '/admin/products/upload', labelKey: 'nav.spuCreate' },
-      { path: '/admin/spu-requests', labelKey: 'nav.spuRequests' },
-      { path: '/admin/spu', labelKey: 'nav.spuList' },
+      { path: '/admin/spu/create', labelKey: 'nav.spuCreate' },
+      { path: '/admin/spu/requests', labelKey: 'nav.spuRequests' },
+      { path: '/admin/spu/list', labelKey: 'nav.spuList' },
     ]
   },
   { icon: FileText, path: '/admin/inquiries', labelKey: 'nav.inquiries' },

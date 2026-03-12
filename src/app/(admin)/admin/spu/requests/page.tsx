@@ -423,7 +423,7 @@ export default function AdminSPURequestsPage() {
                       {request.status === 'approved' && (
                         <div className="flex gap-2">
                           <Link
-                            href={`/admin/products/upload?cas=${request.cas}`}
+                            href={`/admin/spu/create?cas=${request.cas}`}
                             className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors"
                           >
                             <Plus className="w-4 h-4" />
