@@ -955,7 +955,7 @@ function ProductUploadContent() {
           </div>
 
         {/* 表单内容 */}
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-8">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-8 mt-8">
           {/* Step 1: 选择产品 */}
           {currentStep === 0 && (
             <div className="space-y-6">
