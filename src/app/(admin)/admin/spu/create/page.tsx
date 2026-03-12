@@ -203,7 +203,7 @@ function ProductUploadContent() {
 
         if (!nameZh && nameEn) {
           try {
-            const translateResponse = await fetch('/api/shared/ai/translate', {
+            const translateResponse = await fetch('/api/private/shared/ai/translate', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ text: nameEn, targetLanguage: 'zh' }),
@@ -366,7 +366,7 @@ function ProductUploadContent() {
 
         if (!nameZh && nameEn) {
           try {
-            const translateResponse = await fetch('/api/shared/ai/translate', {
+            const translateResponse = await fetch('/api/private/shared/ai/translate', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ text: nameEn, targetLanguage: 'zh' }),
@@ -571,7 +571,7 @@ function ProductUploadContent() {
         // 并行翻译所有语言
         const translationPromises = languagesToTranslate.map(async (lang) => {
           try {
-            const translateResponse = await fetch('/api/shared/ai/translate', {
+            const translateResponse = await fetch('/api/private/shared/ai/translate', {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
@@ -631,7 +631,7 @@ function ProductUploadContent() {
             .filter(lang => lang !== 'en') // 只跳过英文，中文需要翻译
             .map(async (lang) => {
               try {
-                const translateResponse = await fetch('/api/shared/ai/translate', {
+                const translateResponse = await fetch('/api/private/shared/ai/translate', {
                   method: 'POST',
                   headers: { 
                     'Content-Type': 'application/json',

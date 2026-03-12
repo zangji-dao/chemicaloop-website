@@ -120,23 +120,22 @@ src/app/api/
 │       ├── products/    # 产品列表、详情
 │       └── trade-data/  # 贸易数据
 │
-├── private/             # 私有 API（需要认证）
-│   ├── admin/           # 管理员前端私有接口
-│   │   ├── products/    # 产品审核、状态管理
-│   │   ├── users/       # 用户管理
-│   │   ├── spu/         # SPU 管理
-│   │   ├── data-sync/   # 数据同步
-│   │   └── ...
-│   └── www/             # 用户前端私有接口
-│       ├── auth/        # 登出、获取用户信息
-│       ├── profile/     # 个人资料
-│       ├── messages/    # 消息系统
-│       ├── agent/       # 代理商功能
-│       └── ...
-│
-└── shared/              # 公用 API（多端共用）
-    ├── ai/              # AI 翻译、润色
-    └── inquiries/       # 询价
+└── private/             # 私有 API（需要认证）
+    ├── admin/           # 管理员前端私有接口
+    │   ├── products/    # 产品审核、状态管理
+    │   ├── users/       # 用户管理
+    │   ├── spu/         # SPU 管理
+    │   ├── data-sync/   # 数据同步
+    │   └── ...
+    ├── www/             # 用户前端私有接口
+    │   ├── auth/        # 登出、获取用户信息
+    │   ├── profile/     # 个人资料
+    │   ├── messages/    # 消息系统
+    │   ├── agent/       # 代理商功能
+    │   └── ...
+    └── shared/          # 两端共用接口
+        ├── ai/          # AI 翻译、润色
+        └── inquiries/   # 询价
 ```
 
 ### 4.2 创建新 API 的判断流程
@@ -182,9 +181,10 @@ shared/
 |----------|------|------|
 | 用户登录 | `/public/www/auth/login` | 无需认证，用户使用 |
 | 管理员登录 | `/public/admin/login` | 无需认证，管理员使用 |
-| 获取用户信息 | `/private/www/auth/me` | 需要认证，用户使用 |
-| 产品审核 | `/private/admin/products/[id]/review` | 需要认证，管理员使用 |
-| AI 翻译 | `/shared/ai/translate` | 多端共用 |
+| 获取用户信息 | `/private/www/auth/me` | 需要认证，仅用户使用 |
+| 产品审核 | `/private/admin/products/[id]/review` | 需要认证，仅管理员使用 |
+| AI 翻译 | `/private/shared/ai/translate` | 需要认证，两端共用 |
+| 询价 | `/private/shared/inquiries` | 需要认证，两端共用 |
 
 ### 4.5 前端调用规范
 
@@ -197,8 +197,9 @@ fetch('/api/private/www/profile', ...)      // 获取个人资料（需带 token
 fetch('/api/public/admin/login', ...)       // 管理员登录
 fetch('/api/private/admin/products', ...)   // 产品列表（需带 admin_token）
 
-// 多端共用
-fetch('/api/shared/ai/translate', ...)      // AI 翻译
+// 两端共用
+fetch('/api/private/shared/ai/translate', ...)      // AI 翻译
+fetch('/api/private/shared/inquiries', ...)         // 询价
 ```
 
 ---
