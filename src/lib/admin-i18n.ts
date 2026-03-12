@@ -134,6 +134,17 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       reviewFailed: 'Review failed',
       imageGenerated: 'Image generated successfully',
       imageFailed: 'Image generation failed',
+      // Additional keys for products page
+      cas: 'CAS',
+      specInfo: 'Spec Info',
+      status: 'Status',
+      submitTime: 'Submit Time',
+      packaging: 'Packaging',
+      review: 'Review',
+      list: 'List',
+      unlist: 'Unlist',
+      reReview: 'Re-review',
+      relist: 'Relist',
     },
     // 产地
     origins: {
@@ -582,6 +593,17 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       reviewFailed: '审核失败',
       imageGenerated: '图片生成成功',
       imageFailed: '图片生成失败',
+      // Additional keys for products page
+      cas: 'CAS号',
+      specInfo: '规格信息',
+      status: '状态',
+      submitTime: '提交时间',
+      packaging: '包装',
+      review: '审核',
+      list: '上架',
+      unlist: '下架',
+      reReview: '重新审核',
+      relist: '重新上架',
     },
     // 产地
     origins: {
@@ -1029,6 +1051,17 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       reviewFailed: '審査失敗',
       imageGenerated: '画像生成完了',
       imageFailed: '画像生成失敗',
+      // Additional keys for products page
+      cas: 'CAS番号',
+      specInfo: '仕様情報',
+      status: 'ステータス',
+      submitTime: '提出日時',
+      packaging: '包装',
+      review: '審査',
+      list: '公開',
+      unlist: '非公開',
+      reReview: '再審査',
+      relist: '再公開',
     },
     // SPU 管理
     spu: {
@@ -1413,6 +1446,17 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       reviewFailed: '검토 실패',
       imageGenerated: '이미지 생성 완료',
       imageFailed: '이미지 생성 실패',
+      // Additional keys for products page
+      cas: 'CAS 번호',
+      specInfo: '사양 정보',
+      status: '상태',
+      submitTime: '제출 시간',
+      packaging: '포장',
+      review: '검토',
+      list: '게시',
+      unlist: '게시 중지',
+      reReview: '재검토',
+      relist: '재게시',
     },
     // SPU 관리
     spu: {
@@ -1867,6 +1911,17 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       reviewFailed: 'Überprüfung fehlgeschlagen',
       imageGenerated: 'Bild erfolgreich generiert',
       imageFailed: 'Bildgenerierung fehlgeschlagen',
+      // Additional keys for products page
+      cas: 'CAS',
+      specInfo: 'Spezifikationen',
+      status: 'Status',
+      submitTime: 'Eingereicht am',
+      packaging: 'Verpackung',
+      review: 'Überprüfen',
+      list: 'Auflisten',
+      unlist: 'Entfernen',
+      reReview: 'Erneut prüfen',
+      relist: 'Erneut auflisten',
     },
     // SPU-Verwaltung
     spu: {
@@ -2321,6 +2376,17 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       reviewFailed: 'Révision échouée',
       imageGenerated: 'Image générée avec succès',
       imageFailed: 'Échec de génération d\'image',
+      // Additional keys for products page
+      cas: 'CAS',
+      specInfo: 'Spécifications',
+      status: 'Statut',
+      submitTime: 'Date de soumission',
+      packaging: 'Emballage',
+      review: 'Réviser',
+      list: 'Lister',
+      unlist: 'Retirer',
+      reReview: 'Réviser à nouveau',
+      relist: 'Re-lister',
     },
     // Gestion SPU
     spu: {
@@ -2775,6 +2841,17 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       reviewFailed: 'Revisión fallida',
       imageGenerated: 'Imagen generada exitosamente',
       imageFailed: 'Error al generar imagen',
+      // Additional keys for products page
+      cas: 'CAS',
+      specInfo: 'Especificaciones',
+      status: 'Estado',
+      submitTime: 'Fecha de envío',
+      packaging: 'Embalaje',
+      review: 'Revisar',
+      list: 'Listar',
+      unlist: 'Retirar',
+      reReview: 'Revisar de nuevo',
+      relist: 'Relistar',
     },
     // Gestión SPU
     spu: {
@@ -3229,6 +3306,17 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       reviewFailed: 'Revisão falhou',
       imageGenerated: 'Imagem gerada com sucesso',
       imageFailed: 'Falha ao gerar imagem',
+      // Additional keys for products page
+      cas: 'CAS',
+      specInfo: 'Especificações',
+      status: 'Status',
+      submitTime: 'Data de envio',
+      packaging: 'Embalagem',
+      review: 'Revisar',
+      list: 'Listar',
+      unlist: 'Remover',
+      reReview: 'Revisar novamente',
+      relist: 'Relistar',
     },
     // Gestão SPU
     spu: {
@@ -3683,6 +3771,17 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       reviewFailed: 'Ошибка проверки',
       imageGenerated: 'Изображение успешно создано',
       imageFailed: 'Ошибка создания изображения',
+      // Additional keys for products page
+      cas: 'CAS',
+      specInfo: 'Спецификации',
+      status: 'Статус',
+      submitTime: 'Дата отправки',
+      packaging: 'Упаковка',
+      review: 'Проверить',
+      list: 'Опубликовать',
+      unlist: 'Снять',
+      reReview: 'Перепроверить',
+      relist: 'Переопубликовать',
     },
     // Управление SPU
     spu: {
@@ -4137,6 +4236,17 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       reviewFailed: 'فشلت المراجعة',
       imageGenerated: 'تم توليد الصورة بنجاح',
       imageFailed: 'فشل توليد الصورة',
+      // Additional keys for products page
+      cas: 'CAS',
+      specInfo: 'المواصفات',
+      status: 'الحالة',
+      submitTime: 'تاريخ الإرسال',
+      packaging: 'التعبئة',
+      review: 'مراجعة',
+      list: 'إدراج',
+      unlist: 'إزالة',
+      reReview: 'إعادة مراجعة',
+      relist: 'إعادة إدراج',
     },
     // إدارة SPU
     spu: {
