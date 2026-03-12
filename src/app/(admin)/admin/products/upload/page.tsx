@@ -44,9 +44,7 @@ interface SPUItem {
 }
 
 function ProductUploadContent() {
-  const { locale: adminLocale, t } = useAdminLocale();
-  // 将 AdminLocale 转换为页面支持的语言类型，默认使用英文
-  const locale = (adminLocale === 'zh' ? 'zh' : 'en') as 'zh' | 'en';
+  const { locale, t } = useAdminLocale();
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -499,7 +497,7 @@ function ProductUploadContent() {
       } catch (e: any) {
         // 产品图生成失败，停止流程
         console.error('Failed to generate image:', e);
-        const errorMsg = locale === 'zh' ? `产品图生成失败: ${e.message}` : `Failed to generate product image: ${e.message}`;
+        const errorMsg = t('spu.imageGenFailed', { error: e.message });
         setProcessingError(errorMsg);
         setErrors({ cas: errorMsg });
         setProcessingStep('done');
@@ -528,7 +526,7 @@ function ProductUploadContent() {
       } catch (e: any) {
         // HS编码匹配失败，停止流程
         console.error('Failed to match HS code:', e);
-        const errorMsg = locale === 'zh' ? `HS编码匹配失败: ${e.message}` : `Failed to match HS code: ${e.message}`;
+        const errorMsg = t('spu.hsCodeMatchFailed', { error: e.message });
         setProcessingError(errorMsg);
         setErrors({ cas: errorMsg });
         setProcessingStep('done');
@@ -1079,7 +1077,7 @@ function ProductUploadContent() {
                   {spuSearchResults.length > 0 && !pubchemData && (
                     <div className="border border-slate-600 rounded-lg divide-y divide-slate-700 mb-4">
                       <div className="px-4 py-2 bg-slate-700 text-sm text-slate-300">
-                        {locale === 'zh' ? `找到 ${spuSearchResults.length} 个产品` : `Found ${spuSearchResults.length} products`}
+                        {t('spu.foundProducts', { count: spuSearchResults.length })}
                       </div>
                       {spuSearchResults.map((spu) => (
                         <button
@@ -1419,17 +1417,9 @@ function ProductUploadContent() {
                               </span>
                               {translatingFields.size > 0 && (
                                 <span className="text-blue-400 text-xs ml-auto animate-pulse">
-                                  {locale === 'zh' 
-                                    ? `正在翻译: ${Array.from(translatingFields).map(f => 
-                                        f === 'name' ? '名称' : 
-                                        f === 'description' ? '描述' : 
-                                        f === 'applications' ? '应用领域' : 
-                                        f === 'physicalDescription' ? '物理描述' : 
-                                        f === 'colorForm' ? '颜色/形态' : 
-                                        f === 'odor' ? '气味' : 
-                                        f === 'hazardClasses' ? '危险性分类' : f
-                                      ).join(', ')}`
-                                    : `Translating: ${Array.from(translatingFields).join(', ')}`}
+                                  {t('spu.currentlyTranslating')} {Array.from(translatingFields).map(f => 
+                                    t(`spu.field${f.charAt(0).toUpperCase() + f.slice(1)}`)
+                                  ).join(', ')}
                                 </span>
                               )}
                               {Object.keys(translations).length > 0 && translatingFields.size === 0 && (
@@ -1497,17 +1487,11 @@ function ProductUploadContent() {
                           return formData.translations.name[locale];
                         }
                         // 否则根据当前语言显示原文
-                        return locale === 'zh' 
-                          ? (formData.name || formData.nameEn) 
-                          : (formData.nameEn || formData.name);
+                        return formData.name || formData.nameEn || '';
                       })()}
                       onChange={(e) => {
-                        // 根据当前语言更新对应的名称字段
-                        if (locale === 'zh') {
-                          setFormData({ ...formData, name: e.target.value });
-                        } else {
-                          setFormData({ ...formData, nameEn: e.target.value });
-                        }
+                        // 更新名称字段（优先更新中文名称）
+                        setFormData({ ...formData, name: e.target.value });
                       }}
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                       placeholder={t('spu.name')}
@@ -1752,11 +1736,8 @@ function ProductUploadContent() {
                   <textarea
                     value={(() => {
                       // 优先显示翻译后的描述
-                      if (locale === 'zh' && formData.translations?.description?.zh) {
-                        return formData.translations.description.zh;
-                      }
-                      if (locale === 'en' && formData.translations?.description?.en) {
-                        return formData.translations.description.en;
+                      if (formData.translations?.description?.[locale]) {
+                        return formData.translations.description[locale];
                       }
                       // 否则显示原文
                       return pubchemData?.description || selectedSPU?.description || '';
