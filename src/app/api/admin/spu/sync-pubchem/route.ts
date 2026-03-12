@@ -3,6 +3,10 @@ import { getDb, S3Storage } from 'coze-coding-dev-sdk';
 import { sql, eq } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
 import { API_CONFIG } from '@/config/api';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 // PubChem API 基础URL
 const PUBCHEM_BASE_URL = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug';
@@ -13,6 +17,43 @@ const FETCH_TIMEOUT = 60000;
 const VIEW_TIMEOUT = 90000;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000;
+
+// 内存缓存（缓存5分钟，用于预览模式）
+const previewCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5分钟
+
+function getCachedPreview(cas: string): any | null {
+  const cached = previewCache.get(cas);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log(`[Cache] Preview hit for ${cas}`);
+    return cached.data;
+  }
+  return null;
+}
+
+function setCachedPreview(cas: string, data: any): void {
+  previewCache.set(cas, { data, timestamp: Date.now() });
+  console.log(`[Cache] Preview cached for ${cas}`);
+}
+
+// 中文名称识别正则（包含中文Unicode范围）
+const CHINESE_REGEX = /[\u4e00-\u9fff]+/;
+
+/**
+ * 从同义词列表中提取中文名称
+ */
+function extractChineseName(synonyms: string[]): string | null {
+  for (const synonym of synonyms) {
+    if (CHINESE_REGEX.test(synonym)) {
+      const chineseParts = synonym.match(/[\u4e00-\u9fff]+/g);
+      if (chineseParts && chineseParts.length > 0) {
+        const chineseName = chineseParts.find(part => part.length >= 2 && part.length <= 10);
+        if (chineseName) return chineseName;
+      }
+    }
+  }
+  return null;
+}
 
 /**
  * 翻译文本（调用内部翻译 API）
@@ -116,7 +157,45 @@ async function translateContent(
 }
 
 /**
- * 带超时和重试的 fetch 请求
+ * 使用 curl 作为备选的 fetch 方法（解决 Node.js 网络限制）
+ */
+async function fetchWithCurl(url: string, timeoutMs: number = 30000): Promise<any> {
+  try {
+    console.log(`[PubChem] Using curl fallback: ${url}`);
+    const timeoutSeconds = Math.floor(timeoutMs / 1000);
+    
+    // 使用临时文件存储响应（避免 stdout buffer 限制）
+    const tempFile = `/tmp/pubchem_${Date.now()}.json`;
+    const command = `curl -s --connect-timeout 15 --max-time ${timeoutSeconds} '${url}' -o ${tempFile}`;
+    
+    await execAsync(command, { timeout: timeoutMs + 15000 });
+    
+    // 读取文件内容
+    const fs = require('fs');
+    if (fs.existsSync(tempFile)) {
+      const content = fs.readFileSync(tempFile, 'utf-8');
+      fs.unlinkSync(tempFile); // 清理临时文件
+      
+      if (content && content.trim()) {
+        try {
+          const result = JSON.parse(content);
+          console.log(`[PubChem] Curl success, got ${content.length} bytes`);
+          return { ok: true, json: () => Promise.resolve(result) };
+        } catch (parseError) {
+          console.error(`[PubChem] Curl JSON parse error`);
+          return null;
+        }
+      }
+    }
+    return null;
+  } catch (error: any) {
+    console.error(`[PubChem] Curl error:`, error?.message);
+    return null;
+  }
+}
+
+/**
+ * 带超时和重试的 fetch 请求（支持 curl 备选）
  */
 async function fetchWithRetry(url: string, retries: number = MAX_RETRIES, timeout: number = FETCH_TIMEOUT): Promise<Response | null> {
   for (let attempt = 0; attempt < retries; attempt++) {
@@ -149,7 +228,11 @@ async function fetchWithRetry(url: string, retries: number = MAX_RETRIES, timeou
       }
     }
   }
-  return null;
+  
+  // 所有 fetch 重试失败后，尝试 curl 备选
+  console.log(`[PubChem] All fetch attempts failed, trying curl fallback...`);
+  const curlResult = await fetchWithCurl(url, timeout);
+  return curlResult as any;
 }
 
 /**
@@ -910,9 +993,20 @@ export async function POST(request: NextRequest) {
     
     // ========== 预览模式：只获取数据，不写入数据库 ==========
     if (preview && cas) {
-      console.log(`[Sync-PubChem] Preview mode for CAS: ${cas}`);
+      const trimmedCas = cas.trim();
+      console.log(`[Sync-PubChem] Preview mode for CAS: ${trimmedCas}`);
       
-      const pubchemData = await fetchPubChemData(cas.trim());
+      // 检查缓存
+      const cachedData = getCachedPreview(trimmedCas);
+      if (cachedData) {
+        return NextResponse.json({
+          success: true,
+          source: 'cache',
+          data: cachedData,
+        });
+      }
+      
+      const pubchemData = await fetchPubChemData(trimmedCas);
       
       if (!pubchemData) {
         return NextResponse.json({
@@ -921,59 +1015,70 @@ export async function POST(request: NextRequest) {
         });
       }
       
-      // 返回数据，不写入数据库
+      // 提取中文名称（从同义词中识别）
+      const nameZh = pubchemData.synonyms ? extractChineseName(pubchemData.synonyms) : null;
+      
+      // 构建返回数据
+      const responseData = {
+        pubchemCid: pubchemData.cid,
+        pubchemSyncedAt: new Date().toISOString(),
+        // 基本信息
+        nameZh,
+        nameEn: pubchemData.synonyms?.[0] || null, // 英文名称取第一个同义词
+        formula: pubchemData.formula,
+        molecularWeight: pubchemData.molecularWeight,
+        exactMass: pubchemData.exactMass,
+        smiles: pubchemData.smiles,
+        smilesCanonical: pubchemData.smilesCanonical,
+        smilesIsomeric: pubchemData.smilesIsomeric,
+        inchi: pubchemData.inchi,
+        inchiKey: pubchemData.inchiKey,
+        // 计算属性
+        xlogp: pubchemData.xlogp,
+        tpsa: pubchemData.tpsa,
+        complexity: pubchemData.complexity,
+        hBondDonorCount: pubchemData.hBondDonorCount,
+        hBondAcceptorCount: pubchemData.hBondAcceptorCount,
+        rotatableBondCount: pubchemData.rotatableBondCount,
+        heavyAtomCount: pubchemData.heavyAtomCount,
+        formalCharge: pubchemData.formalCharge,
+        // 物理化学性质
+        description: pubchemData.description,
+        physicalDescription: pubchemData.physicalDescription,
+        colorForm: pubchemData.colorForm,
+        odor: pubchemData.odor,
+        boilingPoint: pubchemData.boilingPoint,
+        meltingPoint: pubchemData.meltingPoint,
+        flashPoint: pubchemData.flashPoint,
+        density: pubchemData.density,
+        solubility: pubchemData.solubility,
+        vaporPressure: pubchemData.vaporPressure,
+        refractiveIndex: pubchemData.refractiveIndex,
+        // 安全信息
+        hazardClasses: pubchemData.hazardClasses,
+        healthHazards: pubchemData.healthHazards,
+        ghsClassification: pubchemData.ghsClassification,
+        toxicitySummary: pubchemData.toxicitySummary,
+        carcinogenicity: pubchemData.carcinogenicity,
+        firstAid: pubchemData.firstAid,
+        storageConditions: pubchemData.storageConditions,
+        incompatibleMaterials: pubchemData.incompatibleMaterials,
+        // 同义词和应用
+        synonyms: pubchemData.synonyms,
+        applications: pubchemData.applications,
+        // 结构图
+        structureUrl: pubchemData.structureUrl,
+        structureImageKey: pubchemData.structureImageKey,
+        structure2dSvg: pubchemData.structure2dSvg,
+      };
+      
+      // 缓存结果
+      setCachedPreview(trimmedCas, responseData);
+      
       return NextResponse.json({
         success: true,
-        data: {
-          pubchemCid: pubchemData.cid,
-          pubchemSyncedAt: new Date().toISOString(),
-          // 基本信息
-          formula: pubchemData.formula,
-          molecularWeight: pubchemData.molecularWeight,
-          exactMass: pubchemData.exactMass,
-          smiles: pubchemData.smiles,
-          smilesCanonical: pubchemData.smilesCanonical,
-          smilesIsomeric: pubchemData.smilesIsomeric,
-          inchi: pubchemData.inchi,
-          inchiKey: pubchemData.inchiKey,
-          // 计算属性
-          xlogp: pubchemData.xlogp,
-          tpsa: pubchemData.tpsa,
-          complexity: pubchemData.complexity,
-          hBondDonorCount: pubchemData.hBondDonorCount,
-          hBondAcceptorCount: pubchemData.hBondAcceptorCount,
-          rotatableBondCount: pubchemData.rotatableBondCount,
-          heavyAtomCount: pubchemData.heavyAtomCount,
-          formalCharge: pubchemData.formalCharge,
-          // 物理化学性质
-          description: pubchemData.description,
-          physicalDescription: pubchemData.physicalDescription,
-          colorForm: pubchemData.colorForm,
-          odor: pubchemData.odor,
-          boilingPoint: pubchemData.boilingPoint,
-          meltingPoint: pubchemData.meltingPoint,
-          flashPoint: pubchemData.flashPoint,
-          density: pubchemData.density,
-          solubility: pubchemData.solubility,
-          vaporPressure: pubchemData.vaporPressure,
-          refractiveIndex: pubchemData.refractiveIndex,
-          // 安全信息
-          hazardClasses: pubchemData.hazardClasses,
-          healthHazards: pubchemData.healthHazards,
-          ghsClassification: pubchemData.ghsClassification,
-          toxicitySummary: pubchemData.toxicitySummary,
-          carcinogenicity: pubchemData.carcinogenicity,
-          firstAid: pubchemData.firstAid,
-          storageConditions: pubchemData.storageConditions,
-          incompatibleMaterials: pubchemData.incompatibleMaterials,
-          // 同义词和应用
-          synonyms: pubchemData.synonyms,
-          applications: pubchemData.applications,
-          // 结构图
-          structureUrl: pubchemData.structureUrl,
-          structureImageKey: pubchemData.structureImageKey,
-          structure2dSvg: pubchemData.structure2dSvg,
-        },
+        source: 'pubchem',
+        data: responseData,
       });
     }
     

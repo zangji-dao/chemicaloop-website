@@ -187,11 +187,16 @@ function ProductUploadContent() {
     setConnectionStatus('connecting');
 
     try {
-      const response = await fetch(`/api/products/lookup?cas=${encodeURIComponent(query)}`);
+      // 调用合并后的 PubChem 同步接口（预览模式）
+      const response = await fetch('/api/admin/spu/sync-pubchem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preview: true, cas: query }),
+      });
       const data = await response.json();
 
       if (data.success && data.data) {
-        setConnectionStatus(data.source === 'local' ? 'local_success' : 'remote_success');
+        setConnectionStatus(data.source === 'cache' ? 'local_success' : 'remote_success');
         
         let nameZh = data.data.nameZh || '';
         const nameEn = data.data.nameEn || '';
@@ -215,18 +220,18 @@ function ProductUploadContent() {
         setPubchemData({
           cas: query,
           source: data.source,
-          cid: data.data.cid,
+          cid: data.data.pubchemCid,
           nameZh,
           nameEn,
           formula: data.data.formula || '',
           molecularWeight: data.data.molecularWeight || '',
           smiles: data.data.smiles || '',
-          isomericSmiles: data.data.isomericSmiles || '',
+          isomericSmiles: data.data.smilesIsomeric || '',
           inchi: data.data.inchi || '',
           inchiKey: data.data.inchiKey || '',
           xlogp: data.data.xlogp || '',
-          structure2dUrl: data.data.structure2dUrl || '',
-          structure2dSvgUrl: data.data.structure2dSvgUrl || '',
+          structure2dUrl: data.data.structureUrl || '',
+          structure2dSvgUrl: data.data.structure2dSvg || '',
           synonyms: data.data.synonyms || [],
           boilingPoint: data.data.boilingPoint || '',
           meltingPoint: data.data.meltingPoint || '',
@@ -344,12 +349,17 @@ function ProductUploadContent() {
     setConnectionStatus('connecting');
 
     try {
-      const response = await fetch(`/api/products/lookup?cas=${encodeURIComponent(formData.cas)}`);
+      // 调用合并后的 PubChem 同步接口（预览模式）
+      const response = await fetch('/api/admin/spu/sync-pubchem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preview: true, cas: formData.cas }),
+      });
       const data = await response.json();
 
       if (data.success && data.data) {
         // 数据库连接成功
-        setConnectionStatus(data.source === 'local' ? 'local_success' : 'remote_success');
+        setConnectionStatus(data.source === 'cache' ? 'local_success' : 'remote_success');
         
         let nameZh = data.data.nameZh || '';
         const nameEn = data.data.nameEn || '';
@@ -373,20 +383,20 @@ function ProductUploadContent() {
         setPubchemData({
           cas: formData.cas,
           source: data.source,
-          cid: data.data.cid,
+          cid: data.data.pubchemCid,
           nameZh,
           nameEn,
           formula: data.data.formula || '',
           molecularWeight: data.data.molecularWeight || '',
           // 结构信息
           smiles: data.data.smiles || '',
-          isomericSmiles: data.data.isomericSmiles || '',
+          isomericSmiles: data.data.smilesIsomeric || '',
           inchi: data.data.inchi || '',
           inchiKey: data.data.inchiKey || '',
           xlogp: data.data.xlogp || '',
           // 结构图
-          structure2dUrl: data.data.structure2dUrl || '',
-          structure2dSvgUrl: data.data.structure2dSvgUrl || '',
+          structure2dUrl: data.data.structureUrl || '',
+          structure2dSvgUrl: data.data.structure2dSvg || '',
           // 同义词
           synonyms: data.data.synonyms || [],
           // 物理化学性质
