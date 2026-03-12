@@ -148,7 +148,7 @@ const apiRequest = async (
 
 // 检查邮箱是否可用
 export const checkEmailAvailability = async (email: string): Promise<{ success: boolean; available: boolean; error?: string }> => {
-  return apiRequest('/api/public/auth/check-email', {
+  return apiRequest('/api/public/www/auth/check-email', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
@@ -156,7 +156,7 @@ export const checkEmailAvailability = async (email: string): Promise<{ success: 
 
 // 发送验证码
 export const sendVerificationCode = async (email: string): Promise<{ success: boolean; message: string }> => {
-  return apiRequest('/api/public/auth/send-code', {
+  return apiRequest('/api/public/www/auth/send-code', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
@@ -173,7 +173,7 @@ export const register = async (
   city?: string,
   socialContacts?: Record<string, string>
 ): Promise<RegisterResponse> => {
-  const response = await apiRequest('/api/public/auth/register', {
+  const response = await apiRequest('/api/public/www/auth/register', {
     method: 'POST',
     body: JSON.stringify({
       email,
@@ -202,7 +202,7 @@ export const login = async (
   password: string
 ): Promise<LoginResponse> => {
   try {
-    const response = await apiRequest('/api/public/auth/login', {
+    const response = await apiRequest('/api/public/www/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });

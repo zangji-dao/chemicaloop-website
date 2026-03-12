@@ -173,7 +173,7 @@ export default function ProductDetailPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/public/products/${productId}?locale=${locale}`);
+        const response = await fetch(`/api/public/www/products/${productId}?locale=${locale}`);
         const data = await response.json();
         
         if (data.success && data.data) {

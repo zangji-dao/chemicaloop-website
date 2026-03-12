@@ -721,7 +721,7 @@ function SecurityContent({ user }: { user: any }) {
     setEmailError('');
     
     try {
-      const response = await fetch('/api/public/auth/send-code', {
+      const response = await fetch('/api/public/www/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: newEmail, type: 'change_email' }),
@@ -1324,7 +1324,7 @@ function AgentHallContent({ user }: { user: any }) {
 
     setQueryLoading(true);
     try {
-      const response = await fetch(`/api/public/products/${queryCas.trim()}/suppliers`);
+      const response = await fetch(`/api/public/www/products/${queryCas.trim()}/suppliers`);
       const data = await response.json();
       if (data.success) {
         setQueryResults(data.data);
