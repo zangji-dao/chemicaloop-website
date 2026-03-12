@@ -38,7 +38,7 @@ export default function InquiryAdminPage() {
 
   const loadInquiries = async () => {
     try {
-      const response = await fetch('/api/private/shared/inquiries?userId=all');
+      const response = await fetch('/api/common/inquiries?userId=all');
       if (response.ok) {
         const data = await response.json();
         setInquiries(data.data || []);
@@ -53,7 +53,7 @@ export default function InquiryAdminPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/private/shared/inquiries/${selectedInquiry.id}/reply`, {
+      const response = await fetch(`/api/common/inquiries/${selectedInquiry.id}/reply`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(replyForm),

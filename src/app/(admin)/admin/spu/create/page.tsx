@@ -99,7 +99,7 @@ function ProductUploadContent() {
     setSpuSearchResults([]);
 
     try {
-      const response = await fetch(`/api/private/admin/spu-manage/search?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/admin/spu-manage/search?q=${encodeURIComponent(query)}`);
       const data = await response.json();
 
       if (data.success && data.data.length > 0) {
@@ -169,7 +169,7 @@ function ProductUploadContent() {
     // 1. 先搜索本地 SPU
     setSearchingSPU(true);
     try {
-      const response = await fetch(`/api/private/admin/spu-manage/search?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/admin/spu-manage/search?q=${encodeURIComponent(query)}`);
       const data = await response.json();
 
       if (data.success && data.data.length > 0) {
@@ -203,7 +203,7 @@ function ProductUploadContent() {
 
         if (!nameZh && nameEn) {
           try {
-            const translateResponse = await fetch('/api/private/shared/ai/translate', {
+            const translateResponse = await fetch('/api/common/ai/translate', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ text: nameEn, targetLanguage: 'zh' }),
@@ -278,7 +278,7 @@ function ProductUploadContent() {
     setSpuSearchResults([]);
 
     try {
-      const response = await fetch(`/api/private/admin/spu-manage/search?q=${encodeURIComponent(spuSearchQuery)}`);
+      const response = await fetch(`/api/admin/spu-manage/search?q=${encodeURIComponent(spuSearchQuery)}`);
       const data = await response.json();
 
       if (data.success && data.data.length > 0) {
@@ -366,7 +366,7 @@ function ProductUploadContent() {
 
         if (!nameZh && nameEn) {
           try {
-            const translateResponse = await fetch('/api/private/shared/ai/translate', {
+            const translateResponse = await fetch('/api/common/ai/translate', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ text: nameEn, targetLanguage: 'zh' }),
@@ -571,7 +571,7 @@ function ProductUploadContent() {
         // 并行翻译所有语言
         const translationPromises = languagesToTranslate.map(async (lang) => {
           try {
-            const translateResponse = await fetch('/api/private/shared/ai/translate', {
+            const translateResponse = await fetch('/api/common/ai/translate', {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
@@ -631,7 +631,7 @@ function ProductUploadContent() {
             .filter(lang => lang !== 'en') // 只跳过英文，中文需要翻译
             .map(async (lang) => {
               try {
-                const translateResponse = await fetch('/api/private/shared/ai/translate', {
+                const translateResponse = await fetch('/api/common/ai/translate', {
                   method: 'POST',
                   headers: { 
                     'Content-Type': 'application/json',
@@ -804,7 +804,7 @@ function ProductUploadContent() {
 
       console.log('[SPU] Saving with data:', { cas: spuData.cas, name: spuData.name });
 
-      const response = await fetch('/api/private/admin/spu-manage/save', {
+      const response = await fetch('/api/admin/spu-manage/save', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

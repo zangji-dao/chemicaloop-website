@@ -1141,7 +1141,7 @@ export default function AdminSPUPage() {
       setTranslatingFields(prev => new Set([...prev, fieldName]));
       
       try {
-        const res = await fetch('/api/private/shared/ai/translate', {
+        const res = await fetch('/api/common/ai/translate', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',

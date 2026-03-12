@@ -148,7 +148,7 @@ const apiRequest = async (
 
 // 检查邮箱是否可用
 export const checkEmailAvailability = async (email: string): Promise<{ success: boolean; available: boolean; error?: string }> => {
-  return apiRequest('/api/public/www/auth/check-email', {
+  return apiRequest('/api/www/auth/check-email', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
@@ -156,7 +156,7 @@ export const checkEmailAvailability = async (email: string): Promise<{ success: 
 
 // 发送验证码
 export const sendVerificationCode = async (email: string): Promise<{ success: boolean; message: string }> => {
-  return apiRequest('/api/public/www/auth/send-code', {
+  return apiRequest('/api/www/auth/send-code', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
@@ -173,7 +173,7 @@ export const register = async (
   city?: string,
   socialContacts?: Record<string, string>
 ): Promise<RegisterResponse> => {
-  const response = await apiRequest('/api/public/www/auth/register', {
+  const response = await apiRequest('/api/www/auth/register', {
     method: 'POST',
     body: JSON.stringify({
       email,
@@ -202,7 +202,7 @@ export const login = async (
   password: string
 ): Promise<LoginResponse> => {
   try {
-    const response = await apiRequest('/api/public/www/auth/login', {
+    const response = await apiRequest('/api/www/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -226,7 +226,7 @@ export const login = async (
 // 获取当前用户
 export const getCurrentUser = async (): Promise<AuthResponse> => {
   try {
-    const response = await apiRequest('/api/private/www/auth/me');
+    const response = await apiRequest('/api/www/auth/me');
     
     if (response.success && response.data) {
       saveUser(response.data);
@@ -245,7 +245,7 @@ export const logout = async (): Promise<void> => {
     console.log('logout: Calling backend logout API...');
 
     // 调用后端退出登录 API，使 token 失效
-    const response = await apiRequest('/api/private/www/auth/logout', {
+    const response = await apiRequest('/api/www/auth/logout', {
       method: 'POST',
     });
 
@@ -278,7 +278,7 @@ export const changePassword = async (
   newPassword: string
 ): Promise<{ success: boolean; message?: string; error?: string }> => {
   try {
-    const response = await apiRequest('/api/private/www/profile/change-password', {
+    const response = await apiRequest('/api/www/profile/change-password', {
       method: 'POST',
       body: JSON.stringify({ currentPassword, newPassword }),
     });

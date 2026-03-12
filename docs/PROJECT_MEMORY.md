@@ -108,120 +108,83 @@
 
 ## 4. API 目录规范
 
-### 4.1 设计原则：金字塔思维
+### 4.1 设计原则：按调用端分类
 
-**核心方法：MECE（相互独立，完全穷尽）**
-
-每一层只用**一个维度**切分，不混用维度。
+**一级目录：按调用端分类**
 
 ```
-                    API 接口
-                        │
-           ┌────────────┴────────────┐
-           │                         │
-       需要认证？                 不需要认证？
-           │                         │
-       private                    public
-           │                         │
-    ┌──────┼──────┐            （无认证，无法
-    │      │      │             区分调用者）
-  admin   www   shared
-    │      │      │
-  仅管理  仅用户  两端共用
+api/
+├── admin/     # 管理端独自调用
+├── www/       # 用户端独自调用
+└── common/    # 双端同时调用
 ```
 
-**关键点：public 不区分调用者，因为没有认证就不知道是谁在调用。**
-
-### 4.2 目录结构
+**二级目录：按功能模块分类**
 
 ```
-src/app/api/
-├── public/              # 公开 API（无需认证，不区分调用者）
-│   ├── auth/            # 用户登录、注册、验证码
-│   ├── admin-login/     # 管理员登录（独立，token 机制不同）
-│   ├── products/        # 产品列表、详情（任何人都能看）
-│   └── trade-data/      # 贸易数据（任何人都能看）
-│
-└── private/             # 私有 API（需要认证，区分调用者）
-    ├── admin/           # 仅管理员调用
-    │   ├── products/    # 产品审核、状态管理
-    │   ├── users/       # 用户管理
-    │   ├── spu/         # SPU 管理
-    │   ├── data-sync/   # 数据同步
-    │   └── ...
-    ├── www/             # 仅用户调用
-    │   ├── auth/        # 登出、获取用户信息
-    │   ├── profile/     # 个人资料
-    │   ├── messages/    # 消息系统
-    │   ├── agent/       # 代理商功能
-    │   └── ...
-    └── shared/          # 两端共用
-        ├── ai/          # AI 翻译、润色
-        └── inquiries/   # 询价
+admin/
+├── auth/          # 认证
+├── products/      # 产品管理
+├── spu/           # SPU管理
+├── users/         # 用户管理
+├── inquiries/     # 询盘管理
+├── data-sync/     # 数据同步
+├── customs/       # 海关数据
+└── stats/         # 统计
+
+www/
+├── auth/          # 认证
+├── profile/       # 个人中心
+├── messages/      # 消息系统
+├── email/         # 邮件
+├── agent/         # 代理商
+├── contacts/      # 联系人
+└── supply-inquiries/
+
+common/
+├── products/      # 产品查询
+├── inquiries/     # 询价
+├── ai/            # AI服务
+└── trade-data/    # 贸易数据
 ```
 
-### 4.3 创建新 API 的判断流程
+### 4.2 分类逻辑
 
-```
-新 API 需求
-    │
-    ▼
-需要认证？ ────────────── 否 ──→ public/
-    │                              │
-   是                              ▼
-    │                         管理员用？── 是 ──→ public/admin/
-    │                              │
-   否（用户用）                     └──────→ public/www/
-    ▼
-private/
-    │
-    ▼
-管理员用？── 是 ──→ private/admin/
-    │
-   否
-    │
-    ▼
-用户用？── 是 ──→ private/www/
-    │
-   多端共用
-    │
-    ▼
-shared/
-```
+| 一级目录 | 说明 | 认证要求 |
+|----------|------|----------|
+| `admin` | 仅管理端调用 | 需要 admin_token |
+| `www` | 仅用户端调用 | 需要 auth_token |
+| `common` | 双端共用 | 需要 token（不区分类型） |
 
-### 4.3 分类维度
-
-| 维度 | 选项 | 判断标准 |
-|------|------|----------|
-| 访问权限 | `public` vs `private` | 是否需要 token 认证 |
-| 使用端 | `admin` vs `www` | 谁在调用？管理员还是用户 |
-| 共享性 | 端内独占 vs `shared` | 是否被多端同时调用 |
-
-### 4.4 示例
+### 4.3 示例
 
 | API 功能 | 路径 | 原因 |
 |----------|------|------|
-| 用户登录 | `/public/www/auth/login` | 无需认证，用户使用 |
-| 管理员登录 | `/public/admin/login` | 无需认证，管理员使用 |
-| 获取用户信息 | `/private/www/auth/me` | 需要认证，仅用户使用 |
-| 产品审核 | `/private/admin/products/[id]/review` | 需要认证，仅管理员使用 |
-| AI 翻译 | `/private/shared/ai/translate` | 需要认证，两端共用 |
-| 询价 | `/private/shared/inquiries` | 需要认证，两端共用 |
+| 用户登录 | `/www/auth/login` | 用户端独有 |
+| 管理员登录 | `/admin/auth/login` | 管理端独有 |
+| 获取用户信息 | `/www/auth/me` | 用户端独有 |
+| 产品审核 | `/admin/products/[id]/review` | 管理端独有 |
+| 产品列表 | `/common/products` | 双端共用 |
+| AI 翻译 | `/common/ai/translate` | 双端共用 |
+| 个人资料 | `/www/profile` | 用户端独有 |
+| 用户管理 | `/admin/users` | 管理端独有 |
 
-### 4.5 前端调用规范
+### 4.4 前端调用规范
 
 ```typescript
 // 用户前端调用
-fetch('/api/public/www/auth/login', ...)    // 登录
-fetch('/api/private/www/profile', ...)      // 获取个人资料（需带 token）
+fetch('/api/www/auth/login', ...)      // 登录
+fetch('/api/www/profile', ...)         // 获取个人资料
+fetch('/api/common/products', ...)     // 产品列表（共用）
 
 // 管理后台调用
-fetch('/api/public/admin/login', ...)       // 管理员登录
-fetch('/api/private/admin/products', ...)   // 产品列表（需带 admin_token）
+fetch('/api/admin/auth/login', ...)    // 管理员登录
+fetch('/api/admin/products', ...)      // 产品管理
+fetch('/api/common/products', ...)     // 产品列表（共用）
 
 // 两端共用
-fetch('/api/private/shared/ai/translate', ...)      // AI 翻译
-fetch('/api/private/shared/inquiries', ...)         // 询价
+fetch('/api/common/ai/translate', ...) // AI 翻译
+fetch('/api/common/inquiries', ...)    // 询价
 ```
 
 ---

@@ -215,19 +215,19 @@ export default function MessagesPage() {
         // 并行加载联系人和未读数量
         const [countsRes, receivedRes, sentRes, membersRes] = await Promise.all([
           // 获取所有文件夹未读数
-          fetch('/api/private/www/messages/unread/count', {
+          fetch('/api/www/messages/unread/count', {
             headers: { 'Authorization': `Bearer ${token}` },
           }),
           // 获取收到的联系人请求
-          fetch('/api/private/www/contact-requests?role=receiver&status=pending', {
+          fetch('/api/www/contact-requests?role=receiver&status=pending', {
             headers: { 'Authorization': `Bearer ${token}` },
           }),
           // 获取已发的联系人请求（只查pending）
-          fetch('/api/private/www/contact-requests?role=requester&status=pending', {
+          fetch('/api/www/contact-requests?role=requester&status=pending', {
             headers: { 'Authorization': `Bearer ${token}` },
           }),
           // 获取联系人成员
-          fetch('/api/private/www/contact-members', {
+          fetch('/api/www/contact-members', {
             headers: { 'Authorization': `Bearer ${token}` },
           }),
         ]);
@@ -371,7 +371,7 @@ export default function MessagesPage() {
           const folder = activeTab === 'inbox' ? 'inbox' : 'sent';
           
           // 调用批量同步API
-          const response = await fetch('/api/private/www/email-settings/sync-all', {
+          const response = await fetch('/api/www/email-settings/sync-all', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -414,13 +414,13 @@ export default function MessagesPage() {
         // 加载联系人请求和成员
         const token = getToken();
         const [receivedRes, sentRes, membersRes] = await Promise.all([
-          fetch('/api/private/www/contact-requests?role=receiver&status=pending', {
+          fetch('/api/www/contact-requests?role=receiver&status=pending', {
             headers: { 'Authorization': `Bearer ${token}` },
           }),
-          fetch('/api/private/www/contact-requests?role=requester&status=pending', {
+          fetch('/api/www/contact-requests?role=requester&status=pending', {
             headers: { 'Authorization': `Bearer ${token}` },
           }),
-          fetch('/api/private/www/contact-members', {
+          fetch('/api/www/contact-members', {
             headers: { 'Authorization': `Bearer ${token}` },
           }),
         ]);
@@ -1051,7 +1051,7 @@ export default function MessagesPage() {
   const loadRecentContacts = async () => {
     try {
       const token = getToken();
-      const response = await fetch('/api/private/www/messages/contacts/recent?limit=20', {
+      const response = await fetch('/api/www/messages/contacts/recent?limit=20', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -1069,7 +1069,7 @@ export default function MessagesPage() {
   const loadEmailAccounts = async () => {
     try {
       const token = getToken();
-      const response = await fetch('/api/private/www/email-settings', {
+      const response = await fetch('/api/www/email-settings', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -1137,7 +1137,7 @@ export default function MessagesPage() {
   // 加载联系人成员
   const loadContactMembers = async () => {
     try {
-      const response = await authFetch('/api/private/www/contact-members');
+      const response = await authFetch('/api/www/contact-members');
       if (response.ok) {
         const data = await response.json();
         setContactMembers(data.members || []);
@@ -1152,8 +1152,8 @@ export default function MessagesPage() {
     try {
       // 并行加载收到和已发的申请（只查pending状态）
       const [receivedRes, sentRes] = await Promise.all([
-        authFetch('/api/private/www/contact-requests?role=receiver&status=pending'),
-        authFetch('/api/private/www/contact-requests?role=requester&status=pending'),
+        authFetch('/api/www/contact-requests?role=receiver&status=pending'),
+        authFetch('/api/www/contact-requests?role=requester&status=pending'),
       ]);
       
       if (receivedRes.ok) {
@@ -1294,7 +1294,7 @@ export default function MessagesPage() {
     try {
       setContactRequestLoading(true);
 
-      const response = await authFetch('/api/private/www/contact-requests', {
+      const response = await authFetch('/api/www/contact-requests', {
         method: 'POST',
         body: JSON.stringify({
           requesterId: userId,
@@ -1437,7 +1437,7 @@ export default function MessagesPage() {
   // 一键已读
   const markAllAsRead = async () => {
     try {
-      const response = await authFetch('/api/private/www/messages/mark-all-read', {
+      const response = await authFetch('/api/www/messages/mark-all-read', {
         method: 'POST',
         body: JSON.stringify({ folder: activeTab }),
       });
@@ -1788,7 +1788,7 @@ export default function MessagesPage() {
 
         try {
           const token = getToken();
-          const response = await fetch('/api/private/www/email/send', {
+          const response = await fetch('/api/www/email/send', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -3332,7 +3332,7 @@ export default function MessagesPage() {
                     } else {
                       // 外网邮件
                       const token = getToken();
-                      const response = await fetch('/api/private/www/email/send', {
+                      const response = await fetch('/api/www/email/send', {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',

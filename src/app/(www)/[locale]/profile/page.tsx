@@ -295,7 +295,7 @@ function ProfileContent({ user, locale }: { user: any; locale: string }) {
       const token = getToken();
       if (!token) return;
 
-      const response = await fetch('/api/private/www/profile', {
+      const response = await fetch('/api/www/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-User-ID': user.id,
@@ -355,7 +355,7 @@ function ProfileContent({ user, locale }: { user: any; locale: string }) {
 
     setCheckingUsername(true);
     try {
-      const response = await fetch('/api/private/www/profile/check-username', {
+      const response = await fetch('/api/www/profile/check-username', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: value, currentUserId: user.id }),
@@ -378,7 +378,7 @@ function ProfileContent({ user, locale }: { user: any; locale: string }) {
     setUsernameError('');
     try {
       const token = getToken();
-      const response = await fetch('/api/private/www/profile/set-username', {
+      const response = await fetch('/api/www/profile/set-username', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -447,7 +447,7 @@ function ProfileContent({ user, locale }: { user: any; locale: string }) {
       setLoading(true);
       try {
         const token = getToken();
-        const response = await fetch('/api/private/www/profile', {
+        const response = await fetch('/api/www/profile', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -481,7 +481,7 @@ function ProfileContent({ user, locale }: { user: any; locale: string }) {
   const handleSaveSingleContact = async (id: string, value: string): Promise<boolean> => {
     try {
       const token = getToken();
-      const response = await fetch('/api/private/www/profile', {
+      const response = await fetch('/api/www/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -686,7 +686,7 @@ function SecurityContent({ user }: { user: any }) {
       const token = getToken();
       if (!token) return;
       
-      const response = await fetch('/api/private/www/profile', {
+      const response = await fetch('/api/www/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-User-ID': user.id,
@@ -721,7 +721,7 @@ function SecurityContent({ user }: { user: any }) {
     setEmailError('');
     
     try {
-      const response = await fetch('/api/public/www/auth/send-code', {
+      const response = await fetch('/api/www/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: newEmail, type: 'change_email' }),
@@ -762,7 +762,7 @@ function SecurityContent({ user }: { user: any }) {
     
     try {
       const token = getToken();
-      const response = await fetch('/api/private/www/profile/change-email', {
+      const response = await fetch('/api/www/profile/change-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -811,7 +811,7 @@ function SecurityContent({ user }: { user: any }) {
     
     try {
       const token = getToken();
-      const response = await fetch('/api/private/www/profile/change-password', {
+      const response = await fetch('/api/www/profile/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1112,7 +1112,7 @@ function AgentHallContent({ user }: { user: any }) {
     setAgentInfoLoading(true);
     try {
       const token = getToken();
-      const response = await fetch(`/api/private/www/profile/${user.id}`, {
+      const response = await fetch(`/api/www/profile/${user.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-User-ID': user.id,
@@ -1150,7 +1150,7 @@ function AgentHallContent({ user }: { user: any }) {
     setAgentInfoSaving(true);
     try {
       const token = getToken();
-      const response = await fetch('/api/private/www/agent/info', {
+      const response = await fetch('/api/www/agent/info', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1178,7 +1178,7 @@ function AgentHallContent({ user }: { user: any }) {
     setLoading(true);
     try {
       const token = getToken();
-      const response = await fetch('/api/private/www/agent/products', {
+      const response = await fetch('/api/www/agent/products', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-User-ID': user.id,
@@ -1207,7 +1207,7 @@ function AgentHallContent({ user }: { user: any }) {
       const token = getToken();
       const url = editingProduct 
         ? `/api/agent/products/${editingProduct.id}`
-        : '/api/private/www/agent/products';
+        : '/api/www/agent/products';
       const method = editingProduct ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -1324,7 +1324,7 @@ function AgentHallContent({ user }: { user: any }) {
 
     setQueryLoading(true);
     try {
-      const response = await fetch(`/api/public/www/products/${queryCas.trim()}/suppliers`);
+      const response = await fetch(`/api/common/products/${queryCas.trim()}/suppliers`);
       const data = await response.json();
       if (data.success) {
         setQueryResults(data.data);
@@ -1995,7 +1995,7 @@ function AgentHallContent({ user }: { user: any }) {
                   setInquirySending(true);
                   try {
                     const token = getToken();
-                    const response = await fetch('/api/private/www/inquiries/send', {
+                    const response = await fetch('/api/www/inquiries/send', {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',

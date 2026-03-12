@@ -261,7 +261,7 @@ export default function ProductsPage() {
         params.set('search', searchTerm);
       }
 
-      const response = await fetch(`/api/public/www/products?${params.toString()}`);
+      const response = await fetch(`/api/common/products?${params.toString()}`);
       const data = await response.json();
 
       if (data.success) {
@@ -316,7 +316,7 @@ export default function ProductsPage() {
     setSubmitError(null);
     
     try {
-      const response = await fetch('/api/private/www/spu-requests', {
+      const response = await fetch('/api/www/spu-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

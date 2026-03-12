@@ -173,7 +173,7 @@ export default function ProductDetailPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/public/www/products/${productId}?locale=${locale}`);
+        const response = await fetch(`/api/common/products/${productId}?locale=${locale}`);
         const data = await response.json();
         
         if (data.success && data.data) {
@@ -213,7 +213,7 @@ export default function ProductDetailPage() {
     
     try {
       const token = getToken();
-      const response = await fetch('/api/private/www/supply-inquiries', {
+      const response = await fetch('/api/www/supply-inquiries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ export default function ProductDetailPage() {
     
     try {
       const token = getToken();
-      const response = await fetch('/api/private/www/supply-inquiries', {
+      const response = await fetch('/api/www/supply-inquiries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
