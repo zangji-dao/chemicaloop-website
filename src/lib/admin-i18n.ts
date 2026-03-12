@@ -412,6 +412,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       searchingLibrary: 'Searching SPU library...',
       fetchingFromPubchem: 'Fetching from PubChem...',
       foundProducts: 'Found {count} SPUs',
+      spuAlreadyExists: 'SPU already exists in system, select to use directly without creating new one',
       noDataFound: 'No data found for this CAS number',
       searchFailed: 'Search failed, please try again',
       
@@ -871,6 +872,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       searchingLibrary: '正在搜索SPU库...',
       fetchingFromPubchem: '正在从 PubChem 获取数据...',
       foundProducts: '找到 {count} 个SPU',
+      spuAlreadyExists: '该SPU已存在于系统中，可直接选择使用，无需额外创建',
       noDataFound: '未找到该 CAS 号对应的产品信息',
       searchFailed: '查询失败，请稍后重试',
       
@@ -1216,6 +1218,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       searchingLibrary: 'SPUライブラリを検索中...',
       fetchingFromPubchem: 'PubChemからデータを取得中...',
       foundProducts: '{count}件のSPUが見つかりました',
+      spuAlreadyExists: 'このSPUは既にシステムに存在します。選択して直接使用できます',
       noDataFound: 'このCAS番号に対応する製品情報が見つかりません',
       searchFailed: '検索に失敗しました、再試行してください',
       linkedSpu: 'SPUにリンク済み',
@@ -1613,6 +1616,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       searchingLibrary: 'SPU 라이브러리 검색 중...',
       fetchingFromPubchem: 'PubChem에서 데이터 가져오는 중...',
       foundProducts: '{count}개의 SPU를 찾았습니다',
+      spuAlreadyExists: '이 SPU는 이미 시스템에 존재합니다. 선택하여 바로 사용하세요',
       noDataFound: '해당 CAS 번호에 대한 제품 정보를 찾을 수 없습니다',
       searchFailed: '검색 실패, 나중에 다시 시도하세요',
       
@@ -2078,6 +2082,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       searchingLibrary: 'SPU-Bibliothek durchsuchen...',
       fetchingFromPubchem: 'Daten von PubChem abrufen...',
       foundProducts: '{count} SPUs gefunden',
+      spuAlreadyExists: 'Diese SPU existiert bereits im System. Wählen Sie sie aus, um sie direkt zu verwenden',
       noDataFound: 'Keine Produktinformationen für diese CAS-Nummer gefunden',
       searchFailed: 'Suche fehlgeschlagen, bitte später erneut versuchen',
       
@@ -2543,6 +2548,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       searchingLibrary: 'Recherche dans la bibliothèque SPU...',
       fetchingFromPubchem: 'Récupération depuis PubChem...',
       foundProducts: '{count} SPUs trouvés',
+      spuAlreadyExists: 'Ce SPU existe déjà dans le système. Sélectionnez-le pour l\'utiliser directement',
       noDataFound: 'Aucune information produit trouvée pour ce numéro CAS',
       searchFailed: 'Échec de la recherche, réessayez plus tard',
       
@@ -3008,6 +3014,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       searchingLibrary: 'Buscando en la biblioteca SPU...',
       fetchingFromPubchem: 'Recuperando datos de PubChem...',
       foundProducts: '{count} SPUs encontrados',
+      spuAlreadyExists: 'Este SPU ya existe en el sistema. Selecciónelo para usarlo directamente',
       noDataFound: 'No se encontró información del producto para este número CAS',
       searchFailed: 'Búsqueda fallida, intente más tarde',
       
@@ -3473,6 +3480,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       searchingLibrary: 'Pesquisando na biblioteca SPU...',
       fetchingFromPubchem: 'Recuperando dados do PubChem...',
       foundProducts: '{count} SPUs encontrados',
+      spuAlreadyExists: 'Este SPU já existe no sistema. Selecione-o para usar diretamente',
       noDataFound: 'Nenhuma informação de produto encontrada para este número CAS',
       searchFailed: 'Pesquisa falhou, tente mais tarde',
       
@@ -3938,6 +3946,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       searchingLibrary: 'Поиск в библиотеке SPU...',
       fetchingFromPubchem: 'Получение данных из PubChem...',
       foundProducts: 'Найдено SPU: {count}',
+      spuAlreadyExists: 'Этот SPU уже существует в системе. Выберите его для прямого использования',
       noDataFound: 'Информация о продукте для этого номера CAS не найдена',
       searchFailed: 'Поиск не удался, попробуйте позже',
       
@@ -4403,6 +4412,7 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       searchingLibrary: 'جاري البحث في مكتبة SPU...',
       fetchingFromPubchem: 'جاري جلب البيانات من PubChem...',
       foundProducts: 'تم العثور على {count} SPU',
+      spuAlreadyExists: 'هذا SPU موجود بالفعل في النظام. اختره لاستخدامه مباشرة',
       noDataFound: 'لم يتم العثور على معلومات المنتج لرقم CAS هذا',
       searchFailed: 'فشل البحث، حاول لاحقاً',
       
