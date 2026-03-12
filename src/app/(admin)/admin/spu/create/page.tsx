@@ -99,7 +99,7 @@ function ProductUploadContent() {
     setSpuSearchResults([]);
 
     try {
-      const response = await fetch(`/api/spu/search?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/private/admin/spu-manage/search?q=${encodeURIComponent(query)}`);
       const data = await response.json();
 
       if (data.success && data.data.length > 0) {
@@ -169,7 +169,7 @@ function ProductUploadContent() {
     // 1. 先搜索本地 SPU
     setSearchingSPU(true);
     try {
-      const response = await fetch(`/api/spu/search?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/private/admin/spu-manage/search?q=${encodeURIComponent(query)}`);
       const data = await response.json();
 
       if (data.success && data.data.length > 0) {
@@ -278,7 +278,7 @@ function ProductUploadContent() {
     setSpuSearchResults([]);
 
     try {
-      const response = await fetch(`/api/spu/search?q=${encodeURIComponent(spuSearchQuery)}`);
+      const response = await fetch(`/api/private/admin/spu-manage/search?q=${encodeURIComponent(spuSearchQuery)}`);
       const data = await response.json();
 
       if (data.success && data.data.length > 0) {
@@ -804,7 +804,7 @@ function ProductUploadContent() {
 
       console.log('[SPU] Saving with data:', { cas: spuData.cas, name: spuData.name });
 
-      const response = await fetch('/api/spu/save', {
+      const response = await fetch('/api/private/admin/spu-manage/save', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
