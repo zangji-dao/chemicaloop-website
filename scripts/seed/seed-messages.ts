@@ -1,6 +1,6 @@
 import { getDb } from 'coze-coding-dev-sdk';
-import * as schema from '../src/storage/database/shared/schema';
-import { messages, users } from '../src/storage/database/shared/schema';
+import * as schema from '../../src/storage/database/shared/schema';
+import { messages, users } from '../../src/storage/database/shared/schema';
 import { sql } from 'drizzle-orm';
 
 // 当前用户ID

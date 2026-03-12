@@ -4,9 +4,9 @@
  */
 
 import { getDb, S3Storage } from 'coze-coding-dev-sdk';
-import * as schema from '../src/storage/database/shared/schema';
+import * as schema from '../../src/storage/database/shared/schema';
 import { sql } from 'drizzle-orm';
-import { generateChemicalSVG } from '../src/lib/chemical-svg-generator';
+import { generateChemicalSVG } from '../../src/lib/chemical-svg-generator';
 
 async function main() {
   console.log('🎨 批量生成美化版产品图片\n');

@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "bash ./scripts/build.sh",
-    "dev": "bash ./scripts/dev.sh",
+    "build": "bash ./scripts/dev/build.sh",
+    "dev": "bash ./scripts/dev/dev.sh",
     "preinstall": "npx only-allow pnpm",
     "lint": "eslint",
-    "start": "bash ./scripts/start.sh",
+    "start": "bash ./scripts/dev/start.sh",
     "ts-check": "tsc -p tsconfig.json",
-    "upload-banner": "bash ./scripts/upload-banner.sh",
-    "list-banners": "npx tsx scripts/list-banners.ts",
-    "seed-messages": "npx tsx scripts/seed-messages.ts"
+    "upload-banner": "bash ./scripts/batch/upload-banner.sh",
+    "list-banners": "npx tsx scripts/batch/list-banners.ts",
+    "seed-messages": "npx tsx scripts/seed/seed-messages.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",

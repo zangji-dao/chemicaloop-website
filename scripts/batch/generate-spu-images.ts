@@ -5,8 +5,8 @@
 
 import { getDb, S3Storage } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
-import * as schema from '../src/storage/database/shared/schema';
-import { generateChemicalSVG, validateSVG } from '../src/lib/chemical-svg-generator';
+import * as schema from '../../src/storage/database/shared/schema';
+import { generateChemicalSVG, validateSVG } from '../../src/lib/chemical-svg-generator';
 
 async function main() {
   console.log('开始为缺少产品图的 SPU 生成图片...\n');

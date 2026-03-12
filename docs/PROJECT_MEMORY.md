@@ -369,4 +369,38 @@ import { getAdminToken, getAdminUser } from '@/services/adminAuthService';
 
 ---
 
+## 9. 脚本目录规范
+
+### 9.1 目录结构
+
+```
+scripts/
+├── dev/          # 项目生命周期脚本
+├── seed/         # 种子数据/测试数据
+├── batch/        # 批量处理脚本
+└── sync/         # 数据同步/导入
+```
+
+### 9.2 新增脚本分类决策
+
+| 脚本用途 | 放置目录 | 示例 |
+|----------|----------|------|
+| 项目启动/构建/部署 | `dev/` | `deploy.sh` |
+| 生成测试/演示数据 | `seed/` | `seed-users.ts` |
+| 批量处理现有数据 | `batch/` | `batch-delete-duplicates.ts` |
+| 从外部同步/导入数据 | `sync/` | `sync-from-erp.ts` |
+
+### 9.3 命名规范
+
+| 类型 | 命名前缀 | 示例 |
+|------|----------|------|
+| 种子数据 | `seed-` | `seed-messages.ts` |
+| 批量处理 | `batch-` | `batch-translate.ts` |
+| 数据同步 | `sync-` | `sync-trade-data.ts` |
+| 数据导入 | `import-` | `import-customs.ts` |
+| 数据生成 | `generate-` | `generate-images.ts` |
+| 数据修复 | `fix-` | `fix-names.ts` |
+
+---
+
 > **更新记录**：每次对话结束前，根据新增的关键决策更新此文档。
