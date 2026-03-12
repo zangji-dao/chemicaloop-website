@@ -1026,7 +1026,7 @@ function ProductUploadContent() {
                   {/* SPU 搜索 */}
                   {/* 统一搜索框 */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-3">
                       {t('spu.searchProduct')}
                     </label>
                     <div className="flex gap-3">
@@ -1045,7 +1045,7 @@ function ProductUploadContent() {
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && handleUnifiedSearch()}
                         placeholder={t('spu.enterCas')}
-                        className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400 text-lg"
+                        className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400"
                       />
                       <button
                         onClick={handleUnifiedSearch}

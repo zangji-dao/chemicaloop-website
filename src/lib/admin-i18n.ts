@@ -406,12 +406,12 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       confirmData: 'Confirm Data',
       
       // Search
-      searchProduct: 'Search Product (CAS or Name)',
+      searchProduct: 'Search SPU (CAS or Name)',
       enterCas: 'Enter CAS number, e.g., 64-17-5',
       systemSearchHint: 'System searches product library first, then PubChem if not found',
       searchingLibrary: 'Searching product library...',
       fetchingFromPubchem: 'Fetching from PubChem...',
-      foundProducts: 'Found {count} products',
+      foundProducts: 'Found {count} SPUs',
       noDataFound: 'No data found for this CAS number',
       searchFailed: 'Search failed, please try again',
       
@@ -865,12 +865,12 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       confirmData: '确认数据',
       
       // Search
-      searchProduct: '搜索产品 (CAS 号或名称)',
+      searchProduct: '搜索SPU (CAS 号或名称)',
       enterCas: '输入 CAS 号，如 64-17-5',
       systemSearchHint: '系统会先搜索产品库，如无结果则自动从 PubChem 获取',
       searchingLibrary: '正在搜索产品库...',
       fetchingFromPubchem: '正在从 PubChem 获取数据...',
-      foundProducts: '找到 {count} 个产品',
+      foundProducts: '找到 {count} 个SPU',
       noDataFound: '未找到该 CAS 号对应的产品信息',
       searchFailed: '查询失败，请稍后重试',
       
@@ -1210,12 +1210,12 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       uploadSubtitle: 'SPUライブラリから選択または手動入力',
       selectProduct: '製品を選択',
       confirmData: 'データを確認',
-      searchProduct: '製品を検索 (CAS または名称)',
+      searchProduct: 'SPUを検索 (CAS または名称)',
       enterCas: 'CAS番号を入力、例：64-17-5',
       systemSearchHint: '製品ライブラリを先に検索し、見つからない場合はPubChemから自動取得',
       searchingLibrary: '製品ライブラリを検索中...',
       fetchingFromPubchem: 'PubChemからデータを取得中...',
-      foundProducts: '{count}件の製品が見つかりました',
+      foundProducts: '{count}件のSPUが見つかりました',
       noDataFound: 'このCAS番号に対応する製品情報が見つかりません',
       searchFailed: '検索に失敗しました、再試行してください',
       linkedSpu: 'SPUにリンク済み',
@@ -1607,12 +1607,12 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       confirmData: '데이터 확인',
       
       // Search
-      searchProduct: '제품 검색 (CAS 번호 또는 이름)',
+      searchProduct: 'SPU 검색 (CAS 번호 또는 이름)',
       enterCas: 'CAS 번호 입력 (예: 64-17-5)',
       systemSearchHint: '시스템이 먼저 제품 라이브러리를 검색하고, 결과가 없으면 PubChem에서 자동으로 가져옵니다',
       searchingLibrary: '제품 라이브러리 검색 중...',
       fetchingFromPubchem: 'PubChem에서 데이터 가져오는 중...',
-      foundProducts: '{count}개의 제품을 찾았습니다',
+      foundProducts: '{count}개의 SPU를 찾았습니다',
       noDataFound: '해당 CAS 번호에 대한 제품 정보를 찾을 수 없습니다',
       searchFailed: '검색 실패, 나중에 다시 시도하세요',
       
@@ -2072,12 +2072,12 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       confirmData: 'Daten bestätigen',
       
       // Search
-      searchProduct: 'Produkt suchen (CAS-Nummer oder Name)',
+      searchProduct: 'SPU suchen (CAS-Nummer oder Name)',
       enterCas: 'CAS-Nummer eingeben, z.B. 64-17-5',
       systemSearchHint: 'Das System durchsucht zuerst die Produktbibliothek und ruft bei fehlenden Ergebnissen automatisch von PubChem ab',
       searchingLibrary: 'Produktbibliothek durchsuchen...',
       fetchingFromPubchem: 'Daten von PubChem abrufen...',
-      foundProducts: '{count} Produkte gefunden',
+      foundProducts: '{count} SPUs gefunden',
       noDataFound: 'Keine Produktinformationen für diese CAS-Nummer gefunden',
       searchFailed: 'Suche fehlgeschlagen, bitte später erneut versuchen',
       
@@ -2537,12 +2537,12 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       confirmData: 'Confirmer les données',
       
       // Search
-      searchProduct: 'Rechercher un produit (numéro CAS ou nom)',
+      searchProduct: 'Rechercher un SPU (numéro CAS ou nom)',
       enterCas: 'Entrer un numéro CAS, ex: 64-17-5',
       systemSearchHint: 'Le système recherche d\'abord dans la bibliothèque, puis récupère automatiquement depuis PubChem',
       searchingLibrary: 'Recherche dans la bibliothèque...',
       fetchingFromPubchem: 'Récupération depuis PubChem...',
-      foundProducts: '{count} produits trouvés',
+      foundProducts: '{count} SPUs trouvés',
       noDataFound: 'Aucune information produit trouvée pour ce numéro CAS',
       searchFailed: 'Échec de la recherche, réessayez plus tard',
       
@@ -3002,12 +3002,12 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       confirmData: 'Confirmar datos',
       
       // Search
-      searchProduct: 'Buscar producto (número CAS o nombre)',
+      searchProduct: 'Buscar SPU (número CAS o nombre)',
       enterCas: 'Ingresar número CAS, ej: 64-17-5',
       systemSearchHint: 'El sistema busca primero en la biblioteca, luego recupera automáticamente de PubChem',
       searchingLibrary: 'Buscando en la biblioteca...',
       fetchingFromPubchem: 'Recuperando datos de PubChem...',
-      foundProducts: '{count} productos encontrados',
+      foundProducts: '{count} SPUs encontrados',
       noDataFound: 'No se encontró información del producto para este número CAS',
       searchFailed: 'Búsqueda fallida, intente más tarde',
       
@@ -3467,12 +3467,12 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       confirmData: 'Confirmar dados',
       
       // Search
-      searchProduct: 'Pesquisar produto (número CAS ou nome)',
+      searchProduct: 'Pesquisar SPU (número CAS ou nome)',
       enterCas: 'Digitar número CAS, ex: 64-17-5',
       systemSearchHint: 'O sistema pesquisa primeiro na biblioteca, depois recupera automaticamente do PubChem',
       searchingLibrary: 'Pesquisando na biblioteca...',
       fetchingFromPubchem: 'Recuperando dados do PubChem...',
-      foundProducts: '{count} produtos encontrados',
+      foundProducts: '{count} SPUs encontrados',
       noDataFound: 'Nenhuma informação de produto encontrada para este número CAS',
       searchFailed: 'Pesquisa falhou, tente mais tarde',
       
@@ -3932,12 +3932,12 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       confirmData: 'Подтвердить данные',
       
       // Search
-      searchProduct: 'Поиск продукта (номер CAS или название)',
+      searchProduct: 'Поиск SPU (номер CAS или название)',
       enterCas: 'Введите номер CAS, напр: 64-17-5',
       systemSearchHint: 'Система сначала ищет в библиотеке, затем автоматически получает из PubChem',
       searchingLibrary: 'Поиск в библиотеке...',
       fetchingFromPubchem: 'Получение данных из PubChem...',
-      foundProducts: 'Найдено продуктов: {count}',
+      foundProducts: 'Найдено SPU: {count}',
       noDataFound: 'Информация о продукте для этого номера CAS не найдена',
       searchFailed: 'Поиск не удался, попробуйте позже',
       
@@ -4397,12 +4397,12 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       confirmData: 'تأكيد البيانات',
       
       // Search
-      searchProduct: 'البحث عن منتج (رقم CAS أو الاسم)',
+      searchProduct: 'البحث عن SPU (رقم CAS أو الاسم)',
       enterCas: 'أدخل رقم CAS، مثال: 64-17-5',
       systemSearchHint: 'يبحث النظام أولاً في المكتبة، ثم يجلب تلقائياً من PubChem',
       searchingLibrary: 'جاري البحث في المكتبة...',
       fetchingFromPubchem: 'جاري جلب البيانات من PubChem...',
-      foundProducts: 'تم العثور على {count} منتج',
+      foundProducts: 'تم العثور على {count} SPU',
       noDataFound: 'لم يتم العثور على معلومات المنتج لرقم CAS هذا',
       searchFailed: 'فشل البحث، حاول لاحقاً',
       
