@@ -159,7 +159,7 @@ export default function AuthModal({ isOpen, onClose, locale }: AuthModalProps) {
     setError('');
     
     try {
-      const response = await fetch('/api/auth/send-code', {
+      const response = await fetch('/api/public/www/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),

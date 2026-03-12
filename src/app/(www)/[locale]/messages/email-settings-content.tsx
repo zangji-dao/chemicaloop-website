@@ -143,7 +143,7 @@ export default function EmailSettingsContent({ locale, t }: EmailSettingsContent
         return;
       }
 
-      const response = await fetch('/api/email-settings', {
+      const response = await fetch('/api/private/www/email-settings', {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
@@ -248,7 +248,7 @@ export default function EmailSettingsContent({ locale, t }: EmailSettingsContent
       const token = getToken();
       const url = editingAccountId 
         ? `/api/email-settings/${editingAccountId}`
-        : '/api/email-settings';
+        : '/api/private/www/email-settings';
       const method = editingAccountId ? 'PUT' : 'POST';
 
       const body: Record<string, any> = {
@@ -321,7 +321,7 @@ export default function EmailSettingsContent({ locale, t }: EmailSettingsContent
       // 如果是编辑模式，使用该账户ID进行测试
       const url = editingAccountId 
         ? `/api/email-settings/${editingAccountId}/test`
-        : '/api/email-settings/test';
+        : '/api/private/www/email-settings/test';
       
       const body = editingAccountId 
         ? {} // 编辑模式使用已保存的密码

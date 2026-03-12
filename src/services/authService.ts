@@ -226,7 +226,7 @@ export const login = async (
 // 获取当前用户
 export const getCurrentUser = async (): Promise<AuthResponse> => {
   try {
-    const response = await apiRequest('/api/auth/me');
+    const response = await apiRequest('/api/private/www/auth/me');
     
     if (response.success && response.data) {
       saveUser(response.data);
@@ -245,7 +245,7 @@ export const logout = async (): Promise<void> => {
     console.log('logout: Calling backend logout API...');
 
     // 调用后端退出登录 API，使 token 失效
-    const response = await apiRequest('/api/auth/logout', {
+    const response = await apiRequest('/api/private/www/auth/logout', {
       method: 'POST',
     });
 
@@ -278,7 +278,7 @@ export const changePassword = async (
   newPassword: string
 ): Promise<{ success: boolean; message?: string; error?: string }> => {
   try {
-    const response = await apiRequest('/api/auth/change-password', {
+    const response = await apiRequest('/api/private/www/profile/change-password', {
       method: 'POST',
       body: JSON.stringify({ currentPassword, newPassword }),
     });

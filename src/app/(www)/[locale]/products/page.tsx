@@ -316,7 +316,7 @@ export default function ProductsPage() {
     setSubmitError(null);
     
     try {
-      const response = await fetch('/api/spu-requests', {
+      const response = await fetch('/api/private/www/spu-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

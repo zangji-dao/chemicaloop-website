@@ -213,7 +213,7 @@ export default function ProductDetailPage() {
     
     try {
       const token = getToken();
-      const response = await fetch('/api/supply-inquiries', {
+      const response = await fetch('/api/private/www/supply-inquiries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ export default function ProductDetailPage() {
     
     try {
       const token = getToken();
-      const response = await fetch('/api/supply-inquiries', {
+      const response = await fetch('/api/private/www/supply-inquiries', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

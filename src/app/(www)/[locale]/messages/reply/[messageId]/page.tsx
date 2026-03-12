@@ -80,7 +80,7 @@ export default function ReplyMessagePage() {
       } else {
         // 发送外网邮件
         const token = getToken();
-        const response = await fetch('/api/email-settings/send', {
+        const response = await fetch('/api/private/www/email/send', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
