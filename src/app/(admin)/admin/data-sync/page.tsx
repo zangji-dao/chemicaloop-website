@@ -108,7 +108,7 @@ export default function DataSyncPage() {
     if (isCrawling) {
       interval = setInterval(async () => {
         try {
-          const res = await fetch('/api/data-sync/status');
+          const res = await fetch('/api/private/admin/data-sync/status');
           const data = await res.json();
           
           if (data.logs) {
@@ -151,7 +151,7 @@ export default function DataSyncPage() {
         body.year = customsParams.year;
       }
       
-      const res = await fetch('/api/data-sync/crawl', {
+      const res = await fetch('/api/private/admin/data-sync/crawl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -174,7 +174,7 @@ export default function DataSyncPage() {
   // 停止爬虫
   const stopCrawl = async () => {
     try {
-      await fetch('/api/data-sync/stop', { method: 'POST' });
+      await fetch('/api/private/admin/data-sync/stop', { method: 'POST' });
       setIsCrawling(false);
       setTasks(prev => prev.map(t => 
         t.status === 'running' ? { ...t, status: 'idle' } : t
