@@ -399,8 +399,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       updatingFormMsg: 'Updating form...',
       syncFailedMsg: 'PubChem connection failed',
       
-      // ===== Upload Page (产品上架页面) =====
-      upload: 'Upload Product',
+      // ===== Upload Page (SPU上架页面) =====
+      upload: 'Upload SPU',
       uploadSubtitle: 'Select from product library or enter manually',
       selectProduct: 'Select Product',
       confirmData: 'Confirm Data',
@@ -858,8 +858,8 @@ export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
       updatingFormMsg: '正在更新表单...',
       syncFailedMsg: 'PubChem 连接失败',
       
-      // ===== Upload Page (产品上架页面) =====
-      upload: '产品上架',
+      // ===== Upload Page (SPU上架页面) =====
+      upload: 'SPU上架',
       uploadSubtitle: '从产品库选择或手动录入产品信息',
       selectProduct: '选择产品',
       confirmData: '确认数据',

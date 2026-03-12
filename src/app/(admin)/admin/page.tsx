@@ -40,7 +40,7 @@ interface AdminUser {
 
 const activityConfig: Record<string, { label: string; icon: typeof Users; color: string }> = {
   user_registered: { label: '新用户注册', icon: UserPlus, color: 'text-blue-400' },
-  product_added: { label: '产品上架', icon: PackagePlus, color: 'text-purple-400' },
+  product_added: { label: 'SPU上架', icon: PackagePlus, color: 'text-purple-400' },
   inquiry_sent: { label: '发送询价', icon: MessageSquare, color: 'text-orange-400' },
 };
 
