@@ -261,7 +261,7 @@ export default function ProductsPage() {
         params.set('search', searchTerm);
       }
 
-      const response = await fetch(`/api/products?${params.toString()}`);
+      const response = await fetch(`/api/public/www/products?${params.toString()}`);
       const data = await response.json();
 
       if (data.success) {

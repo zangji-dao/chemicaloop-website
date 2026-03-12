@@ -1324,7 +1324,7 @@ function AgentHallContent({ user }: { user: any }) {
 
     setQueryLoading(true);
     try {
-      const response = await fetch(`/api/products/${queryCas.trim()}/suppliers`);
+      const response = await fetch(`/api/public/www/products/${queryCas.trim()}/suppliers`);
       const data = await response.json();
       if (data.success) {
         setQueryResults(data.data);
