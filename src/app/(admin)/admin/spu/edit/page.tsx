@@ -535,13 +535,12 @@ function SPUEditContent() {
     const abortController = new AbortController();
     translateAbortControllerRef.current = abortController;
     
-    for (let i = 0; i < fieldsToTranslate.length; i++) {
-      const fieldName = fieldsToTranslate[i];
+    // 并行翻译所有字段
+    const translationPromises = fieldsToTranslate.map(async (fieldName) => {
       const value = formData[fieldName as keyof typeof formData] as string;
+      if (!value) return { fieldName, success: false };
       
-      if (!value) continue;
-      
-      setTranslatingFields(new Set([fieldName]));
+      setTranslatingFields(prev => new Set([...prev, fieldName]));
       
       try {
         const res = await fetch('/api/common/ai/translate', {
@@ -568,17 +567,26 @@ function SPUEditContent() {
           }
         }
         
-        setTranslationProgress(prev => ({ ...prev, current: i + 1 }));
+        setTranslationProgress(prev => ({ ...prev, current: prev.current + 1 }));
+        
+        return { fieldName, success: true };
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
-          console.log('Translation aborted');
-          break;
+          console.log(`Translation aborted for ${fieldName}`);
+          return { fieldName, success: false, aborted: true };
         }
         console.error(`Error translating ${fieldName}:`, err);
+        return { fieldName, success: false };
+      } finally {
+        setTranslatingFields(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(fieldName);
+          return newSet;
+        });
       }
-      
-      setTranslatingFields(new Set());
-    }
+    });
+    
+    await Promise.all(translationPromises);
     
     translateAbortControllerRef.current = null;
     setTranslating(false);
