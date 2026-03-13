@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const { email, type } = body;
 
     // 调用后端API发送验证码
-    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/send-code`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/auth/send-code`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, type }),

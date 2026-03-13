@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 转发请求到后端 API
-    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/me`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/auth/me`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,

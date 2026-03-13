@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { userId } = await params;
-    const backendUrl = `${API_CONFIG.backendURL}/api/profile/${userId}`;
+    const backendUrl = `${API_CONFIG.backendURL}/api/www/profile/${userId}`;
     
     // 获取认证头
     const authHeader = request.headers.get('authorization');

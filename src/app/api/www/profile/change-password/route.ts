@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 调用后端API修改密码
-    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/change-password`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/auth/change-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

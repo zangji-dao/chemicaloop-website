@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 转发请求到后端 API
-    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/register`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

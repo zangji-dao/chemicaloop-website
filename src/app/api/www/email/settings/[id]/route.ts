@@ -20,7 +20,7 @@ export async function GET(
       );
     }
 
-    const response = await fetch(`${API_CONFIG.backendURL}/api/email-settings/${id}`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/email-settings/${id}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -59,7 +59,7 @@ export async function PUT(
 
     const body = await request.json();
 
-    const response = await fetch(`${API_CONFIG.backendURL}/api/email-settings/${id}`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/email-settings/${id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -97,7 +97,7 @@ export async function DELETE(
       );
     }
 
-    const response = await fetch(`${API_CONFIG.backendURL}/api/email-settings/${id}`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/email-settings/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,

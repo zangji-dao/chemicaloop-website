@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 调用后端API修改邮箱
-    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/change-email`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/auth/change-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

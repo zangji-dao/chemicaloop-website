@@ -26,17 +26,17 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/inquiries', inquiryRoutes);
+// Routes - 按 admin/www/common 分类
 app.use('/api/admin', adminRoutes);
-app.use('/api/news', newsRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/contact-requests', contactRequestsRoutes);
-app.use('/api/contact-members', contactMembersRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/email-settings', emailSettingsRoutes);
+app.use('/api/www/auth', authRoutes);
+app.use('/api/www/messages', messageRoutes);
+app.use('/api/www/contact-requests', contactRequestsRoutes);
+app.use('/api/www/contact-members', contactMembersRoutes);
+app.use('/api/www/profile', profileRoutes);
+app.use('/api/www/email-settings', emailSettingsRoutes);
+app.use('/api/common/products', productRoutes);
+app.use('/api/common/inquiries', inquiryRoutes);
+app.use('/api/common/news', newsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

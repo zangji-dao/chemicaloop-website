@@ -5,8 +5,8 @@ import { API_CONFIG } from '@/lib/config';
 // 辅助函数：代理请求到后端
 async function proxyToBackend(request: NextRequest, userId: string): Promise<NextResponse> {
   const url = new URL(request.url);
-  // 前端 /api/www/contact-members → 后端 /api/contact-members?userId=xxx
-  const backendPath = url.pathname.replace('/api/www/', '/api/');
+  // 前端 /api/www/contact-members → 后端 /api/www/contact-members?userId=xxx
+  const backendPath = url.pathname;
   const backendUrl = `${API_CONFIG.backendURL}${backendPath}?userId=${userId}`;
 
   const headers: Record<string, string> = {

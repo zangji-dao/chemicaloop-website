@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // 转发请求到后端
-    const response = await fetch(`${API_CONFIG.backendURL}/api/email-settings/sync`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/email-settings/sync`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

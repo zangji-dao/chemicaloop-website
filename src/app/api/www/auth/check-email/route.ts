@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const { email } = body;
 
     // 转发请求到后端 API
-    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/check-email`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/auth/check-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

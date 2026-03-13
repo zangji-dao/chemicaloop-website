@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 转发请求到后端 API
-    const response = await fetch(`${API_CONFIG.backendURL}/api/auth/login`, {
+    const response = await fetch(`${API_CONFIG.backendURL}/api/www/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
