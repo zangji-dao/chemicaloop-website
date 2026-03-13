@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import Header from '@/components/layout/Header';
-import { bannerConfig, getBannerImages } from '@/config/banner';
+import { bannerConfig, getBannerImages } from '@/lib/config';
 
 export default function HomePage() {
   const t = useTranslations('home');

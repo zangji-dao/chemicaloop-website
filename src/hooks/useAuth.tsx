@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { User, login, register, getCurrentUser, logout, saveUser, getToken, clearAuth, getUser } from '@/services/authService';
-import { hasRole, isAgentOrAbove, isAdminRole, isSuperAdmin } from '@/lib/constants/roles';
+import { hasRole, isAgentOrAbove, isAdminRole, isSuperAdmin } from '@/lib/constants';
 
 interface AuthContextType {
   user: User | null;

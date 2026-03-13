@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG } from '@/lib/config';
 import { getToken } from '@/lib/auth';
 
 export async function PUT(

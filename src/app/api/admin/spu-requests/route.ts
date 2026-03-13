@@ -3,7 +3,7 @@ import { getDb, S3Storage } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
 import { generateChemicalSVG, validateSVG } from '@/lib/chemical-svg-generator';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG } from '@/lib/config';
 
 /**
  * GET /api/spu-requests

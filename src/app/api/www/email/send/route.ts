@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from '@/lib/auth';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG } from '@/lib/config';
 
 /**
  * 发送外网邮件

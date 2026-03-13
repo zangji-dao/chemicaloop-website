@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG } from '@/lib/config';
 
 /**
  * 检查邮箱是否可用

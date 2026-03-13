@@ -3,7 +3,7 @@ import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/storage/database/shared/schema';
 import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG } from '@/lib/config';
 
 interface BatchTranslateRequest {
   targetLanguage: string;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { ADMIN_ALLOWED_ROLES, AGENT_ALLOWED_ROLES, isSuperAdmin, isAdminRole, isAgentOrAbove } from './constants/roles';
+import { ADMIN_ALLOWED_ROLES, AGENT_ALLOWED_ROLES, isSuperAdmin, isAdminRole, isAgentOrAbove } from './constants';
 
 /**
  * 认证结果类型

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserIdFromToken } from '@/lib/tokenUtils';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG } from '@/lib/config';
 
 // 辅助函数：代理请求到后端
 async function proxyToBackend(request: NextRequest, userId: string): Promise<NextResponse> {

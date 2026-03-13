@@ -3,7 +3,7 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { hasRole } from '@/lib/constants/roles';
+import { hasRole } from '@/lib/constants';
 
 interface PermissionGateProps {
   /** 需要的最低角色权限 */

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { isAdminRole, isSuperAdmin, hasRole } from '@/lib/constants/roles';
+import { isAdminRole, isSuperAdmin, hasRole } from '@/lib/constants';
 import {
   getAdminToken,
   getAdminUser,

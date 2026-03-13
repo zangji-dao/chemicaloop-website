@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserIdFromRequest } from '@/lib/auth';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG } from '@/lib/config';
 
 async function proxyToBackend(request: NextRequest, userId: string): Promise<NextResponse> {
   const url = new URL(request.url);

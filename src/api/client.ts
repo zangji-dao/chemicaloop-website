@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG } from '@/lib/config';
 import { getToken, clearAuth } from '@/services/authService';
 
 export const apiClient = axios.create({
