@@ -11,7 +11,7 @@ import UserCard from '@/components/user/UserCard';
 import { getToken } from '@/services/authService';
 import { getMessages, getUnreadCount } from '@/services/messageService';
 import { useAuth } from '@/hooks/useAuth';
-import { getUserAvatar } from '@/utils/avatar';
+import { getUserAvatar } from '@/lib/utils';
 
 export default function Header() {
   const t = useTranslations('nav');

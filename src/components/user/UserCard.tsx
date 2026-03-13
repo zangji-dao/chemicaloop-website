@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { LogOut, MessageSquare, Shield, UserCircle, Mail } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { getUserAvatar } from '@/utils/avatar';
+import { getUserAvatar } from '@/lib/utils';
 
 interface UserCardProps {
   locale: string;
