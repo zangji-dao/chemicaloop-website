@@ -1,40 +1,60 @@
 'use client';
 
-import { getAdminToken } from '@/services/adminAuthService';
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useAdminLocale } from '@/contexts/AdminLocaleContext';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Check, 
-  Search, 
-  AlertCircle, 
-  Loader2, 
+import { useEffect, useState, useCallback, useRef, useMemo, Suspense } from 'react';
+import {
+  Search,
   Database,
-  ExternalLink,
-  Link2,
+  Check,
   X,
+  Loader2,
+  ExternalLink,
+  Save,
+  RefreshCw,
+  AlertCircle,
+  ChevronLeft,
 } from 'lucide-react';
+import { useAdminLocale } from '@/contexts/AdminLocaleContext';
+import { getAdminToken } from '@/services/adminAuthService';
 
-// 步骤定义 - 简化为两步
-// 注意：标题需要在组件内部使用 t() 函数获取，这里只定义 key
-const stepKeys = [
-  { key: 'identification', titleKey: 'spu.selectProduct', icon: Search },
-  { key: 'confirmation', titleKey: 'spu.confirmData', icon: Check },
-];
+// SPU 数据接口
+interface PubChemData {
+  cid?: number;
+  cas: string;
+  nameZh?: string;
+  nameEn?: string;
+  formula?: string;
+  molecularWeight?: string;
+  smiles?: string;
+  inchi?: string;
+  inchiKey?: string;
+  xlogp?: string;
+  boilingPoint?: string;
+  meltingPoint?: string;
+  flashPoint?: string;
+  density?: string;
+  solubility?: string;
+  vaporPressure?: string;
+  physicalDescription?: string;
+  colorForm?: string;
+  odor?: string;
+  hazardClasses?: string;
+  synonyms?: string[];
+  applications?: string[];
+  description?: string;
+  structure2dUrl?: string;
+  pubchemSyncedAt?: string;
+}
 
-// SPU 数据类型
-interface SPUItem {
+interface SelectedSPU {
   id: string;
   cas: string;
   name: string;
   name_en?: string;
   formula?: string;
   description?: string;
-  hs_code?: string;
   pubchem_cid?: number;
   molecular_weight?: string;
+  hs_code?: string;
   synonyms?: string[];
   applications?: string[];
   physicalDescription?: string;
@@ -43,773 +63,296 @@ interface SPUItem {
   hazardClasses?: string;
 }
 
-function ProductUploadContent() {
+function ProductCreateContent() {
   const { locale, t } = useAdminLocale();
-  const searchParams = useSearchParams();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [loading, setLoading] = useState(false);
-  
-  // SPU 搜索状态
+
+  // 视图模式：'search' 搜索页，'edit' 编辑页
+  const [viewMode, setViewMode] = useState<'search' | 'edit'>('search');
+
+  // ========== 搜索相关状态 ==========
   const [spuSearchQuery, setSpuSearchQuery] = useState('');
   const [searchingSPU, setSearchingSPU] = useState(false);
-  const [spuSearchResults, setSpuSearchResults] = useState<SPUItem[]>([]);
-  const [selectedSPU, setSelectedSPU] = useState<SPUItem | null>(null);
-  const [showNoSpuHint, setShowNoSpuHint] = useState(false);
-  
-  // PubChem 搜索状态（备选）
   const [searchingPubChem, setSearchingPubChem] = useState(false);
-  const [pubchemData, setPubchemData] = useState<any>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'local_success' | 'remote_success' | 'failed'>('idle');
+  const [spuSearchResults, setSpuSearchResults] = useState<SelectedSPU[]>([]);
+  const [showNoSpuHint, setShowNoSpuHint] = useState(false);
+  const [pubchemData, setPubchemData] = useState<PubChemData | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'success' | 'failed'>('idle');
+  const [selectedSPU, setSelectedSPU] = useState<SelectedSPU | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // 自动处理状态（产品图、HS编码、翻译）
-  const [autoProcessing, setAutoProcessing] = useState(false);
-  const [processingStep, setProcessingStep] = useState<'image' | 'hscode' | 'translate' | 'done' | null>(null);
-  const [processingError, setProcessingError] = useState<string | null>(null);
-  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
-  const [matchedHsCode, setMatchedHsCode] = useState<string | null>(null);
-  const [translations, setTranslations] = useState<Record<string, any>>({});
-  const [translatingFields, setTranslatingFields] = useState<Set<string>>(new Set()); // 正在翻译的字段集合
-
-  // 从URL获取CAS参数并自动搜索
-  useEffect(() => {
-    const casParam = searchParams.get('cas');
-    if (casParam) {
-      // 设置CAS到表单
-      setFormData(prev => ({
-        ...prev,
-        cas: casParam,
-      }));
-      // 自动搜索SPU
-      setSpuSearchQuery(casParam);
-      // 延迟触发搜索
-      setTimeout(() => {
-        handleSPUSearchWithQuery(casParam);
-      }, 100);
-    }
-  }, [searchParams]);
-
-  // 带参数的SPU搜索函数
-  const handleSPUSearchWithQuery = async (query: string) => {
-    if (!query || query.length < 2) {
-      return;
-    }
-
-    setSearchingSPU(true);
-    setShowNoSpuHint(false);
-    setSpuSearchResults([]);
-
-    try {
-      const response = await fetch(`/api/admin/spu-manage/search?q=${encodeURIComponent(query)}`);
-      const data = await response.json();
-
-      if (data.success && data.data.length > 0) {
-        setSpuSearchResults(data.data);
-      } else {
-        setShowNoSpuHint(true);
-      }
-    } catch (error) {
-      console.error('SPU search error:', error);
-      setShowNoSpuHint(true);
-    } finally {
-      setSearchingSPU(false);
-    }
-  };
+  // ========== 编辑相关状态 ==========
+  const [saving, setSaving] = useState(false);
 
   // 表单数据
   const [formData, setFormData] = useState({
-    // SPU 关联
-    spuId: '',
-    
-    // 基本信息（从 SPU 自动填充或手动输入）
     cas: '',
     name: '',
     nameEn: '',
     formula: '',
-
-    // 自动生成的数据
-    generatedImageUrl: '',
+    molecularWeight: '',
+    description: '',
+    synonyms: [] as string[],
+    applications: [] as string[],
     hsCode: '',
-    translations: {} as Record<string, Record<string, string>>,
-
-    // 上架选项
-    isListed: true, // 是否上架
-
-    // Step 3: 上架设置（商业信息）
-    price: '',
-    stock: '',
-    moq: '',
-    deliveryTime: '',
+    hsCodeExtensions: {} as Record<string, string>,
+    status: 'ACTIVE',
+    smiles: '',
+    inchi: '',
+    inchiKey: '',
+    xlogp: '',
+    physicalDescription: '',
+    colorForm: '',
+    odor: '',
+    boilingPoint: '',
+    meltingPoint: '',
+    flashPoint: '',
+    density: '',
+    solubility: '',
+    vaporPressure: '',
+    hazardClasses: '',
+    generatedImageUrl: '',
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  
-  // 保存SPU状态
-  const [savingSPU, setSavingSPU] = useState(false);
-  const [spuSaved, setSpuSaved] = useState(false);
-  
-  // 弹窗状态
-  const [showDialog, setShowDialog] = useState(false);
-  const [dialogContent, setDialogContent] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' });
+  // PubChem 信息（只读）
+  const [pubchemInfo, setPubchemInfo] = useState<{
+    cid?: number;
+    syncedAt?: string;
+  }>({});
 
-  // 统一搜索函数：先搜 SPU，没有结果则搜 PubChem
+  // 图片相关状态
+  const [structureImageUrl, setStructureImageUrl] = useState<string | null>(null);
+  const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
+  const [generatingImage, setGeneratingImage] = useState(false);
+
+  // ========== 搜索功能 ==========
   const handleUnifiedSearch = async () => {
-    const query = spuSearchQuery || formData.cas;
-    if (!query || query.length < 2) {
-      setErrors({ cas: t('spu.casRequired') });
-      return;
-    }
+    const query = spuSearchQuery.trim();
+    if (!query) return;
 
-    // 重置状态
     setErrors({});
     setSpuSearchResults([]);
-    setPubchemData(null);
     setShowNoSpuHint(false);
+    setPubchemData(null);
+    setSelectedSPU(null);
     setConnectionStatus('idle');
 
-    // 1. 先搜索本地 SPU
+    // Step 1: 搜索本地 SPU
     setSearchingSPU(true);
     try {
-      const response = await fetch(`/api/admin/spu-manage/search?q=${encodeURIComponent(query)}`);
+      const token = getAdminToken();
+      const response = await fetch(`/api/admin/spu-manage/search?q=${encodeURIComponent(query)}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      });
       const data = await response.json();
 
-      if (data.success && data.data.length > 0) {
+      if (data.success && data.data && data.data.length > 0) {
         setSpuSearchResults(data.data);
         setSearchingSPU(false);
-        return; // 有结果就结束
+        return;
       }
     } catch (error) {
       console.error('SPU search error:', error);
     }
     setSearchingSPU(false);
 
-    // 2. SPU 没有结果，从 PubChem 获取
+    // Step 2: 本地无结果，搜索 PubChem
+    await searchPubChem(query);
+  };
+
+  const searchPubChem = async (cas: string) => {
     setSearchingPubChem(true);
     setConnectionStatus('connecting');
 
     try {
-      // 调用合并后的 PubChem 同步接口（预览模式）
+      // Step 1: 检测连接
+      const connectionResponse = await fetch('/api/admin/spu/check-pubchem-connection');
+      const connectionData = await connectionResponse.json();
+
+      if (!connectionData.connected) {
+        setConnectionStatus('failed');
+        setSearchingPubChem(false);
+        return;
+      }
+
+      // Step 2: 获取 PubChem 数据
+      setConnectionStatus('success');
+      const token = getAdminToken();
       const response = await fetch('/api/admin/spu/sync-pubchem', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ preview: true, cas: query }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ preview: true, cas }),
       });
+
       const data = await response.json();
 
       if (data.success && data.data) {
-        setConnectionStatus(data.source === 'cache' ? 'local_success' : 'remote_success');
-        
-        let nameZh = data.data.nameZh || '';
-        const nameEn = data.data.nameEn || '';
-
-        if (!nameZh && nameEn) {
-          try {
-            const translateResponse = await fetch('/api/common/ai/translate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: nameEn, targetLanguage: 'zh' }),
-            });
-            const translateData = await translateResponse.json();
-            if (translateData.translatedText) {
-              nameZh = translateData.translatedText;
-            }
-          } catch (translateError) {
-            console.error('Translation error:', translateError);
-          }
-        }
-
-        setPubchemData({
-          cas: query,
-          source: data.source,
-          cid: data.data.pubchemCid,
-          nameZh,
-          nameEn,
-          formula: data.data.formula || '',
-          molecularWeight: data.data.molecularWeight || '',
-          smiles: data.data.smiles || '',
-          isomericSmiles: data.data.smilesIsomeric || '',
-          inchi: data.data.inchi || '',
-          inchiKey: data.data.inchiKey || '',
-          xlogp: data.data.xlogp || '',
-          structure2dUrl: data.data.structureUrl || '',
-          structure2dSvgUrl: data.data.structure2dSvg || '',
-          synonyms: data.data.synonyms || [],
-          boilingPoint: data.data.boilingPoint || '',
-          meltingPoint: data.data.meltingPoint || '',
-          flashPoint: data.data.flashPoint || '',
-          density: data.data.density || '',
-          solubility: data.data.solubility || '',
-          vaporPressure: data.data.vaporPressure || '',
-          physicalDescription: data.data.physicalDescription || '',
-          colorForm: data.data.colorForm || '',
-          odor: data.data.odor || '',
-          description: data.data.description || '',
-          applications: data.data.applications || [],
-          hazardClasses: data.data.hazardClasses || '',
-        });
-        // 重置自动处理状态
-        setProcessingStep(null);
-    setProcessingError(null);
-        setGeneratedImageUrl(null);
-        setMatchedHsCode(null);
-        setTranslations({});
+        setPubchemData(data.data);
       } else {
-        setConnectionStatus('failed');
-        setPubchemData(null);
         setErrors({ cas: t('spu.noDataFound') });
       }
     } catch (error) {
       console.error('PubChem search error:', error);
       setConnectionStatus('failed');
-      setPubchemData(null);
       setErrors({ cas: t('spu.searchFailed') });
     } finally {
       setSearchingPubChem(false);
     }
   };
 
-  // 搜索 SPU（保留用于其他地方调用）
-  const handleSPUSearch = async () => {
-    if (!spuSearchQuery || spuSearchQuery.length < 2) {
-      return;
-    }
-
-    setSearchingSPU(true);
-    setShowNoSpuHint(false);
-    setSpuSearchResults([]);
-
-    try {
-      const response = await fetch(`/api/admin/spu-manage/search?q=${encodeURIComponent(spuSearchQuery)}`);
-      const data = await response.json();
-
-      if (data.success && data.data.length > 0) {
-        setSpuSearchResults(data.data);
-      } else {
-        setShowNoSpuHint(true);
-      }
-    } catch (error) {
-      console.error('SPU search error:', error);
-      setShowNoSpuHint(true);
-    } finally {
-      setSearchingSPU(false);
-    }
-  };
-
-  // 选择 SPU
-  const handleSelectSPU = (spu: SPUItem) => {
+  const handleSelectSPU = (spu: SelectedSPU) => {
     setSelectedSPU(spu);
-    setFormData({
-      ...formData,
-      spuId: spu.id,
-      cas: spu.cas,
-      name: spu.name,
-      nameEn: spu.name_en || '',
-      formula: spu.formula || '',
-    });
     setSpuSearchResults([]);
-    setSpuSearchQuery('');
-    // 重置自动处理状态
-    setProcessingStep(null);
-    setProcessingError(null);
-    setGeneratedImageUrl(null);
-    setMatchedHsCode(null);
-    setTranslations({});
+    setPubchemData(null);
+    setErrors({});
   };
 
-  // 取消选择 SPU
   const handleClearSPU = () => {
     setSelectedSPU(null);
+    setPubchemData(null);
+    setSpuSearchResults([]);
+    setErrors({});
+  };
+
+  // ========== 进入编辑模式 ==========
+  const enterEditMode = () => {
+    const dataSource = pubchemData || selectedSPU;
+    if (!dataSource) return;
+
+    // 初始化表单数据
     setFormData({
-      ...formData,
-      spuId: '',
+      cas: (dataSource as any).cas || '',
+      name: (dataSource as any).nameZh || (dataSource as any).name || '',
+      nameEn: (dataSource as any).nameEn || (dataSource as any).name_en || '',
+      formula: (dataSource as any).formula || '',
+      molecularWeight: (dataSource as any).molecularWeight || (dataSource as any).molecular_weight || '',
+      description: (dataSource as any).description || '',
+      synonyms: (dataSource as any).synonyms || [],
+      applications: (dataSource as any).applications || [],
+      hsCode: (dataSource as any).hsCode || (dataSource as any).hs_code || '',
+      hsCodeExtensions: {},
+      status: 'ACTIVE',
+      smiles: (dataSource as any).smiles || '',
+      inchi: (dataSource as any).inchi || '',
+      inchiKey: (dataSource as any).inchiKey || '',
+      xlogp: (dataSource as any).xlogp || '',
+      physicalDescription: (dataSource as any).physicalDescription || '',
+      colorForm: (dataSource as any).colorForm || '',
+      odor: (dataSource as any).odor || '',
+      boilingPoint: (dataSource as any).boilingPoint || '',
+      meltingPoint: (dataSource as any).meltingPoint || '',
+      flashPoint: (dataSource as any).flashPoint || '',
+      density: (dataSource as any).density || '',
+      solubility: (dataSource as any).solubility || '',
+      vaporPressure: (dataSource as any).vaporPressure || '',
+      hazardClasses: (dataSource as any).hazardClasses || '',
+      generatedImageUrl: '',
+    });
+
+    // 设置 PubChem 信息
+    if (pubchemData) {
+      setPubchemInfo({
+        cid: pubchemData.cid,
+        syncedAt: pubchemData.pubchemSyncedAt,
+      });
+      setStructureImageUrl(pubchemData.structure2dUrl || null);
+    } else if (selectedSPU) {
+      setPubchemInfo({
+        cid: selectedSPU.pubchem_cid,
+      });
+    }
+
+    setViewMode('edit');
+  };
+
+  const backToSearch = () => {
+    setViewMode('search');
+    setFormData({
       cas: '',
       name: '',
       nameEn: '',
       formula: '',
+      molecularWeight: '',
+      description: '',
+      synonyms: [],
+      applications: [],
+      hsCode: '',
+      hsCodeExtensions: {},
+      status: 'ACTIVE',
+      smiles: '',
+      inchi: '',
+      inchiKey: '',
+      xlogp: '',
+      physicalDescription: '',
+      colorForm: '',
+      odor: '',
+      boilingPoint: '',
+      meltingPoint: '',
+      flashPoint: '',
+      density: '',
+      solubility: '',
+      vaporPressure: '',
+      hazardClasses: '',
+      generatedImageUrl: '',
     });
-    // 重置自动处理状态
-    setProcessingStep(null);
-    setProcessingError(null);
-    setGeneratedImageUrl(null);
-    setMatchedHsCode(null);
-    setTranslations({});
+    setPubchemInfo({});
+    setStructureImageUrl(null);
+    setProductImageUrl(null);
   };
 
-  // 使用 PubChem 搜索（保留用于单独调用）
-  const handlePubChemSearch = async () => {
+  // ========== 保存功能 ==========
+  const handleSave = async (isListed: boolean = true) => {
     if (!formData.cas) {
-      setErrors({ cas: 'Please enter a CAS number' });
+      alert(locale === 'zh' ? 'CAS号不能为空' : 'CAS number is required');
       return;
     }
 
-    setSearchingPubChem(true);
-    setErrors({});
-    setPubchemData(null);
-
-    // 显示连接状态
-    setConnectionStatus('connecting');
-
-    try {
-      // 调用合并后的 PubChem 同步接口（预览模式）
-      const response = await fetch('/api/admin/spu/sync-pubchem', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ preview: true, cas: formData.cas }),
-      });
-      const data = await response.json();
-
-      if (data.success && data.data) {
-        // 数据库连接成功
-        setConnectionStatus(data.source === 'cache' ? 'local_success' : 'remote_success');
-        
-        let nameZh = data.data.nameZh || '';
-        const nameEn = data.data.nameEn || '';
-
-        if (!nameZh && nameEn) {
-          try {
-            const translateResponse = await fetch('/api/common/ai/translate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: nameEn, targetLanguage: 'zh' }),
-            });
-            const translateData = await translateResponse.json();
-            if (translateData.translatedText) {
-              nameZh = translateData.translatedText;
-            }
-          } catch (translateError) {
-            console.error('Translation error:', translateError);
-          }
-        }
-
-        setPubchemData({
-          cas: formData.cas,
-          source: data.source,
-          cid: data.data.pubchemCid,
-          nameZh,
-          nameEn,
-          formula: data.data.formula || '',
-          molecularWeight: data.data.molecularWeight || '',
-          // 结构信息
-          smiles: data.data.smiles || '',
-          isomericSmiles: data.data.smilesIsomeric || '',
-          inchi: data.data.inchi || '',
-          inchiKey: data.data.inchiKey || '',
-          xlogp: data.data.xlogp || '',
-          // 结构图
-          structure2dUrl: data.data.structureUrl || '',
-          structure2dSvgUrl: data.data.structure2dSvg || '',
-          // 同义词
-          synonyms: data.data.synonyms || [],
-          // 物理化学性质
-          boilingPoint: data.data.boilingPoint || '',
-          meltingPoint: data.data.meltingPoint || '',
-          flashPoint: data.data.flashPoint || '',
-          density: data.data.density || '',
-          solubility: data.data.solubility || '',
-          vaporPressure: data.data.vaporPressure || '',
-          physicalDescription: data.data.physicalDescription || '',
-          colorForm: data.data.colorForm || '',
-          odor: data.data.odor || '',
-          // 描述与应用
-          description: data.data.description || '',
-          applications: data.data.applications || [],
-          // 危险性分类
-          hazardClasses: data.data.hazardClasses || '',
-        });
-        // 重置自动处理状态
-        setProcessingStep(null);
-    setProcessingError(null);
-        setGeneratedImageUrl(null);
-        setMatchedHsCode(null);
-        setTranslations({});
-      } else {
-        setConnectionStatus('failed');
-        setPubchemData(null);
-        setErrors({ cas: t('spu.noDataFound') });
-      }
-    } catch (error) {
-      console.error('PubChem search error:', error);
-      setConnectionStatus('failed');
-      setPubchemData(null);
-      setErrors({ cas: t('spu.searchFailed') });
-    } finally {
-      setSearchingPubChem(false);
-    }
-  };
-
-  // 纯度等级识别
-  // 验证当前步骤
-  const validateStep = (step: number): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (step === 0) {
-      // Step 1: 选择产品
-      if (!formData.spuId && !formData.cas) {
-        newErrors.cas = 'Please select a SPU or enter a CAS number';
-      }
-    } else if (step === 1) {
-      // Step 2: 确认数据 - 无需验证，用户可以编辑自动生成的数据
-    } else if (step === 2) {
-      // Step 3: 商业信息
-      if (!formData.price) newErrors.price = 'Price is required';
-      if (!formData.stock) newErrors.stock = 'Stock is required';
-      if (!formData.moq) newErrors.moq = 'MOQ is required';
-      if (!formData.deliveryTime) newErrors.deliveryTime = 'Delivery time is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // 自动处理函数：生成产品图、匹配HS编码、翻译多语言
-  const handleAutoProcess = async () => {
-    if (!pubchemData && !selectedSPU) return;
-
-    setAutoProcessing(true);
-    setProcessingStep(null);
-    setProcessingError(null);
-    setProcessingError(null);
-    setGeneratedImageUrl(null);
-    setMatchedHsCode(null);
-    setTranslations({});
-    
-    const cas = pubchemData?.cas || selectedSPU?.cas;
-    const name = pubchemData?.nameZh || selectedSPU?.name;
-    const nameEn = pubchemData?.nameEn || selectedSPU?.name_en;
-    const formula = pubchemData?.formula || selectedSPU?.formula;
-    const description = pubchemData?.description || selectedSPU?.description;
-    const applications = pubchemData?.applications || selectedSPU?.applications || [];
-
-    // 支持的语言列表
-    const targetLanguages = ['en', 'zh', 'ja', 'ko', 'de', 'fr', 'es', 'pt', 'ru', 'ar'];
-    
-    // 获取 token
-    const token = getAdminToken();
-
-    try {
-      // Step 1: 生成产品图（必须成功）
-      setProcessingStep('image');
-      try {
-        const imageResponse = await fetch('/api/admin/products/generate-image', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ cas, name: nameEn || name }),
-        });
-        const imageData = await imageResponse.json();
-        if (!imageData.success) {
-          throw new Error(imageData.error || '产品图生成失败');
-        }
-        setGeneratedImageUrl(imageData.imageUrl);
-        // 立即填充到表单
-        setFormData(prev => ({ ...prev, generatedImageUrl: imageData.imageUrl }));
-      } catch (e: any) {
-        // 产品图生成失败，停止流程
-        console.error('Failed to generate image:', e);
-        const errorMsg = t('spu.imageGenFailed', { error: e.message });
-        setProcessingError(errorMsg);
-        setErrors({ cas: errorMsg });
-        setProcessingStep('done');
-        setAutoProcessing(false);
-        return;
-      }
-
-      // Step 2: 匹配 HS 编码（必须成功）
-      setProcessingStep('hscode');
-      try {
-        const hsResponse = await fetch('/api/admin/products/match-hs-code', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ cas, name, nameEn, formula, description, applications }),
-        });
-        const hsData = await hsResponse.json();
-        if (!hsData.success) {
-          throw new Error(hsData.error || 'HS编码匹配失败');
-        }
-        setMatchedHsCode(hsData.hsCode);
-        // 立即填充到表单
-        setFormData(prev => ({ ...prev, hsCode: hsData.hsCode }));
-      } catch (e: any) {
-        // HS编码匹配失败，停止流程
-        console.error('Failed to match HS code:', e);
-        const errorMsg = t('spu.hsCodeMatchFailed', { error: e.message });
-        setProcessingError(errorMsg);
-        setErrors({ cas: errorMsg });
-        setProcessingStep('done');
-        setAutoProcessing(false);
-        return;
-      }
-
-      // Step 3: 翻译到 10 种语言（并行翻译，大幅提升速度）
-      setProcessingStep('translate');
-      const newTranslations: Record<string, any> = {};
-
-      // 辅助函数：并行翻译单个字段到所有语言
-      const translateFieldParallel = async (fieldName: string, text: string, skipZh: boolean = false) => {
-        if (!text) return;
-        
-        // 构建需要翻译的语言列表
-        const languagesToTranslate = targetLanguages.filter(lang => {
-          if (lang === 'en') return false; // 英文直接使用原文
-          if (lang === 'zh' && skipZh && name) return false; // 名称已有中文则跳过
-          return true;
-        });
-
-        // 设置英文原文
-        newTranslations[fieldName] = { ...newTranslations[fieldName], en: text };
-        if (fieldName === 'name' && name) {
-          newTranslations[fieldName] = { ...newTranslations[fieldName], zh: name };
-        }
-
-        // 添加到正在翻译的字段集合
-        setTranslatingFields(prev => new Set([...prev, fieldName]));
-
-        // 并行翻译所有语言
-        const translationPromises = languagesToTranslate.map(async (lang) => {
-          try {
-            const translateResponse = await fetch('/api/common/ai/translate', {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-              },
-              body: JSON.stringify({ text, targetLanguage: lang }),
-            });
-            const translateData = await translateResponse.json();
-            if (translateData.translatedText) {
-              return { lang, translatedText: translateData.translatedText };
-            }
-          } catch (e) {
-            console.error(`Failed to translate ${fieldName} to ${lang}:`, e);
-          }
-          return null;
-        });
-
-        const results = await Promise.all(translationPromises);
-        results.forEach((result) => {
-          if (result) {
-            newTranslations[fieldName] = { ...newTranslations[fieldName], [result.lang]: result.translatedText };
-          }
-        });
-
-        // 从正在翻译的字段集合中移除
-        setTranslatingFields(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(fieldName);
-          return newSet;
-        });
-      };
-
-      // 并行翻译所有字段（同时发送所有请求）
-      const allTranslationTasks: Promise<void>[] = [];
-
-      // 翻译名称
-      const nameToTranslate = nameEn || name;
-      if (nameToTranslate) {
-        allTranslationTasks.push(translateFieldParallel('name', nameToTranslate, true));
-      }
-
-      // 翻译描述
-      if (description) {
-        allTranslationTasks.push(translateFieldParallel('description', description));
-      }
-
-      // 翻译应用领域（数组）- 并行处理每个应用
-      if (applications && applications.length > 0) {
-        newTranslations.applications = { en: [...applications] };
-        // 注意：zh 需要翻译，不要跳过
-        
-        // 添加到正在翻译的字段集合
-        setTranslatingFields(prev => new Set([...prev, 'applications']));
-        
-        const appTasks = applications.flatMap((app: string, index: number) => {
-          return targetLanguages
-            .filter(lang => lang !== 'en') // 只跳过英文，中文需要翻译
-            .map(async (lang) => {
-              try {
-                const translateResponse = await fetch('/api/common/ai/translate', {
-                  method: 'POST',
-                  headers: { 
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                  },
-                  body: JSON.stringify({ text: app, targetLanguage: lang }),
-                });
-                const translateData = await translateResponse.json();
-                if (translateData.translatedText) {
-                  newTranslations.applications[lang] = newTranslations.applications[lang] || [];
-                  newTranslations.applications[lang][index] = translateData.translatedText;
-                }
-              } catch (e) {
-                console.error(`Failed to translate application to ${lang}:`, e);
-                newTranslations.applications[lang] = newTranslations.applications[lang] || [];
-                newTranslations.applications[lang][index] = app;
-              }
-            });
-        });
-        
-        // 包装应用翻译任务，完成后移除状态
-        const appTranslationTask = Promise.all(appTasks).then(() => {
-          setTranslatingFields(prev => {
-            const newSet = new Set(prev);
-            newSet.delete('applications');
-            return newSet;
-          });
-        });
-        allTranslationTasks.push(appTranslationTask);
-      }
-
-      // 翻译物理描述
-      const physicalDescription = pubchemData?.physicalDescription || selectedSPU?.physicalDescription;
-      if (physicalDescription) {
-        allTranslationTasks.push(translateFieldParallel('physicalDescription', physicalDescription));
-      }
-
-      // 翻译颜色/形态
-      const colorForm = pubchemData?.colorForm || selectedSPU?.colorForm;
-      if (colorForm) {
-        allTranslationTasks.push(translateFieldParallel('colorForm', colorForm));
-      }
-
-      // 翻译气味
-      const odor = pubchemData?.odor || selectedSPU?.odor;
-      if (odor) {
-        allTranslationTasks.push(translateFieldParallel('odor', odor));
-      }
-
-      // 翻译危险性分类
-      const hazardClasses = pubchemData?.hazardClasses || selectedSPU?.hazardClasses;
-      if (hazardClasses) {
-        allTranslationTasks.push(translateFieldParallel('hazardClasses', hazardClasses));
-      }
-
-      // 翻译物理化学性质
-      const boilingPoint = pubchemData?.boilingPoint;
-      if (boilingPoint) {
-        allTranslationTasks.push(translateFieldParallel('boilingPoint', boilingPoint));
-      }
-
-      const meltingPoint = pubchemData?.meltingPoint;
-      if (meltingPoint) {
-        allTranslationTasks.push(translateFieldParallel('meltingPoint', meltingPoint));
-      }
-
-      const flashPoint = pubchemData?.flashPoint;
-      if (flashPoint) {
-        allTranslationTasks.push(translateFieldParallel('flashPoint', flashPoint));
-      }
-
-      const density = pubchemData?.density;
-      if (density) {
-        allTranslationTasks.push(translateFieldParallel('density', density));
-      }
-
-      const solubility = pubchemData?.solubility;
-      if (solubility) {
-        allTranslationTasks.push(translateFieldParallel('solubility', solubility));
-      }
-
-      const vaporPressure = pubchemData?.vaporPressure;
-      if (vaporPressure) {
-        allTranslationTasks.push(translateFieldParallel('vaporPressure', vaporPressure));
-      }
-
-      // 等待所有翻译完成
-      await Promise.all(allTranslationTasks);
-
-      setTranslations(newTranslations);
-      setProcessingStep('done');
-      
-      // 将翻译数据填充到表单中
-      setFormData(prev => ({
-        ...prev,
-        translations: newTranslations,
-      }));
-
-    } catch (error) {
-      console.error('Auto process error:', error);
-    } finally {
-      setAutoProcessing(false);
-    }
-  };
-
-  // 显示弹窗
-  const showNotification = (title: string, message: string, type: 'success' | 'error' = 'success') => {
-    setDialogContent({ title, message, type });
-    setShowDialog(true);
-  };
-
-  // 保存 SPU 数据到数据库
-  const saveSPU = async (isListedOverride?: boolean): Promise<string | null> => {
-    // 验证必填数据
-    if (!formData.cas) {
-      showNotification(
-        t('spu.saveFailed'),
-        t('spu.casRequired'),
-        'error'
-      );
-      return null;
-    }
-    
-    const spuName = formData.name || formData.nameEn || pubchemData?.nameZh || pubchemData?.nameEn || selectedSPU?.name || selectedSPU?.name_en;
+    const spuName = formData.name || formData.nameEn;
     if (!spuName) {
-      showNotification(
-        t('spu.saveFailed'),
-        t('spu.productNameRequired'),
-        'error'
-      );
-      return null;
+      alert(locale === 'zh' ? '产品名称不能为空' : 'Product name is required');
+      return;
     }
 
-    setSavingSPU(true);
+    setSaving(true);
     try {
       const token = getAdminToken();
-      
-      // 确定最终的上架状态
-      const isListed = isListedOverride !== undefined ? isListedOverride : formData.isListed;
-      
+
       const spuData = {
         cas: formData.cas,
         name: spuName,
-        nameEn: formData.nameEn || pubchemData?.nameEn || selectedSPU?.name_en || null,
-        formula: formData.formula || pubchemData?.formula || selectedSPU?.formula || null,
-        description: pubchemData?.description || selectedSPU?.description || null,
-        pubchemCid: pubchemData?.cid || selectedSPU?.pubchem_cid || null,
-        molecularWeight: pubchemData?.molecularWeight || selectedSPU?.molecular_weight || null,
-        smiles: pubchemData?.smiles || null,
-        inchi: pubchemData?.inchi || null,
-        inchiKey: pubchemData?.inchiKey || null,
-        xlogp: pubchemData?.xlogp || null,
-        boilingPoint: pubchemData?.boilingPoint || null,
-        meltingPoint: pubchemData?.meltingPoint || null,
-        flashPoint: pubchemData?.flashPoint || null,
-        hazardClasses: pubchemData?.hazardClasses || selectedSPU?.hazardClasses || null,
-        synonyms: pubchemData?.synonyms || selectedSPU?.synonyms || null,
-        applications: pubchemData?.applications || selectedSPU?.applications || null,
-        imageUrl: formData.generatedImageUrl || null,
-        structureUrl: pubchemData?.structure2dUrl || null, // PubChem 2D 结构图 URL
+        nameEn: formData.nameEn || null,
+        formula: formData.formula || null,
+        description: formData.description || pubchemData?.description || selectedSPU?.description || null,
+        pubchemCid: pubchemInfo.cid || null,
+        molecularWeight: formData.molecularWeight || pubchemData?.molecularWeight || selectedSPU?.molecular_weight || null,
+        smiles: formData.smiles || pubchemData?.smiles || null,
+        inchi: formData.inchi || pubchemData?.inchi || null,
+        inchiKey: formData.inchiKey || pubchemData?.inchiKey || null,
+        xlogp: formData.xlogp || pubchemData?.xlogp || null,
+        boilingPoint: formData.boilingPoint || pubchemData?.boilingPoint || null,
+        meltingPoint: formData.meltingPoint || pubchemData?.meltingPoint || null,
+        flashPoint: formData.flashPoint || pubchemData?.flashPoint || null,
+        hazardClasses: formData.hazardClasses || pubchemData?.hazardClasses || selectedSPU?.hazardClasses || null,
+        synonyms: formData.synonyms.length > 0 ? formData.synonyms : pubchemData?.synonyms || selectedSPU?.synonyms || null,
+        applications: formData.applications.length > 0 ? formData.applications : pubchemData?.applications || selectedSPU?.applications || null,
+        imageUrl: formData.generatedImageUrl || productImageUrl || null,
+        structureUrl: structureImageUrl || pubchemData?.structure2dUrl || null,
         hsCode: formData.hsCode || null,
-        translations: Object.keys(formData.translations).length > 0 ? formData.translations : null,
-        // 物理描述相关
-        physicalDescription: pubchemData?.physicalDescription || selectedSPU?.physicalDescription || null,
-        colorForm: pubchemData?.colorForm || selectedSPU?.colorForm || null,
-        odor: pubchemData?.odor || selectedSPU?.odor || null,
-        density: pubchemData?.density || null,
-        solubility: pubchemData?.solubility || null,
-        vaporPressure: pubchemData?.vaporPressure || null,
-        // 状态：根据用户选择的上架选项决定
+        translations: null,
+        physicalDescription: formData.physicalDescription || pubchemData?.physicalDescription || selectedSPU?.physicalDescription || null,
+        colorForm: formData.colorForm || pubchemData?.colorForm || selectedSPU?.colorForm || null,
+        odor: formData.odor || pubchemData?.odor || selectedSPU?.odor || null,
+        density: formData.density || pubchemData?.density || null,
+        solubility: formData.solubility || pubchemData?.solubility || null,
+        vaporPressure: formData.vaporPressure || pubchemData?.vaporPressure || null,
         status: isListed ? 'ACTIVE' : 'INACTIVE',
       };
 
-      console.log('[SPU] Saving with data:', { cas: spuData.cas, name: spuData.name });
-
       const response = await fetch('/api/admin/spu-manage/save', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
@@ -817,671 +360,349 @@ function ProductUploadContent() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
-        setSpuSaved(true);
-        setFormData(prev => ({ ...prev, spuId: result.data.id }));
-        console.log('[SPU] Saved successfully:', result.data.id);
-        return result.data.id;
+        alert(locale === 'zh' ? '保存成功！' : 'Saved successfully!');
+        window.location.href = '/admin/spu';
       } else {
-        console.error('Failed to save SPU:', result.error);
-        showNotification(
-          t('spu.saveFailed'),
-          `${t('spu.error')}: ${result.error}`,
-          'error'
-        );
-        return null;
+        alert(`${locale === 'zh' ? '保存失败' : 'Save failed'}: ${result.error}`);
       }
     } catch (error) {
       console.error('Error saving SPU:', error);
-      showNotification(
-        t('spu.saveFailed'),
-        t('spu.networkError'),
-        'error'
-      );
-      return null;
+      alert(locale === 'zh' ? '保存失败' : 'Save failed');
     } finally {
-      setSavingSPU(false);
+      setSaving(false);
     }
   };
 
-  // 下一步
-  const handleNext = async () => {
-    if (validateStep(currentStep)) {
-      // 如果在第一步且有数据，且自动处理未完成，先触发自动处理
-      if (currentStep === 0 && (pubchemData || selectedSPU) && processingStep !== 'done') {
-        // 填充表单数据
-        const dataSource = pubchemData || selectedSPU;
-        setFormData(prev => ({
-          ...prev,
-          name: dataSource.nameZh || dataSource.name || prev.name,
-          nameEn: dataSource.nameEn || dataSource.name_en || prev.nameEn,
-          formula: dataSource.formula || prev.formula,
-          cas: dataSource.cas || prev.cas,
-        }));
+  // ========== 生成产品图 ==========
+  const handleGenerateProductImage = async () => {
+    if (!pubchemInfo.cid) {
+      alert(locale === 'zh' ? '请先同步 PubChem 数据' : 'Please sync PubChem data first');
+      return;
+    }
 
-        // 触发自动处理
-        await handleAutoProcess();
-        // 注意：handleAutoProcess 成功后会设置 processingStep = 'done'
-        // 用户需要再次点击"下一步"才能进入下一页
-      } else if (currentStep === 1) {
-        // Step 2: 确认数据 -> 保存SPU并上架
-        const savedSpuId = await saveSPU(true); // 直接传递上架状态
-        if (savedSpuId) {
-          showNotification(
-            t('spu.saveSuccess'),
-            t('spu.productSavedToLibrary'),
-            'success'
-          );
-          // 延迟跳转，让用户看到成功提示
-          setTimeout(() => {
-            window.location.href = '/admin/spu';
-          }, 1500);
-        }
+    setGeneratingImage(true);
+    try {
+      const token = getAdminToken();
+      const response = await fetch('/api/admin/products/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          cas: formData.cas,
+          name: formData.nameEn || formData.name,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setProductImageUrl(data.imageUrl);
+        setFormData(prev => ({ ...prev, generatedImageUrl: data.imageUrl }));
       } else {
-        // 已经处理完成或不需要处理，直接进入下一步
-        setCurrentStep(currentStep + 1);
+        alert(`${locale === 'zh' ? '生成失败' : 'Generation failed'}: ${data.error}`);
       }
+    } catch (error) {
+      console.error('Error generating image:', error);
+      alert(locale === 'zh' ? '生成失败' : 'Generation failed');
+    } finally {
+      setGeneratingImage(false);
     }
-  };
-
-  // 暂不上架
-  const handleSaveOnly = async () => {
-    if (validateStep(currentStep)) {
-      const savedSpuId = await saveSPU(false); // 直接传递不上架状态
-      if (savedSpuId) {
-        showNotification(
-          t('spu.saveSuccess'),
-          t('spu.productSavedNotListed'),
-          'success'
-        );
-        // 延迟跳转，让用户看到成功提示
-        setTimeout(() => {
-          window.location.href = '/admin/spu';
-        }, 1500);
-      }
-    }
-  };
-
-  // 上一步
-  const handlePrevious = () => {
-    setCurrentStep(currentStep - 1);
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      {/* 页面标题 */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">
-          {t('spu.upload')}
-        </h1>
-        <p className="text-slate-400">
-          {t('spu.uploadSubtitle')}
-        </p>
-      </div>
-
-        {/* 步骤指示器 */}
+    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white min-h-screen">
+      <div className="max-w-5xl mx-auto p-6">
+        {/* 页面标题 */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {stepKeys.map((step, index) => {
-              const Icon = step.icon;
-              const isCompleted = index < currentStep;
-              const isCurrent = index === currentStep;
-              return (
-                <div key={step.key} className="flex items-center flex-1">
-                  <div className="flex items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
-                        isCompleted
-                          ? 'bg-blue-600 border-blue-600 text-white'
-                          : isCurrent
-                          ? 'bg-slate-700 border-blue-500 text-blue-400'
-                          : 'bg-slate-800 border-slate-600 text-slate-500'
-                      }`}
-                    >
-                      {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
-                    </div>
-                    <div className="ml-3 hidden sm:block">
-                      <div
-                        className={`text-sm font-medium ${
-                          isCurrent ? 'text-blue-400' : isCompleted ? 'text-white' : 'text-slate-500'
-                        }`}
-                      >
-                        {t(step.titleKey)}
-                      </div>
-                    </div>
-                  </div>
-                  {index < stepKeys.length - 1 && (
-                    <div
-                      className={`flex-1 h-0.5 mx-4 ${
-                        index < currentStep ? 'bg-blue-600' : 'bg-slate-700'
-                      }`}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {t('spu.upload')}
+          </h1>
+          <p className="text-slate-400">
+            {t('spu.uploadSubtitle')}
+          </p>
+        </div>
 
-        {/* 表单内容 */}
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-8 mt-8">
-          {/* Step 1: 选择产品 */}
-          {currentStep === 0 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Database className="h-6 w-6 text-blue-400" />
-                <h2 className="text-xl font-bold text-white">{t(stepKeys[0].titleKey)}</h2>
+        {/* 搜索视图 */}
+        {viewMode === 'search' && (
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-8">
+            <div className="flex items-center gap-2 mb-6">
+              <Database className="h-6 w-6 text-blue-400" />
+              <h2 className="text-xl font-bold text-white">{t('spu.selectProduct')}</h2>
+            </div>
+
+            {/* 搜索框 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-slate-300 mb-3">
+                {t('spu.searchProduct')}
+              </label>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={spuSearchQuery}
+                  onChange={(e) => setSpuSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUnifiedSearch()}
+                  placeholder={t('spu.enterCas')}
+                  className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400"
+                />
+                <button
+                  onClick={handleUnifiedSearch}
+                  disabled={searchingSPU || searchingPubChem}
+                  className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 font-medium"
+                >
+                  {(searchingSPU || searchingPubChem) ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
+                  {t('common.search')}
+                </button>
               </div>
+              <p className="text-sm text-slate-500 mt-2">
+                {t('spu.systemSearchHint')}
+              </p>
+            </div>
 
-              {/* 已选择的 SPU */}
-              {selectedSPU ? (
-                <div className="bg-green-600/10 border border-green-500/30 rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <Link2 className="h-5 w-5 text-green-400" />
-                      <span className="font-semibold text-green-400">
-                        {t('spu.linkedSpu')}
-                      </span>
-                    </div>
-                    <button
-                      onClick={handleClearSPU}
-                      className="text-sm text-slate-400 hover:text-white transition-colors"
-                    >
-                      {t('spu.unlink')}
-                    </button>
+            {/* 搜索状态指示 */}
+            {(searchingSPU || searchingPubChem) && (
+              <div className="flex items-center gap-2 text-blue-400 mb-4">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">
+                  {searchingSPU
+                    ? t('spu.searchingLibrary')
+                    : t('spu.fetchingFromPubchem')}
+                </span>
+              </div>
+            )}
+
+            {/* 已选择的本地 SPU */}
+            {selectedSPU && (
+              <div className="bg-green-600/10 border border-green-500/30 rounded-lg p-6 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-green-400" />
+                    <span className="font-semibold text-green-400">
+                      {t('spu.linkedSpu')}
+                    </span>
                   </div>
-                  
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="bg-slate-700/50 rounded-lg p-4">
-                      <div className="text-sm text-slate-400 mb-1">{t('spu.nameZh')}</div>
-                      <div className="font-semibold text-white">{selectedSPU.name}</div>
-                    </div>
-                    <div className="bg-slate-700/50 rounded-lg p-4">
-                      <div className="text-sm text-slate-400 mb-1">{t('spu.nameEn')}</div>
-                      <div className="font-semibold text-white">{selectedSPU.name_en || '-'}</div>
-                    </div>
-                    <div className="bg-slate-700/50 rounded-lg p-4">
-                      <div className="text-sm text-slate-400 mb-1">CAS Number</div>
-                      <div className="font-mono font-semibold text-blue-400">{selectedSPU.cas}</div>
-                    </div>
+                  <button
+                    onClick={handleClearSPU}
+                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                  >
+                    {t('spu.unlink')}
+                  </button>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <div className="text-sm text-slate-400 mb-1">{t('spu.nameZh')}</div>
+                    <div className="font-semibold text-white">{selectedSPU.name}</div>
+                  </div>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <div className="text-sm text-slate-400 mb-1">{t('spu.nameEn')}</div>
+                    <div className="font-semibold text-white">{selectedSPU.name_en || '-'}</div>
+                  </div>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <div className="text-sm text-slate-400 mb-1">CAS Number</div>
+                    <div className="font-mono font-semibold text-blue-400">{selectedSPU.cas}</div>
+                  </div>
+                  {selectedSPU.formula && (
                     <div className="bg-slate-700/50 rounded-lg p-4">
                       <div className="text-sm text-slate-400 mb-1">{t('spu.formula')}</div>
-                      <div className="font-mono font-semibold text-white">{selectedSPU.formula || '-'}</div>
+                      <div className="font-mono font-semibold text-white">{selectedSPU.formula}</div>
                     </div>
-                    {selectedSPU.hs_code && (
-                      <div className="bg-slate-700/50 rounded-lg p-4">
-                        <div className="text-sm text-slate-400 mb-1">HS Code</div>
-                        <div className="font-mono font-semibold text-white">{selectedSPU.hs_code}</div>
-                      </div>
-                    )}
-                    {selectedSPU.pubchem_cid && (
-                      <div className="bg-slate-700/50 rounded-lg p-4">
-                        <div className="text-sm text-slate-400 mb-1">PubChem CID</div>
-                        <a 
-                          href={`https://pubchem.ncbi.nlm.nih.gov/compound/${selectedSPU.pubchem_cid}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-mono font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1"
-                        >
-                          {selectedSPU.pubchem_cid}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </div>
-                    )}
+                  )}
+                </div>
+
+                <button
+                  onClick={enterEditMode}
+                  className="mt-6 w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  {t('spu.next')}
+                </button>
+              </div>
+            )}
+
+            {/* SPU 搜索结果 */}
+            {spuSearchResults.length > 0 && !selectedSPU && (
+              <div className="border border-slate-600 rounded-lg divide-y divide-slate-700 mb-4">
+                <div className="px-4 py-3 bg-slate-700">
+                  <div className="text-sm text-slate-300 font-medium">
+                    {t('spu.foundProducts', { count: spuSearchResults.length })}
+                  </div>
+                  <div className="text-xs text-green-400 mt-1 flex items-center gap-1">
+                    <Check className="h-3 w-3" />
+                    {t('spu.spuAlreadyExists')}
                   </div>
                 </div>
-              ) : (
-                <>
-                  {/* SPU 搜索 */}
-                  {/* 统一搜索框 */}
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-slate-300 mb-3">
-                      {t('spu.searchProduct')}
-                    </label>
-                    <div className="flex gap-3">
-                      <input
-                        type="text"
-                        value={spuSearchQuery || formData.cas}
-                        onChange={(e) => {
-                          setSpuSearchQuery(e.target.value);
-                          setFormData({ ...formData, cas: e.target.value });
-                          // 重置状态
-                          setSpuSearchResults([]);
-                          setShowNoSpuHint(false);
-                          setPubchemData(null);
-                          setConnectionStatus('idle');
-                          setErrors({});
-                        }}
-                        onKeyDown={(e) => e.key === 'Enter' && handleUnifiedSearch()}
-                        placeholder={t('spu.enterCas')}
-                        className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400"
-                      />
-                      <button
-                        onClick={handleUnifiedSearch}
-                        disabled={searchingSPU || searchingPubChem}
-                        className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 font-medium"
-                      >
-                        {(searchingSPU || searchingPubChem) ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
-                        {t('common.search')}
-                      </button>
+                {spuSearchResults.map((spu) => (
+                  <button
+                    key={spu.id}
+                    onClick={() => handleSelectSPU(spu)}
+                    className="w-full p-4 flex items-center justify-between hover:bg-slate-700 transition-colors text-left"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm text-blue-400 font-medium">{spu.cas}</span>
+                        <span className="text-slate-600">|</span>
+                        <span className="font-medium text-white">{spu.name}</span>
+                        {spu.name_en && <span className="text-slate-400 text-sm">({spu.name_en})</span>}
+                      </div>
+                      {spu.formula && (
+                        <div className="text-sm text-slate-500 mt-1">
+                          {t('spu.formula')}: {spu.formula}
+                        </div>
+                      )}
                     </div>
-                    <p className="text-sm text-slate-500 mt-2">
-                      {t('spu.systemSearchHint')}
-                    </p>
+                    <Check className="h-5 w-5 text-slate-500" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* PubChem 数据 */}
+            {pubchemData && !selectedSPU && (
+              <div className="bg-green-600/10 border border-green-500/30 rounded-lg p-6 mb-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Check className="h-5 w-5 text-green-400" />
+                  <span className="font-semibold text-green-400">
+                    {t('spu.fetchedFromPubchem')}
+                  </span>
+                  <span className="ml-auto text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">
+                    PubChem
+                  </span>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <div className="text-sm text-slate-400 mb-1">{t('spu.nameZh')}</div>
+                    <div className="font-semibold text-white">{pubchemData.nameZh || '-'}</div>
                   </div>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <div className="text-sm text-slate-400 mb-1">{t('spu.nameEn')}</div>
+                    <div className="font-semibold text-white">{pubchemData.nameEn || '-'}</div>
+                  </div>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <div className="text-sm text-slate-400 mb-1">CAS Number</div>
+                    <div className="font-mono font-semibold text-blue-400">{pubchemData.cas}</div>
+                  </div>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <div className="text-sm text-slate-400 mb-1">{t('spu.formula')}</div>
+                    <div className="font-mono font-semibold text-white">{pubchemData.formula || '-'}</div>
+                  </div>
+                </div>
 
-                  {/* 搜索状态指示 */}
-                  {(searchingSPU || searchingPubChem) && (
-                    <div className="flex items-center gap-2 text-blue-400 mb-4">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm">
-                        {searchingSPU 
-                          ? t('spu.searchingLibrary')
-                          : t('spu.fetchingFromPubchem')}
-                      </span>
-                    </div>
-                  )}
+                <button
+                  onClick={enterEditMode}
+                  className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  {t('spu.next')}
+                </button>
+              </div>
+            )}
 
-                  {/* SPU 搜索结果 */}
-                  {spuSearchResults.length > 0 && !pubchemData && (
-                    <div className="border border-slate-600 rounded-lg divide-y divide-slate-700 mb-4">
-                      <div className="px-4 py-3 bg-slate-700">
-                        <div className="text-sm text-slate-300 font-medium">
-                          {t('spu.foundProducts', { count: spuSearchResults.length })}
-                        </div>
-                        <div className="text-xs text-green-400 mt-1 flex items-center gap-1">
-                          <Check className="h-3 w-3" />
-                          {t('spu.spuAlreadyExists')}
-                        </div>
+            {errors.cas && <p className="text-red-400 text-sm mt-1">{errors.cas}</p>}
+          </div>
+        )}
+
+        {/* 编辑视图 */}
+        {viewMode === 'edit' && (
+          <div className="space-y-6">
+            {/* 顶部导航 */}
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={backToSearch}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                {t('spu.previous')}
+              </button>
+              <h2 className="text-xl font-bold text-white">{t('spu.editSpu')}</h2>
+              <div className="w-32"></div>
+            </div>
+
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-8">
+              {/* 图片展示区域 */}
+              {(pubchemInfo.cid || structureImageUrl) && (
+                <div className="mb-6 p-4 bg-slate-700/30 border border-slate-600 rounded-lg">
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* PubChem 2D 结构图 */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm text-slate-400">{t('spu.structure2D')}</span>
+                        {pubchemInfo.cid && (
+                          <a
+                            href={`https://pubchem.ncbi.nlm.nih.gov/compound/${pubchemInfo.cid}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:underline text-xs"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
                       </div>
-                      {spuSearchResults.map((spu) => (
-                        <button
-                          key={spu.id}
-                          onClick={() => handleSelectSPU(spu)}
-                          className="w-full p-4 flex items-center justify-between hover:bg-slate-700 transition-colors text-left"
-                        >
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm text-blue-400 font-medium">{spu.cas}</span>
-                              <span className="text-slate-600">|</span>
-                              <span className="font-medium text-white">{spu.name}</span>
-                              {spu.name_en && <span className="text-slate-400 text-sm">({spu.name_en})</span>}
-                            </div>
-                            {spu.formula && (
-                              <div className="text-sm text-slate-500 mt-1">
-                                {t('spu.formula')}: {spu.formula}
-                              </div>
-                            )}
-                          </div>
-                          <Check className="h-5 w-5 text-slate-500" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* PubChem 数据 */}
-                  {pubchemData && !selectedSPU && (
-                    <div className="bg-green-600/10 border border-green-500/30 rounded-lg p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Check className="h-5 w-5 text-green-400" />
-                        <span className="font-semibold text-green-400">
-                          {t('spu.fetchedFromPubchem')}
-                        </span>
-                        <span className="ml-auto text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">
-                          PubChem
-                        </span>
-                      </div>
-                      
-                      {/* 主要信息区 */}
-                      <div className="grid md:grid-cols-3 gap-4 mb-4">
-                        {/* 2D 结构图 */}
-                        {pubchemData.structure2dUrl && (
-                          <div className="bg-slate-700/50 rounded-lg p-4 flex flex-col items-center justify-center row-span-2">
-                            <div className="text-sm text-slate-400 mb-2">{t('spu.twoDStructure')}</div>
-                            <img 
-                              src={pubchemData.structure2dUrl} 
-                              alt={`${pubchemData.nameEn || pubchemData.nameZh || 'Compound'} 2D Structure`}
-                              className="max-w-full h-auto rounded border border-slate-600"
-                              style={{ maxHeight: '180px' }}
-                              loading="lazy"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                              }}
-                            />
-                            {pubchemData.cid && (
-                              <a 
-                                href={`https://pubchem.ncbi.nlm.nih.gov/compound/${pubchemData.cid}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-2 text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
-                              >
-                                <ExternalLink className="h-3 w-3" />
-                                PubChem CID: {pubchemData.cid}
-                              </a>
-                            )}
+                      <div className="aspect-square bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
+                        {structureImageUrl ? (
+                          <img
+                            src={structureImageUrl}
+                            alt="2D Structure"
+                            className="max-w-full max-h-full object-contain"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="text-center text-slate-500">
+                            <Database className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">{t('spu.noData')}</p>
                           </div>
                         )}
-                        
-                        <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm text-slate-400 mb-1">{t('spu.nameZh')}</div>
-                          <div className="font-semibold text-white">{pubchemData.nameZh || '-'}</div>
-                        </div>
-                        <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm text-slate-400 mb-1">{t('spu.nameEn')}</div>
-                          <div className="font-semibold text-white">{pubchemData.nameEn || '-'}</div>
-                        </div>
-                        <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm text-slate-400 mb-1">CAS Number</div>
-                          <div className="font-mono font-semibold text-blue-400">{pubchemData.cas}</div>
-                        </div>
-                        <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm text-slate-400 mb-1">{t('spu.molecularFormula')}</div>
-                          <div className="font-mono font-semibold text-white">{pubchemData.formula || '-'}</div>
-                        </div>
-                        <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm text-slate-400 mb-1">{t('spu.molecularWeight')}</div>
-                          <div className="font-mono font-semibold text-white">{pubchemData.molecularWeight || '-'}</div>
-                        </div>
-                      </div>
-                      
-                      {/* 结构信息区 */}
-                      <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
-                        <div className="text-sm font-medium text-slate-300 mb-3">{t('spu.structureInfo')}</div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                          <div className="bg-slate-800 rounded px-3 py-2">
-                            <span className="text-slate-500">SMILES:</span>{' '}
-                            <span className="font-mono text-slate-300 break-all">{pubchemData.smiles || '-'}</span>
-                          </div>
-                          <div className="bg-slate-800 rounded px-3 py-2">
-                            <span className="text-slate-500">InChIKey:</span>{' '}
-                            <span className="font-mono text-slate-300">{pubchemData.inchiKey || '-'}</span>
-                          </div>
-                          {pubchemData.inchi && (
-                            <div className="bg-slate-800 rounded px-3 py-2 md:col-span-2">
-                              <span className="text-slate-500">InChI:</span>{' '}
-                              <span className="font-mono text-slate-300 break-all text-xs">{pubchemData.inchi}</span>
-                            </div>
-                          )}
-                          {pubchemData.xlogp && (
-                            <div className="bg-slate-800 rounded px-3 py-2">
-                              <span className="text-slate-500">XLogP:</span>{' '}
-                              <span className="font-mono text-slate-300">{pubchemData.xlogp}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* 同义词区 */}
-                      {pubchemData.synonyms && pubchemData.synonyms.length > 0 && (
-                        <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
-                          <div className="text-sm font-medium text-slate-300 mb-3">{t('spu.synonymsAliases')}</div>
-                          <div className="flex flex-wrap gap-2">
-                            {pubchemData.synonyms.slice(0, 15).map((synonym: string, index: number) => (
-                              <span key={index} className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">
-                                {synonym}
-                              </span>
-                            ))}
-                            {pubchemData.synonyms.length > 15 && (
-                              <span className="px-2 py-1 bg-slate-700 text-slate-500 rounded text-xs">
-                                +{pubchemData.synonyms.length - 15} more
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* 物理化学性质 */}
-                      {(pubchemData.boilingPoint || pubchemData.meltingPoint || pubchemData.flashPoint || pubchemData.density || pubchemData.solubility || pubchemData.vaporPressure) && (
-                        <div className="bg-slate-700/50 rounded-lg p-4">
-                          <div className="text-sm font-medium text-slate-300 mb-3">{t('spu.physicochemicalProperties')}</div>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                            {pubchemData.boilingPoint && (
-                              <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{t('spu.boilingPoint')}:</span>{' '}
-                                <span className="font-medium text-slate-300">{pubchemData.boilingPoint}</span>
-                              </div>
-                            )}
-                            {pubchemData.meltingPoint && (
-                              <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{t('spu.meltingPoint')}:</span>{' '}
-                                <span className="font-medium text-slate-300">{pubchemData.meltingPoint}</span>
-                              </div>
-                            )}
-                            {pubchemData.flashPoint && (
-                              <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{t('spu.flashPoint')}:</span>{' '}
-                                <span className="font-medium text-slate-300">{pubchemData.flashPoint}</span>
-                              </div>
-                            )}
-                            {pubchemData.density && (
-                              <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{t('spu.density')}:</span>{' '}
-                                <span className="font-medium text-slate-300">{pubchemData.density}</span>
-                              </div>
-                            )}
-                            {pubchemData.solubility && (
-                              <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{t('spu.solubility')}:</span>{' '}
-                                <span className="font-medium text-slate-300">{pubchemData.solubility}</span>
-                              </div>
-                            )}
-                            {pubchemData.vaporPressure && (
-                              <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{t('spu.vaporPressure')}:</span>{' '}
-                                <span className="font-medium text-slate-300">{pubchemData.vaporPressure}</span>
-                              </div>
-                            )}
-                            {pubchemData.physicalDescription && (
-                              <div className="bg-slate-800 rounded px-3 py-2 md:col-span-2">
-                                <span className="text-slate-500">{t('spu.physicalDescription')}:</span>{' '}
-                                <span className="font-medium text-slate-300">{pubchemData.physicalDescription}</span>
-                              </div>
-                            )}
-                            {pubchemData.colorForm && (
-                              <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{t('spu.colorForm')}:</span>{' '}
-                                <span className="font-medium text-slate-300">{pubchemData.colorForm}</span>
-                              </div>
-                            )}
-                            {pubchemData.odor && (
-                              <div className="bg-slate-800 rounded px-3 py-2">
-                                <span className="text-slate-500">{t('spu.odor')}:</span>{' '}
-                                <span className="font-medium text-slate-300">{pubchemData.odor}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* 产品描述 */}
-                      {pubchemData.description && (
-                        <div className="bg-slate-700/50 rounded-lg p-4 mt-4">
-                          <div className="text-sm font-medium text-slate-300 mb-2">{t('spu.description')}</div>
-                          <p className="text-sm text-slate-400">{pubchemData.description}</p>
-                        </div>
-                      )}
-                      
-                      {/* 行业应用 */}
-                      {pubchemData.applications && pubchemData.applications.length > 0 && (
-                        <div className="bg-slate-700/50 rounded-lg p-4 mt-4">
-                          <div className="text-sm font-medium text-slate-300 mb-2">{t('spu.applications')}</div>
-                          <ul className="text-sm text-slate-400 list-disc list-inside space-y-1">
-                            {pubchemData.applications.slice(0, 5).map((app: string, index: number) => (
-                              <li key={index}>{app}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {/* 自动处理状态 */}
-                      {(pubchemData || selectedSPU) && (
-                        <div className={`mt-6 rounded-lg p-4 ${
-                          processingError 
-                            ? 'bg-red-600/10 border border-red-500/30' 
-                            : processingStep === 'done' 
-                              ? 'bg-green-600/10 border border-green-500/30'
-                              : autoProcessing
-                                ? 'bg-blue-600/10 border border-blue-500/30'
-                                : 'bg-slate-700/50 border border-slate-600'
-                        }`}>
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              {processingError ? (
-                                <X className="h-5 w-5 text-red-400" />
-                              ) : processingStep === 'done' ? (
-                                <Check className="h-5 w-5 text-green-400" />
-                              ) : autoProcessing ? (
-                                <Loader2 className="h-5 w-5 text-blue-400 animate-spin" />
-                              ) : (
-                                <Database className="h-5 w-5 text-slate-400" />
-                              )}
-                              <span className={`font-medium ${
-                                processingError 
-                                  ? 'text-red-400' 
-                                  : processingStep === 'done' 
-                                    ? 'text-green-400'
-                                    : autoProcessing
-                                      ? 'text-blue-400'
-                                      : 'text-slate-300'
-                              }`}>
-                                {processingError 
-                                  ? t('spu.processingFailed')
-                                  : processingStep === 'done' 
-                                    ? t('spu.processingComplete')
-                                    : autoProcessing 
-                                      ? t('spu.processingData')
-                                      : t('spu.aiDataProcessing')}
-                              </span>
-                            </div>
-                            {(processingError || !autoProcessing && processingStep !== 'done') && (
-                              <button
-                                onClick={handleAutoProcess}
-                                disabled={autoProcessing}
-                                className={`px-3 py-1 text-sm rounded transition-colors ${
-                                  processingError 
-                                    ? 'bg-red-600 text-white hover:bg-red-700' 
-                                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                                } disabled:opacity-50`}
-                              >
-                                {processingError 
-                                  ? t('spu.retry')
-                                  : t('spu.startGeneration')}
-                              </button>
-                            )}
-                          </div>
-                          
-                          {processingError && (
-                            <p className="text-sm text-red-400 mb-3">{processingError}</p>
-                          )}
-                          
-                          <div className="space-y-2 text-sm">
-                            {/* 产品图生成 */}
-                            <div className="flex items-center gap-2">
-                              {processingStep === 'image' && autoProcessing ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-                              ) : generatedImageUrl ? (
-                                <Check className="h-4 w-4 text-green-400" />
-                              ) : processingStep && ['hscode', 'translate', 'done'].includes(processingStep) ? (
-                                <X className="h-4 w-4 text-red-400" />
-                              ) : (
-                                <div className="h-4 w-4 rounded-full border-2 border-slate-600" />
-                              )}
-                              <span className={generatedImageUrl ? 'text-green-400' : processingStep && ['hscode', 'translate', 'done'].includes(processingStep) && !generatedImageUrl ? 'text-red-400' : 'text-slate-400'}>
-                                {t('spu.generateProductImage')}
-                              </span>
-                              {generatedImageUrl && (
-                                <a href={generatedImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 text-xs ml-auto hover:text-blue-300">
-                                  {t('common.view')}
-                                </a>
-                              )}
-                            </div>
-                            
-                            {/* HS编码匹配 */}
-                            <div className="flex items-center gap-2">
-                              {processingStep === 'hscode' && autoProcessing ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-                              ) : matchedHsCode ? (
-                                <Check className="h-4 w-4 text-green-400" />
-                              ) : processingStep && ['translate', 'done'].includes(processingStep) ? (
-                                <X className="h-4 w-4 text-red-400" />
-                              ) : (
-                                <div className="h-4 w-4 rounded-full border-2 border-slate-600" />
-                              )}
-                              <span className={matchedHsCode ? 'text-green-400' : processingStep && ['translate', 'done'].includes(processingStep) && !matchedHsCode ? 'text-red-400' : 'text-slate-400'}>
-                                {t('spu.matchHsCode')}
-                              </span>
-                              {matchedHsCode && (
-                                <span className="text-blue-400 font-mono text-xs ml-auto">{matchedHsCode}</span>
-                              )}
-                            </div>
-                            
-                            {/* 多语言翻译 */}
-                            <div className="flex items-center gap-2">
-                              {processingStep === 'translate' && autoProcessing ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-                              ) : Object.keys(translations).length > 0 ? (
-                                <Check className="h-4 w-4 text-green-400" />
-                              ) : processingStep === 'done' && Object.keys(translations).length === 0 ? (
-                                <X className="h-4 w-4 text-slate-500" />
-                              ) : (
-                                <div className="h-4 w-4 rounded-full border-2 border-slate-600" />
-                              )}
-                              <span className={Object.keys(translations).length > 0 ? 'text-green-400' : 'text-slate-400'}>
-                                {t('spu.translateTenLang')}
-                              </span>
-                              {translatingFields.size > 0 && (
-                                <span className="text-blue-400 text-xs ml-auto animate-pulse">
-                                  {t('spu.currentlyTranslating')} {Array.from(translatingFields).map(f => 
-                                    t(`spu.field${f.charAt(0).toUpperCase() + f.slice(1)}`)
-                                  ).join(', ')}
-                                </span>
-                              )}
-                              {Object.keys(translations).length > 0 && translatingFields.size === 0 && (
-                                <span className="text-green-400 text-xs ml-auto">
-                                  {t('spu.processingDone')}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* 提示信息 */}
-                      <div className="mt-6 pt-4 border-t border-slate-600">
-                        <p className="text-sm text-slate-400 text-center">
-                          {processingStep === 'done' 
-                            ? t('spu.dataGeneratedClickNext')
-                            : autoProcessing
-                              ? t('spu.processingDataPleaseWait')
-                              : t('spu.confirmThenStart')}
-                        </p>
                       </div>
                     </div>
-                  )}
-                </>
+
+                    {/* 产品图 */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-slate-400">{t('spu.productImage')}</span>
+                        <button
+                          type="button"
+                          onClick={handleGenerateProductImage}
+                          disabled={generatingImage || !pubchemInfo.cid}
+                          className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          {generatingImage ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>{t('spu.generating')}</span>
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="w-3 h-3" />
+                              <span>{productImageUrl || formData.generatedImageUrl ? t('spu.redraw') : t('spu.clickToGenerate')}</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <div className="aspect-square bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-lg border border-slate-600/50 flex items-center justify-center overflow-hidden">
+                        {productImageUrl || formData.generatedImageUrl ? (
+                          <img
+                            src={productImageUrl || formData.generatedImageUrl}
+                            alt="Product"
+                            className="max-w-full max-h-full object-contain"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="text-center text-slate-500">
+                            <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-xs">{pubchemInfo.cid ? t('spu.clickToGenerate') : t('spu.syncPubchemFirst')}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
-              {errors.cas && <p className="text-red-400 text-sm mt-1">{errors.cas}</p>}
-            </div>
-          )}
-
-          {/* Step 2: 确认数据 */}
-          {currentStep === 1 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Check className="h-6 w-6 text-blue-400" />
-                <h2 className="text-xl font-bold text-white">{t(stepKeys[1].titleKey)}</h2>
-              </div>
-
-              {/* 基本信息区块 */}
-              <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
-                <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                  <Database className="h-4 w-4 text-blue-400" />
-                  {t('spu.basicInformation')}
-                </h3>
+              {/* 基本信息 */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-white mb-4">{t('spu.basicInformation')}</h3>
                 <div className="grid md:grid-cols-3 gap-4">
-                  {/* CAS号 */}
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">{t('spu.casNumber')}</label>
                     <input
@@ -1491,126 +712,102 @@ function ProductUploadContent() {
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-blue-400"
                     />
                   </div>
-                  {/* 名称（根据当前语言统一显示） */}
                   <div className="md:col-span-2">
                     <label className="block text-xs text-slate-400 mb-1">{t('spu.name')}</label>
                     <input
                       type="text"
-                      value={(() => {
-                        // 优先显示翻译后的名称
-                        if (formData.translations?.name?.[locale]) {
-                          return formData.translations.name[locale];
-                        }
-                        // 否则根据当前语言显示原文
-                        return formData.name || formData.nameEn || '';
-                      })()}
-                      onChange={(e) => {
-                        // 更新名称字段（优先更新中文名称）
-                        setFormData({ ...formData, name: e.target.value });
-                      }}
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-                      placeholder={t('spu.name')}
                     />
                   </div>
-                  {/* 分子式 */}
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">{t('spu.molecularFormula')}</label>
+                    <label className="block text-xs text-slate-400 mb-1">{t('spu.nameEn')}</label>
+                    <input
+                      type="text"
+                      value={formData.nameEn}
+                      onChange={(e) => setFormData(prev => ({ ...prev, nameEn: e.target.value }))}
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">{t('spu.formula')}</label>
                     <input
                       type="text"
                       value={formData.formula}
-                      onChange={(e) => setFormData({ ...formData, formula: e.target.value })}
+                      onChange={(e) => setFormData(prev => ({ ...prev, formula: e.target.value }))}
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-                      placeholder="C2H4O2"
                     />
                   </div>
-                  {/* 分子量 */}
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">{t('spu.molecularWeight')}</label>
+                    <label className="block text-xs text-slate-400 mb-1">{t('spu.hsCode')}</label>
                     <input
                       type="text"
-                      value={(pubchemData?.molecularWeight || selectedSPU?.molecular_weight) || ''}
-                      onChange={(e) => {
-                        // 分子量不可编辑，仅展示
-                      }}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-slate-300"
-                      readOnly
+                      value={formData.hsCode}
+                      onChange={(e) => setFormData(prev => ({ ...prev, hsCode: e.target.value }))}
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                     />
                   </div>
-                  {/* PubChem CID */}
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">PubChem CID</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={(pubchemData?.cid || selectedSPU?.pubchem_cid) || ''}
-                        readOnly
-                        className="flex-1 px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-slate-300"
-                      />
-                      {(pubchemData?.cid || selectedSPU?.pubchem_cid) && (
-                        <a
-                          href={`https://pubchem.ncbi.nlm.nih.gov/compound/${pubchemData?.cid || selectedSPU?.pubchem_cid}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 flex items-center"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      )}
-                    </div>
+                    <label className="block text-xs text-slate-400 mb-1">{t('spu.status')}</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                    >
+                      <option value="ACTIVE">{t('spu.active')}</option>
+                      <option value="INACTIVE">{t('spu.inactive')}</option>
+                    </select>
                   </div>
                 </div>
               </div>
 
-              {/* 结构信息区块 */}
-              {(pubchemData?.smiles || pubchemData?.inchiKey || pubchemData?.inchi || pubchemData?.xlogp) && (
-                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.structureInfo')}</h3>
+              {/* 化学信息 */}
+              {(formData.molecularWeight || formData.smiles || formData.inchiKey) && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.chemicalInformation')}</h3>
                   <div className="grid md:grid-cols-2 gap-4">
-                    {/* SMILES */}
-                    {pubchemData?.smiles && (
-                      <div className="md:col-span-2">
-                        <label className="block text-xs text-slate-400 mb-1">SMILES</label>
-                        <input
-                          type="text"
-                          value={pubchemData.smiles}
-                          readOnly
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-sm text-slate-300"
-                        />
-                      </div>
-                    )}
-                    {/* InChIKey */}
-                    {pubchemData?.inchiKey && (
+                    {formData.molecularWeight && (
                       <div>
-                        <label className="block text-xs text-slate-400 mb-1">InChIKey</label>
+                        <label className="block text-xs text-slate-400 mb-1">{t('spu.molecularWeight')}</label>
                         <input
                           type="text"
-                          value={pubchemData.inchiKey}
-                          readOnly
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-sm text-slate-300"
-                        />
-                      </div>
-                    )}
-                    {/* XLogP */}
-                    {pubchemData?.xlogp && (
-                      <div>
-                        <label className="block text-xs text-slate-400 mb-1">XLogP</label>
-                        <input
-                          type="text"
-                          value={pubchemData.xlogp}
+                          value={formData.molecularWeight}
                           readOnly
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-slate-300"
                         />
                       </div>
                     )}
-                    {/* InChI */}
-                    {pubchemData?.inchi && (
-                      <div className="md:col-span-2">
-                        <label className="block text-xs text-slate-400 mb-1">InChI</label>
+                    {formData.smiles && (
+                      <div>
+                        <label className="block text-xs text-slate-400 mb-1">SMILES</label>
                         <input
                           type="text"
-                          value={pubchemData.inchi}
+                          value={formData.smiles}
                           readOnly
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-xs text-slate-300"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-slate-300"
+                        />
+                      </div>
+                    )}
+                    {formData.inchiKey && (
+                      <div>
+                        <label className="block text-xs text-slate-400 mb-1">InChI Key</label>
+                        <input
+                          type="text"
+                          value={formData.inchiKey}
+                          readOnly
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-slate-300"
+                        />
+                      </div>
+                    )}
+                    {formData.xlogp && (
+                      <div>
+                        <label className="block text-xs text-slate-400 mb-1">XLogP</label>
+                        <input
+                          type="text"
+                          value={formData.xlogp}
+                          readOnly
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-slate-300"
                         />
                       </div>
                     )}
@@ -1618,422 +815,173 @@ function ProductUploadContent() {
                 </div>
               )}
 
-              {/* 物理化学性质区块 */}
-              {(pubchemData?.boilingPoint || pubchemData?.meltingPoint || pubchemData?.flashPoint || 
-                pubchemData?.density || pubchemData?.solubility || pubchemData?.vaporPressure) && (
-                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+              {/* 物理化学性质 */}
+              {(formData.boilingPoint || formData.meltingPoint || formData.flashPoint || formData.density) && (
+                <div className="mb-6">
                   <h3 className="text-sm font-semibold text-white mb-4">{t('spu.physicochemicalProperties')}</h3>
                   <div className="grid md:grid-cols-3 gap-4">
-                    {pubchemData?.boilingPoint && (
+                    {formData.boilingPoint && (
                       <div>
                         <label className="block text-xs text-slate-400 mb-1">{t('spu.boilingPoint')}</label>
                         <input
                           type="text"
-                          value={formData.translations?.boilingPoint?.[locale] || pubchemData.boilingPoint}
+                          value={formData.boilingPoint}
                           readOnly
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                         />
                       </div>
                     )}
-                    {pubchemData?.meltingPoint && (
+                    {formData.meltingPoint && (
                       <div>
                         <label className="block text-xs text-slate-400 mb-1">{t('spu.meltingPoint')}</label>
                         <input
                           type="text"
-                          value={formData.translations?.meltingPoint?.[locale] || pubchemData.meltingPoint}
+                          value={formData.meltingPoint}
                           readOnly
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                         />
                       </div>
                     )}
-                    {pubchemData?.flashPoint && (
+                    {formData.flashPoint && (
                       <div>
                         <label className="block text-xs text-slate-400 mb-1">{t('spu.flashPoint')}</label>
                         <input
                           type="text"
-                          value={formData.translations?.flashPoint?.[locale] || pubchemData.flashPoint}
+                          value={formData.flashPoint}
                           readOnly
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                         />
                       </div>
                     )}
-                    {pubchemData?.density && (
+                    {formData.density && (
                       <div>
                         <label className="block text-xs text-slate-400 mb-1">{t('spu.density')}</label>
                         <input
                           type="text"
-                          value={formData.translations?.density?.[locale] || pubchemData.density}
+                          value={formData.density}
                           readOnly
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                         />
                       </div>
                     )}
-                    {pubchemData?.solubility && (
-                      <div>
-                        <label className="block text-xs text-slate-400 mb-1">{t('spu.solubility')}</label>
-                        <input
-                          type="text"
-                          value={formData.translations?.solubility?.[locale] || pubchemData.solubility}
+                    {formData.physicalDescription && (
+                      <div className="md:col-span-3">
+                        <label className="block text-xs text-slate-400 mb-1">{t('spu.physicalDescription')}</label>
+                        <textarea
+                          value={formData.physicalDescription}
                           readOnly
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
+                          rows={2}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-slate-300"
                         />
                       </div>
                     )}
-                    {pubchemData?.vaporPressure && (
-                      <div>
-                        <label className="block text-xs text-slate-400 mb-1">{t('spu.vaporPressure')}</label>
-                        <input
-                          type="text"
-                          value={formData.translations?.vaporPressure?.[locale] || pubchemData.vaporPressure}
-                          readOnly
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* 物理描述区块 */}
-              {(pubchemData?.physicalDescription || pubchemData?.colorForm || pubchemData?.odor || 
-                selectedSPU?.physicalDescription || selectedSPU?.colorForm || selectedSPU?.odor) && (
-                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.physicalDescription')}</h3>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {/* 物理描述 */}
-                    <div className="md:col-span-3">
-                      <label className="block text-xs text-slate-400 mb-1">{t('spu.physicalDescription')}</label>
-                      <textarea
-                        value={formData.translations?.physicalDescription?.[locale] || pubchemData?.physicalDescription || selectedSPU?.physicalDescription || ''}
-                        readOnly
-                        rows={2}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-slate-300"
-                      />
-                    </div>
-                    {/* 颜色/形态 */}
-                    <div>
-                      <label className="block text-xs text-slate-400 mb-1">{t('spu.colorForm')}</label>
-                      <input
-                        type="text"
-                        value={formData.translations?.colorForm?.[locale] || pubchemData?.colorForm || selectedSPU?.colorForm || ''}
-                        readOnly
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
-                      />
-                    </div>
-                    {/* 气味 */}
-                    <div className="md:col-span-2">
-                      <label className="block text-xs text-slate-400 mb-1">{t('spu.odor')}</label>
-                      <input
-                        type="text"
-                        value={formData.translations?.odor?.[locale] || pubchemData?.odor || selectedSPU?.odor || ''}
-                        readOnly
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 危险性分类 */}
-              {(pubchemData?.hazardClasses || selectedSPU?.hazardClasses) && (
-                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.hazardClassification')}</h3>
-                  <div className="bg-slate-800 border border-slate-600 rounded-lg p-3">
-                    <p className="text-sm text-slate-300">{formData.translations?.hazardClasses?.[locale] || pubchemData?.hazardClasses || selectedSPU?.hazardClasses}</p>
                   </div>
                 </div>
               )}
 
               {/* 产品描述 */}
-              {(pubchemData?.description || selectedSPU?.description) && (
-                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+              {formData.description && (
+                <div className="mb-6">
                   <h3 className="text-sm font-semibold text-white mb-4">{t('spu.description')}</h3>
                   <textarea
-                    value={(() => {
-                      // 优先显示翻译后的描述
-                      if (formData.translations?.description?.[locale]) {
-                        return formData.translations.description[locale];
-                      }
-                      // 否则显示原文
-                      return pubchemData?.description || selectedSPU?.description || '';
-                    })()}
-                    readOnly
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     rows={4}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-slate-300"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               )}
 
-              {/* 行业应用 */}
-              {((pubchemData?.applications && pubchemData.applications.length > 0) || (selectedSPU?.applications && selectedSPU.applications.length > 0)) && (
-                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.applications')}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {(() => {
-                      const apps = pubchemData?.applications || selectedSPU?.applications || [];
-                      // 如果有翻译数据且是数组，优先显示对应语言的翻译
-                      const translatedApps = formData.translations?.applications?.[locale];
-                      if (Array.isArray(translatedApps)) {
-                        return translatedApps.map((app: string, index: number) => (
-                          <span key={index} className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm border border-blue-500/30">
-                            {app}
-                          </span>
-                        ));
-                      }
-                      // 否则显示原文
-                      return apps.map((app: string, index: number) => (
-                        <span key={index} className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm border border-blue-500/30">
-                            {app}
-                          </span>
-                        ));
-                    })()}
+              {/* 危险性分类 */}
+              {formData.hazardClasses && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.hazardClassification')}</h3>
+                  <div className="bg-slate-800 border border-slate-600 rounded-lg p-3">
+                    <p className="text-sm text-slate-300">{formData.hazardClasses}</p>
                   </div>
                 </div>
               )}
 
-              {/* 同义词/别名 */}
-              {(pubchemData?.synonyms?.length > 0) && (
-                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+              {/* 行业应用 */}
+              {formData.applications.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.applications')}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.applications.map((app, index) => (
+                      <span key={index} className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm border border-blue-500/30">
+                        {app}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 同义词 */}
+              {formData.synonyms.length > 0 && (
+                <div className="mb-6">
                   <h3 className="text-sm font-semibold text-white mb-4">{t('spu.synonymsAliases')}</h3>
                   <div className="flex flex-wrap gap-2">
-                    {pubchemData.synonyms.slice(0, 20).map((synonym: string, index: number) => (
+                    {formData.synonyms.slice(0, 20).map((synonym, index) => (
                       <span key={index} className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">
                         {synonym}
                       </span>
                     ))}
-                    {pubchemData.synonyms.length > 20 && (
+                    {formData.synonyms.length > 20 && (
                       <span className="px-2 py-1 bg-slate-700 text-slate-500 rounded text-xs">
-                        +{pubchemData.synonyms.length - 20} {t('spu.more')}
+                        +{formData.synonyms.length - 20} {t('spu.more')}
                       </span>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* AI 自动生成的数据 */}
-              <div className="bg-blue-600/10 border border-blue-500/30 rounded-lg p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Database className="h-5 w-5 text-blue-400" />
-                  <span className="font-semibold text-blue-400">
-                    {t('spu.aiGeneratedEditable')}
-                  </span>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* 产品图 */}
-                  <div className="bg-slate-700/50 rounded-lg p-4">
-                    <div className="text-sm text-slate-300 mb-2">{t('spu.productImage')}</div>
-                    {formData.generatedImageUrl ? (
-                      <div className="relative">
-                        <img 
-                          src={formData.generatedImageUrl} 
-                          alt="Generated product"
-                          className="w-full h-40 object-contain rounded border border-slate-600 bg-slate-800"
-                          loading="lazy"
-                        />
-                        <button
-                          onClick={() => setFormData({ ...formData, generatedImageUrl: '' })}
-                          className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="w-full h-40 rounded border border-dashed border-slate-600 bg-slate-800 flex items-center justify-center text-slate-500">
-                        {t('spu.noProductImage')}
-                      </div>
-                    )}
-                    <div className="mt-2">
-                      <label className="block text-xs text-slate-400 mb-1">
-                        {t('spu.imageUrlReplaceable')}
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.generatedImageUrl}
-                        onChange={(e) => setFormData({ ...formData, generatedImageUrl: e.target.value })}
-                        placeholder={t('spu.enterImageUrl')}
-                        className="w-full px-2 py-1 text-xs bg-slate-800 border border-slate-600 rounded text-slate-300"
-                      />
-                    </div>
-                  </div>
-
-                  {/* HS编码 */}
-                  <div className="bg-slate-700/50 rounded-lg p-4">
-                    <div className="text-sm text-slate-300 mb-2">{t('spu.hsCode')}</div>
-                    <input
-                      type="text"
-                      value={formData.hsCode}
-                      onChange={(e) => setFormData({ ...formData, hsCode: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg font-mono text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-                      placeholder={t('spu.hsCode')}
-                    />
-                    <p className="text-xs text-slate-400 mt-2">
-                      {t('spu.hsCodeForCustoms')}
-                    </p>
-                  </div>
-
-                  {/* 多语言翻译 */}
-                  <div className="bg-slate-700/50 rounded-lg p-4 md:col-span-2">
-                    <div className="text-sm text-slate-300 mb-3">{t('spu.multiLangTranslations')}</div>
-                    {Object.keys(formData.translations.name || {}).length > 0 ? (
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                        {Object.entries(formData.translations.name || {}).map(([lang, name]) => (
-                          <div key={lang} className={`bg-slate-800 rounded p-2 ${lang === locale ? 'ring-2 ring-blue-400' : ''}`}>
-                            <div className="text-xs text-slate-400 mb-1 flex items-center gap-1">
-                              <span className="font-medium uppercase">{lang}</span>
-                              {lang === locale && <span className="text-blue-400">✓</span>}
-                            </div>
-                            <input
-                              type="text"
-                              value={name as string}
-                              onChange={(e) => {
-                                setFormData(prev => ({
-                                  ...prev,
-                                  translations: {
-                                    ...prev.translations,
-                                    name: {
-                                      ...(prev.translations.name || {}),
-                                      [lang]: e.target.value,
-                                    },
-                                  },
-                                }));
-                              }}
-                              className="w-full px-2 py-1 text-sm bg-slate-700 border border-slate-600 rounded text-white"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-slate-500 text-sm py-4 text-center">
-                        {t('spu.noTranslationData')}
-                      </div>
-                    )}
-                  </div>
-                </div>
+              {/* 产品图 URL（可编辑） */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-white mb-4">{t('spu.productImage')}</h3>
+                <input
+                  type="text"
+                  value={formData.generatedImageUrl || productImageUrl || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, generatedImageUrl: e.target.value }))}
+                  placeholder={t('spu.enterImageUrl')}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
 
-            </div>
-          )}
-
-          {/* 导航按钮 */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-slate-700">
-            {/* 第一步时不显示上一步按钮 */}
-            {currentStep > 0 ? (
-              <button
-                onClick={handlePrevious}
-                className="px-6 py-3 bg-slate-700 text-white rounded-lg transition-colors flex items-center gap-2"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                {t('spu.previous')}
-              </button>
-            ) : (
-              <div></div>
-            )}
-
-            {currentStep === 0 ? (
-              // 第一步：下一步按钮
-              <button
-                onClick={handleNext}
-                disabled={autoProcessing || savingSPU || !(pubchemData || selectedSPU)}
-                className={`px-6 py-3 text-white rounded-lg transition-colors flex items-center gap-2 ${
-                  (pubchemData || selectedSPU) && processingStep !== 'done' 
-                    ? 'bg-green-600' 
-                    : 'bg-blue-600'
-                } disabled:opacity-50`}
-              >
-                {autoProcessing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {t('spu.processingDone')}
-                  </>
-                ) : (pubchemData || selectedSPU) && processingStep !== 'done' ? (
-                  <>
-                    <Check className="h-4 w-4" />
-                    {t('spu.createProductWithData')}
-                  </>
-                ) : (
-                  <>
-                    {t('spu.next')}
-                    <ChevronRight className="h-4 w-4" />
-                  </>
-                )}
-              </button>
-            ) : (
-              // 第二步：两个按钮
-              <div className="flex gap-3">
+              {/* 保存按钮 */}
+              <div className="flex justify-end gap-3 pt-6 border-t border-slate-700">
                 <button
-                  onClick={handleSaveOnly}
-                  disabled={savingSPU}
-                  className="px-6 py-3 bg-slate-700 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                  onClick={() => handleSave(false)}
+                  disabled={saving}
+                  className="px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
-                  {savingSPU ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Check className="h-4 w-4" />
-                  )}
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   {t('spu.saveAsDraft')}
                 </button>
                 <button
-                  onClick={handleNext}
-                  disabled={savingSPU}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                  onClick={() => handleSave(true)}
+                  disabled={saving}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
-                  {savingSPU ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Database className="h-4 w-4" />
-                  )}
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
                   {t('spu.saveToLibrary')}
                 </button>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 自定义弹窗 */}
-      {showDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setShowDialog(false)} />
-          <div className="relative bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-6 max-w-md mx-4 z-10">
-            <div className="flex items-center gap-3 mb-4">
-              {dialogContent.type === 'success' ? (
-                <div className="w-10 h-10 rounded-full bg-green-600/20 flex items-center justify-center">
-                  <Check className="h-5 w-5 text-green-400" />
-                </div>
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-red-600/20 flex items-center justify-center">
-                  <AlertCircle className="h-5 w-5 text-red-400" />
-                </div>
-              )}
-              <h3 className="text-lg font-semibold text-white">{dialogContent.title}</h3>
             </div>
-            <p className="text-slate-300 mb-6">{dialogContent.message}</p>
-            <button
-              onClick={() => setShowDialog(false)}
-              className={`w-full py-2 px-4 rounded-lg text-white font-medium ${
-                dialogContent.type === 'success' 
-                  ? 'bg-green-600 hover:bg-green-700' 
-                  : 'bg-red-600 hover:bg-red-700'
-              }`}
-            >
-              {t('common.confirm')}
-            </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
-export default function ProductUploadPage() {
+export default function ProductCreatePage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     }>
-      <ProductUploadContent />
+      <ProductCreateContent />
     </Suspense>
   );
 }
