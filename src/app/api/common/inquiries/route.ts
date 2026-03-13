@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { inquiryManager } from '@/db/inquiryManager';
+import { inquiryRepository } from '@/repositories/inquiryRepository';
 
 // POST /api/inquiries - 创建询价
 export async function POST(request: NextRequest) {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 创建询价
-    const inquiry = await inquiryManager.createInquiry({
+    const inquiry = await inquiryRepository.createInquiry({
       userId,
       productId,
       productName,
@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
 
     // 如果 userId 是 'all'，获取所有询价（管理员用）
     if (userId === 'all') {
-      const { inquiryManager } = await import('@/db/inquiryManager');
-      const allInquiries = await inquiryManager.getPendingInquiries();
+      const { inquiryRepository } = await import('@/repositories/inquiryRepository');
+      const allInquiries = await inquiryRepository.getPendingInquiries();
       return NextResponse.json({
         success: true,
         data: allInquiries,
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let allInquiries = await inquiryManager.getUserInquiries(userId);
+    let allInquiries = await inquiryRepository.getUserInquiries(userId);
 
     // 根据类型过滤
     if (type === 'pending') {

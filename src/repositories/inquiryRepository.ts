@@ -1,14 +1,14 @@
 import { eq, and, desc, SQL } from "drizzle-orm";
 import { getDb } from "coze-coding-dev-sdk";
-import { inquiries } from "./schema";
-import * as schema from "./schema";
+import { inquiries } from "@/db";
+import * as schema from "@/db";
 
 // 类型推断
 type Inquiry = typeof inquiries.$inferSelect;
 type InsertInquiry = typeof inquiries.$inferInsert;
 type UpdateInquiry = Partial<InsertInquiry>;
 
-export class InquiryManager {
+export class InquiryRepository {
   /**
    * 创建询价
    */
@@ -98,4 +98,4 @@ export class InquiryManager {
   }
 }
 
-export const inquiryManager = new InquiryManager();
+export const inquiryRepository = new InquiryRepository();

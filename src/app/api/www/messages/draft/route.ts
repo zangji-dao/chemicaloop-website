@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { messageManager } from '@/db/messageManager';
+import { messageRepository } from '@/repositories/messageRepository';
 
 /**
  * POST /api/messages/draft - 保存或更新草稿
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     // 注意：草稿的 recipientId 可以是草稿用户的 ID，或者使用当前用户 ID（自己）
     const toUserId = recipient_address || currentUserId;
 
-    const message = await messageManager.createMessage({
+    const message = await messageRepository.createMessage({
       id: id, // 如果有 id 则更新
       fromUserId: currentUserId,
       toUserId: toUserId,

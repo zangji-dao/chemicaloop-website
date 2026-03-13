@@ -1,8 +1,8 @@
 import { eq, and, desc, or, SQL } from "drizzle-orm";
 import { getDb } from "coze-coding-dev-sdk";
-import { messages } from "./schema";
-import type { messages as MessagesTable } from "./schema";
-import * as schema from "./schema";
+import { messages } from "@/db";
+import type { messages as MessagesTable } from "@/db";
+import * as schema from "@/db";
 import { sql } from "drizzle-orm";
 import { LLMClient, Config } from 'coze-coding-dev-sdk';
 
@@ -83,7 +83,7 @@ If the text is already in the target language, return it as-is.`;
   }
 }
 
-export class MessageManager {
+export class MessageRepository {
   /**
    * 创建消息（使用实际数据库表结构）
    */
@@ -467,4 +467,4 @@ export class MessageManager {
   }
 }
 
-export const messageManager = new MessageManager();
+export const messageRepository = new MessageRepository();

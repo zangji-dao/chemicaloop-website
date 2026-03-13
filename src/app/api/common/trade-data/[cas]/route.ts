@@ -55,7 +55,7 @@ export async function GET(
         queryTradePartnerData, 
         getAvailableYears,
         formatTradeDataForDisplay 
-      } = await import('@/db/tradeDataManager');
+      } = await import('@/repositories/tradeDataRepository');
 
       // 1. 从本地数据库查询数据
       dbRecords = await queryTradeData({

@@ -1,4 +1,4 @@
-import { messageManager } from '@/db/messageManager';
+import { messageRepository } from '@/repositories/messageRepository';
 
 const CURRENT_USER_ID = 'c4ca4238-a0b9-2382-0dcc-509a6f75849b';
 
@@ -112,7 +112,7 @@ async function seedMessages() {
     for (let i = 0; i < TEST_INQUIRIES.length; i++) {
       const inquiry = TEST_INQUIRIES[i];
       
-      const message = await messageManager.createMessage({
+      const message = await messageRepository.createMessage({
         userId: CURRENT_USER_ID,
         type: 'inquiry',
         folder: 'sent',
@@ -144,7 +144,7 @@ async function seedMessages() {
     for (let i = 0; i < TEST_REPLIES.length; i++) {
       const reply = TEST_REPLIES[i];
 
-      const message = await messageManager.createMessage({
+      const message = await messageRepository.createMessage({
         userId: CURRENT_USER_ID,
         type: 'reply',
         folder: 'inbox',
@@ -187,7 +187,7 @@ async function seedMessages() {
     ];
 
     for (const draft of drafts) {
-      const message = await messageManager.createMessage({
+      const message = await messageRepository.createMessage({
         userId: CURRENT_USER_ID,
         type: 'inquiry',
         folder: 'drafts',

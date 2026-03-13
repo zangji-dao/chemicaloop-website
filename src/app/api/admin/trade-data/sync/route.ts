@@ -5,7 +5,7 @@ import {
   updateSyncTask,
   getPendingSyncTasks,
   upsertTradeData 
-} from '@/db/tradeDataManager';
+} from '@/repositories/tradeDataRepository';
 import { getHSCodeByCAS, getAllCASMappings } from '@/services/cas-hs-mapping';
 import { getCountryName } from '@/data/country-codes';
 

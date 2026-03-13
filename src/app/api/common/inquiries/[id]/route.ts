@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { inquiryManager } from '@/db/inquiryManager';
+import { inquiryRepository } from '@/repositories/inquiryRepository';
 
 // PATCH /api/inquiries/[id]/reply - 回复询价
 export async function PATCH(
@@ -27,7 +27,7 @@ export async function PATCH(
     }
 
     // 回复询价
-    const inquiry = await inquiryManager.replyToInquiry(id, {
+    const inquiry = await inquiryRepository.replyToInquiry(id, {
       repliedBy,
       repliedByUserId,
       replyContent,
@@ -64,7 +64,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const inquiry = await inquiryManager.getInquiryById(id);
+    const inquiry = await inquiryRepository.getInquiryById(id);
 
     if (!inquiry) {
       return NextResponse.json(
