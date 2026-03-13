@@ -8,7 +8,7 @@
  */
 
 import { getHSCodeByCAS, type CASHSMapping } from './cas-hs-mapping';
-import { REPORTER_COUNTRIES, getCountryName } from './country-codes';
+import { REPORTER_COUNTRIES, getCountryName } from '@/data/country-codes';
 
 // UN Comtrade API 配置
 const COMTRADE_API_BASE = 'https://comtradeapi.un.org/data/v1';

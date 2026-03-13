@@ -15,7 +15,7 @@ assertDevEnvironment();
 
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
-import * as schema from '../../src/storage/database/shared/schema';
+import * as schema from '@/db';
 
 const TARGET_LANGUAGE = 'zh';
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';

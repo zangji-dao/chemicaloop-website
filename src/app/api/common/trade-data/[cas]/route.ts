@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getHSCodeByCAS } from '@/lib/cas-hs-mapping';
-import { getCountryName } from '@/lib/country-codes';
+import { getHSCodeByCAS } from '@/services/cas-hs-mapping';
+import { getCountryName } from '@/data/country-codes';
 
 /**
  * GET /api/trade-data/[cas]

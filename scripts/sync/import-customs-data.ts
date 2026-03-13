@@ -13,7 +13,7 @@ assertDevEnvironment();
 import fs from 'fs';
 import path from 'path';
 import { getDb } from 'coze-coding-dev-sdk';
-import * as schema from '../../src/storage/database/shared/schema';
+import * as schema from '@/db';
 import { sql } from 'drizzle-orm';
 
 // 解析 CSV 行（处理引号）

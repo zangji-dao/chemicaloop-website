@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { CountrySelector } from '@/components/common/country-selector';
 import { YearRangeSelector, QuickYearRangeButtons } from '@/components/common/year-selector';
-import { REPORTER_COUNTRIES } from '@/lib/country-codes';
+import { REPORTER_COUNTRIES } from '@/data/country-codes';
 import { cn } from '@/lib/utils';
 
 interface TradeDataItem {

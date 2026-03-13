@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getMonthlyTradeData, getQuarterlyTradeData, getTradeDataTrend } from '@/lib/un-comtrade-service';
-import { getHSCodeByCAS } from '@/lib/cas-hs-mapping';
+import { getMonthlyTradeData, getQuarterlyTradeData, getTradeDataTrend } from '@/services/un-comtrade-service';
+import { getHSCodeByCAS } from '@/services/cas-hs-mapping';
 
 /**
  * GET /api/trade-data/[cas]/trend

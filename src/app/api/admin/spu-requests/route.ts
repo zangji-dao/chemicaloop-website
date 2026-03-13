@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb, S3Storage } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
-import { generateChemicalSVG, validateSVG } from '@/lib/chemical-svg-generator';
+import { generateChemicalSVG, validateSVG } from '@/services/chemical-svg-generator';
 import { API_CONFIG } from '@/lib/config';
 
 /**

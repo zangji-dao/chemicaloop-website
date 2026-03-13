@@ -8,7 +8,7 @@ import { eq, and, desc, between, sql } from "drizzle-orm";
 import { getDb } from "coze-coding-dev-sdk";
 import { tradeData, tradeDataSyncTasks } from "./schema";
 import * as schema from "./schema";
-import { getCountryName } from "@/lib/country-codes";
+import { getCountryName } from '@/data/country-codes';
 
 // 类型定义
 export type TradeDataRecord = typeof tradeData.$inferSelect;

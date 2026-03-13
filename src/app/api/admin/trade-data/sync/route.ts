@@ -6,8 +6,8 @@ import {
   getPendingSyncTasks,
   upsertTradeData 
 } from '@/db/tradeDataManager';
-import { getHSCodeByCAS, getAllCASMappings } from '@/lib/cas-hs-mapping';
-import { getCountryName } from '@/lib/country-codes';
+import { getHSCodeByCAS, getAllCASMappings } from '@/services/cas-hs-mapping';
+import { getCountryName } from '@/data/country-codes';
 
 // UN Comtrade API 配置
 const COMTRADE_API_BASE = 'https://comtradeapi.un.org/data/v1';

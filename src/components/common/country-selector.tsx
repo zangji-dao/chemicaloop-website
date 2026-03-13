@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { ChevronDown, Search, Globe, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { REPORTER_COUNTRIES, COMMON_COUNTRIES, COUNTRIES_BY_REGION, type Country } from '@/lib/country-codes';
+import { REPORTER_COUNTRIES, COMMON_COUNTRIES, COUNTRIES_BY_REGION, type Country } from '@/data/country-codes';
 
 interface CountrySelectorProps {
   value: string;
