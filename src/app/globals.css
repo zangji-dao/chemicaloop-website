@@ -199,21 +199,72 @@
 /* ========================================
    管理后台暗色主题表单组件
    ======================================== */
-@layer components {
-  /* 暗色背景下的表单输入框基础样式 */
-  .form-input-dark {
-    @apply w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60;
-  }
 
-  /* 等宽字体版本（用于代码、化学式等） */
-  .form-input-dark-mono {
-    @apply form-input-dark font-mono;
-  }
+/* 暗色背景下的表单输入框基础样式 */
+.form-input-dark {
+  width: 100%;
+  background-color: rgb(15 23 42 / 0.5);
+  border: 1px solid rgb(51 65 85 / 0.8);
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: white;
+  outline: none;
+}
 
-  /* 小尺寸版本 */
-  .form-input-dark-sm {
-    @apply form-input-dark text-xs px-3 py-2;
-  }
+.form-input-dark::placeholder {
+  color: rgb(100 116 139);
+}
+
+.form-input-dark:focus {
+  --tw-ring-color: rgb(59 130 246 / 0.6);
+  box-shadow: 0 0 0 2px var(--tw-ring-color);
+}
+
+/* 等宽字体版本（用于代码、化学式等） */
+.form-input-dark-mono {
+  width: 100%;
+  background-color: rgb(15 23 42 / 0.5);
+  border: 1px solid rgb(51 65 85 / 0.8);
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: white;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  outline: none;
+}
+
+.form-input-dark-mono::placeholder {
+  color: rgb(100 116 139);
+}
+
+.form-input-dark-mono:focus {
+  --tw-ring-color: rgb(59 130 246 / 0.6);
+  box-shadow: 0 0 0 2px var(--tw-ring-color);
+}
+
+/* 小尺寸版本 */
+.form-input-dark-sm {
+  width: 100%;
+  background-color: rgb(15 23 42 / 0.5);
+  border: 1px solid rgb(51 65 85 / 0.8);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: white;
+  outline: none;
+}
+
+.form-input-dark-sm::placeholder {
+  color: rgb(100 116 139);
+}
+
+.form-input-dark-sm:focus {
+  --tw-ring-color: rgb(59 130 246 / 0.6);
+  box-shadow: 0 0 0 2px var(--tw-ring-color);
 }
 
 /* ========================================
