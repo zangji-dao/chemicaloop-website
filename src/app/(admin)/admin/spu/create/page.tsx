@@ -744,7 +744,7 @@ function ProductUploadContent() {
   };
 
   // 保存 SPU 数据到数据库
-  const saveSPU = async (): Promise<string | null> => {
+  const saveSPU = async (isListedOverride?: boolean): Promise<string | null> => {
     // 验证必填数据
     if (!formData.cas) {
       showNotification(
@@ -768,6 +768,9 @@ function ProductUploadContent() {
     setSavingSPU(true);
     try {
       const token = getAdminToken();
+      
+      // 确定最终的上架状态
+      const isListed = isListedOverride !== undefined ? isListedOverride : formData.isListed;
       
       const spuData = {
         cas: formData.cas,
@@ -799,7 +802,7 @@ function ProductUploadContent() {
         solubility: pubchemData?.solubility || null,
         vaporPressure: pubchemData?.vaporPressure || null,
         // 状态：根据用户选择的上架选项决定
-        status: formData.isListed ? 'ACTIVE' : 'INACTIVE',
+        status: isListed ? 'ACTIVE' : 'INACTIVE',
       };
 
       console.log('[SPU] Saving with data:', { cas: spuData.cas, name: spuData.name });
@@ -863,8 +866,7 @@ function ProductUploadContent() {
         // 用户需要再次点击"下一步"才能进入下一页
       } else if (currentStep === 1) {
         // Step 2: 确认数据 -> 保存SPU并上架
-        setFormData(prev => ({ ...prev, isListed: true })); // 设置为上架
-        const savedSpuId = await saveSPU();
+        const savedSpuId = await saveSPU(true); // 直接传递上架状态
         if (savedSpuId) {
           showNotification(
             t('spu.saveSuccess'),
@@ -886,10 +888,7 @@ function ProductUploadContent() {
   // 暂不上架
   const handleSaveOnly = async () => {
     if (validateStep(currentStep)) {
-      // 设置为不上架
-      setFormData(prev => ({ ...prev, isListed: false }));
-      
-      const savedSpuId = await saveSPU();
+      const savedSpuId = await saveSPU(false); // 直接传递不上架状态
       if (savedSpuId) {
         showNotification(
           t('spu.saveSuccess'),
