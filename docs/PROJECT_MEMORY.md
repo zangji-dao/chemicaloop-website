@@ -1,6 +1,8 @@
-# CHEMICALOOP 项目记忆
+# CHEMICALOOP 项目编程规范
 
-> 每次新对话，请先阅读此文档了解项目背景和关键规则
+> ⚠️ **重要：每次新对话，必须先阅读此文档。这是编程规范，不是日志！**
+>
+> 本文档定义的所有规则**必须严格遵守**，禁止随意改动架构设计。
 
 ---
 
@@ -30,7 +32,7 @@
 
 ---
 
-## 2. 核心业务逻辑
+## 2. 核心业务逻辑（必须遵守）
 
 ### 2.1 PubChem 同步流程
 
@@ -42,7 +44,7 @@
               用户点击"翻译并保存" → 触发翻译
 ```
 
-**关键点**：数据不会自动写入数据库，必须用户确认。
+**⚠️ 强制规则**：数据不会自动写入数据库，必须用户确认。
 
 ### 2.2 两套登录系统
 
@@ -51,7 +53,7 @@
 | 前端用户 | `auth_token` | 普通用户、代理商登录 |
 | 管理后台 | `admin_token` | 管理员登录 |
 
-**关键点**：两套系统独立，Token 不可混用。
+**⚠️ 强制规则**：两套系统独立，Token 不可混用。
 
 ### 2.3 权限验证体系
 
@@ -60,21 +62,21 @@
 | BFF 层 | `src/lib/auth.ts` | 前端请求验证，提取用户信息 |
 | 后端层 | `backend/src/middleware/auth.ts` | 业务逻辑验证，角色判断 |
 
-**关键点**：两层验证各司其职，不可省略任一层。
+**⚠️ 强制规则**：两层验证各司其职，不可省略任一层。
 
 ### 2.4 API 响应格式
 
 ```typescript
-// 统一格式
+// 统一格式（必须遵守）
 { code: 0, msg: 'success', data: {...} }  // 成功
 { code: 1, msg: '错误信息', data: null }   // 失败
 ```
 
 ---
 
-## 3. 架构约束（不能触碰）
+## 3. 架构约束（绝对不能触碰）
 
-### 3.1 BFF 架构
+### 3.1 BFF 架构（核心约束）
 
 ```
 前端页面 → Next.js API Routes (BFF) → Express 后端 → 数据库
@@ -82,12 +84,12 @@
          验证请求、转发
 ```
 
-**禁止**：
+**❌ 严格禁止**：
 - 删除 `backend/` 目录
 - 在前端直接调用后端（必须经过 BFF）
 - 合并 BFF 层和后端
 
-### 3.2 端口规范
+### 3.2 端口规范（严格执行）
 
 | 服务 | 端口 | 说明 |
 |------|------|------|
@@ -95,7 +97,7 @@
 | 后端 | 3001 | Express |
 | 系统保留 | 9000 | 禁止使用 |
 
-### 3.3 代码复用规范
+### 3.3 代码复用规范（必须使用）
 
 | 场景 | 必须使用 | 禁止 |
 |------|----------|------|
@@ -106,7 +108,7 @@
 
 ---
 
-## 4. API 目录分类规范
+## 4. API 目录分类规范（强制执行）
 
 ### 4.1 新建 API 时的决策流程
 
@@ -164,7 +166,7 @@
 
 ---
 
-## 5. 编程规范（精简版）
+## 5. 编程规范（严格执行）
 
 ### 5.1 代码质量
 
@@ -206,20 +208,20 @@
 
 ### 5.5 多语言翻译（Admin）
 
-### 核心文件
+#### 核心文件
 
 | 文件 | 职责 |
 |------|------|
 | `src/lib/admin-i18n.ts` | 翻译配置，定义所有语言的翻译键 |
 | `src/contexts/AdminLocaleContext.tsx` | 语言上下文，提供 `t()` 翻译函数 |
 
-### 翻译机制
+#### 翻译机制
 
 ```
 用户选择语言 → 存入 localStorage (admin_locale) → Context 更新 → t() 返回对应翻译
 ```
 
-### 使用方式
+#### 使用方式
 
 **方式一：菜单项配置（推荐）**
 
@@ -256,7 +258,7 @@ function MyComponent() {
 }
 ```
 
-### 新增翻译键步骤
+#### 新增翻译键步骤
 
 1. 在 `src/lib/admin-i18n.ts` 中找到对应语言的 `nav` 对象
 2. 添加新的键值对，例如：
@@ -269,7 +271,7 @@ function MyComponent() {
 3. **必须为所有 10 种语言添加翻译**：`en`, `zh`, `ja`, `ko`, `de`, `fr`, `es`, `pt`, `ru`, `ar`
 4. 使用时调用 `t('nav.newFeature')`
 
-### 翻译键命名规范
+#### 翻译键命名规范
 
 | 前缀 | 用途 | 示例 |
 |------|------|------|
@@ -278,7 +280,7 @@ function MyComponent() {
 | `products.*` | 产品相关 | `products.title`, `products.approve` |
 | `users.*` | 用户相关 | `users.title`, `users.email` |
 
-### 注意事项
+#### 注意事项
 
 - ⚠️ **禁止硬编码文字**：不要直接写 `"仪表盘"`，应使用 `t('nav.dashboard')`
 - ⚠️ **新增功能必须补全所有语言**：不能只添加英文或中文
@@ -286,7 +288,7 @@ function MyComponent() {
 
 ---
 
-## 6. UI 设计规范
+## 6. UI 设计规范（必须遵守）
 
 ### 6.1 前端用户端（WWW）
 
@@ -313,21 +315,21 @@ function MyComponent() {
 
 ---
 
-## 7. 常见陷阱与已解决问题
+## 7. 常见陷阱与规避方案
 
-### 7.1 已统一项
+### 7.1 已统一的工具（必须使用）
 
 | 问题 | 解决方案 |
 |------|----------|
-| Token 提取重复 12+ 处 | `src/lib/auth.ts` |
-| 后端地址重复 18+ 处 | `src/config/api.ts` |
-| 角色判断重复 10 处 | `adminOnlyMiddleware` |
-| localStorage 直接访问 25+ 处 | `adminAuthService.ts` |
+| Token 提取重复 | `src/lib/auth.ts` |
+| 后端地址重复 | `src/config/api.ts` |
+| 角色判断重复 | `adminOnlyMiddleware` |
+| localStorage 直接访问 | `adminAuthService.ts` |
 
-### 7.2 常见错误
+### 7.2 常见错误与规避
 
-| 错误 | 原因 | 解决 |
-|------|------|------|
+| 错误 | 原因 | 规避方案 |
+|------|------|----------|
 | 循环内发请求 | 性能问题 | 批量接口 |
 | 搜索无防抖 | 请求过多 | useDebounce |
 | 图片无懒加载 | 首屏慢 | loading="lazy" |
@@ -398,152 +400,57 @@ scripts/
 | 批量处理现有数据 | `batch/` | `batch-delete-duplicates.ts` |
 | 从外部同步/导入数据 | `sync/` | `sync-from-erp.ts` |
 
-### 9.3 命名规范
+---
 
-| 类型 | 命名前缀 | 示例 |
-|------|----------|------|
-| 种子数据 | `seed-` | `seed-messages.ts` |
-| 批量处理 | `batch-` | `batch-translate.ts` |
-| 数据同步 | `sync-` | `sync-trade-data.ts` |
-| 数据导入 | `import-` | `import-customs.ts` |
-| 数据生成 | `generate-` | `generate-images.ts` |
-| 数据修复 | `fix-` | `fix-names.ts` |
+## 10. 路由架构规范（2026-03-13 更新）
 
-### 9.4 安全规范
+### 10.1 后端路由挂载
 
-**生产环境禁止运行的脚本：**
-
-| 目录 | 原因 |
-|------|------|
-| `seed/` | 生成假数据，污染生产数据库 |
-| `batch/` | 绕过权限验证，直接操作数据库 |
-| `sync/` | 外部数据直接入库，无审计 |
-
-**强制要求：**
-
-所有 `seed/`、`batch/`、`sync/` 脚本必须添加环境检查：
+后端路由**必须**按以下分类挂载：
 
 ```typescript
-import { assertDevEnvironment } from '../lib/env-check';
-assertDevEnvironment();
+// Routes - 按 admin/www/common 分类
+app.use('/api/admin', adminRoutes);
+app.use('/api/www/auth', authRoutes);
+app.use('/api/www/messages', messageRoutes);
+app.use('/api/www/contact-requests', contactRequestsRoutes);
+app.use('/api/www/contact-members', contactMembersRoutes);
+app.use('/api/www/profile', profileRoutes);
+app.use('/api/www/email-settings', emailSettingsRoutes);
+app.use('/api/common/products', productRoutes);
+app.use('/api/common/inquiries', inquiryRoutes);
+app.use('/api/common/news', newsRoutes);
 ```
 
-### 9.5 环境安全检查机制
+### 10.2 前端 BFF 路由转发
 
-`scripts/lib/env-check.ts` 实现原理：
+前端 BFF 路由**必须**转发到对应后端路径：
 
-```typescript
-export function assertDevEnvironment() {
-  const env = process.env.NODE_ENV;
-  const isProduction = env === 'production';
-  
-  // 额外检查：是否有生产环境特征
-  const hasProdFeatures = 
-    process.env.DEPLOY_RUN_PORT || 
-    process.env.COZE_DEPLOY_MODE;
-  
-  if (isProduction || hasProdFeatures) {
-    console.error('❌ 安全拦截：此脚本禁止在生产环境运行');
-    process.exit(1);
-  }
-}
-```
+| 前端路径 | 后端路径 |
+|---------|---------|
+| `/api/admin/*` | `/api/admin/*` |
+| `/api/www/*` | `/api/www/*` |
+| `/api/common/*` | `/api/common/*` |
 
-**检查内容：**
-- `NODE_ENV === 'production'`：标准生产环境检测
-- `DEPLOY_RUN_PORT` / `COZE_DEPLOY_MODE`：部署环境特征
+**⚠️ 禁止**：在 BFF 中使用 `replace('/api/www/', '/api/')` 这种临时代理逻辑。
 
-### 9.6 已移除的危险 API
+### 10.3 路由映射表
 
-| 移除的 API | 原因 | 替代方案 |
-|------------|------|----------|
-| `/api/www/messages/seed` | 可被外部调用污染数据库 | 使用 `pnpm seed-messages` 本地运行 |
-
-**安全原则：** 种子数据脚本只能通过命令行本地运行，禁止暴露为 HTTP API。
+| 功能模块 | 后端路径 | 前端路径 |
+|---------|---------|---------|
+| 用户认证 | `/api/www/auth/*` | `/api/www/auth/*` |
+| 消息系统 | `/api/www/messages/*` | `/api/www/messages/*` |
+| 联系人请求 | `/api/www/contact-requests/*` | `/api/www/contact-requests/*` |
+| 联系人成员 | `/api/www/contact-members/*` | `/api/www/contact-members/*` |
+| 个人资料 | `/api/www/profile/*` | `/api/www/profile/*` |
+| 邮箱设置 | `/api/www/email-settings/*` | `/api/www/email-settings/*` |
+| 产品 | `/api/common/products/*` | `/api/common/products/*` |
+| 询盘 | `/api/common/inquiries/*` | `/api/common/inquiries/*` |
+| 新闻 | `/api/common/news/*` | `/api/common/news/*` |
+| 管理后台 | `/api/admin/*` | `/api/admin/*` |
 
 ---
 
-## 10. Public 目录规范
-
-### 10.1 目录结构
-
-```
-public/
-├── assets/          # 静态资源
-│   ├── flags/       # 国旗图标
-│   ├── icons/       # 图标
-│   ├── images/      # 图片
-│   ├── logos/       # Logo
-│   └── social/      # 社交分享图
-```
-
-### 10.2 资源分类
-
-| 目录 | 内容 | 示例 |
-|------|------|------|
-| `flags/` | 语言国旗图标 | `zh.png`, `en.png` |
-| `icons/` | UI 图标 | `favicon.ico` |
-| `images/` | 通用图片 | `banner/` 轮播图 |
-| `logos/` | 品牌 Logo | `logo-blue-bg.png` |
-| `social/` | 社交分享预览图 | `og-image.png` |
-
-### 10.3 禁止事项
-
-| 禁止 | 原因 |
-|------|------|
-| 放置测试 HTML 文件 | 暴露测试账号密码 |
-| 硬编码 Token | 安全风险 |
-| 放置调试工具 | 信息泄露 |
-
-**测试账号信息应放在内部文档，不要提交到代码库。**
-
----
-
-## 11. 变更历史
-
-### 2026-03-13 项目目录重构
-
-#### 组件目录重构
-- 创建 9 个功能域目录：`layout/`, `common/`, `auth/`, `messaging/`, `trade/`, `user/`, `shared/`, `admin/`, `inquiries/`
-- 移动 21 个组件文件，更新 30+ 处导入路径
-
-#### 翻译文件整合
-- `src/messages/` → `src/i18n/www/`
-- `src/lib/admin-i18n/locales/` → `src/i18n/admin/`
-- 创建 `src/i18n/config.ts` 统一配置
-
-#### 数据库目录标准化
-- Schema 定义移至 `src/db/`
-- 数据访问层移至 `src/repositories/`
-
-#### Lib 目录整理
-- 创建 `src/data/` 存放静态数据
-- 创建 `src/services/` 存放业务服务
-
-#### 脚本安全处理
-- 恢复 `scripts/lib/env-check.ts` 环境安全检查
-- 恢复 `scripts/SECURITY.md` 安全规范文档
-- 删除 API 接口 `/api/www/messages/seed`（防止外部调用）
-- 种子脚本仅通过命令行本地运行
-
-#### 最终目录结构
-```
-src/
-├── components/    # 按功能域分类
-├── i18n/          # 国际化统一目录
-├── db/            # 数据库 Schema
-├── repositories/  # 数据访问层
-├── data/          # 静态数据
-├── services/      # 业务服务
-└── lib/           # 工具库
-scripts/
-├── lib/           # 环境安全检查
-├── dev/           # 项目生命周期
-├── seed/          # 种子数据
-├── batch/         # 批量处理
-└── sync/          # 数据同步
-```
-
----
-
-> **更新记录**：每次对话结束前，根据新增的关键决策更新此文档。
+> 📌 **最后更新**：2026-03-13
+>
+> 本文档是**编程规范**，不是日志。所有规则**必须严格遵守**。
