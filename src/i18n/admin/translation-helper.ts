@@ -1,4 +1,4 @@
-import type { AdminLocale } from './config';
+import type { Locale } from '../config';
 import en from './en.json';
 import zh from './zh.json';
 import ja from './ja.json';
@@ -11,7 +11,7 @@ import ru from './ru.json';
 import ar from './ar.json';
 
 // 翻译数据
-const translations: Record<AdminLocale, Record<string, any>> = {
+const translations: Record<Locale, Record<string, any>> = {
   en,
   zh,
   ja,
@@ -24,7 +24,7 @@ const translations: Record<AdminLocale, Record<string, any>> = {
   ar,
 };
 
-export function getAdminTranslation(locale: AdminLocale, key: string): string {
+export function getAdminTranslation(locale: Locale, key: string): string {
   const keys = key.split('.');
   let value: any = translations[locale];
   

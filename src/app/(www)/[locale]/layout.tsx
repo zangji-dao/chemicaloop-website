@@ -1,7 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { locales } from '@/lib/i18n';
+import { locales } from '@/i18n/config';
 import Providers from '@/components/layout/Providers';
 import AdminSwitchButton from '@/components/shared/AdminSwitchButton';
 

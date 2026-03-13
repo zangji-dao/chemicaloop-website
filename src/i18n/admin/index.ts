@@ -1,18 +1,24 @@
 /**
  * 管理后台多语言配置
  * 
- * 拆分自原 admin-i18n.ts 文件
- * 各语言翻译存放在当前目录下
+ * 复用统一的语言配置，导出带 admin 前缀的别名以保持兼容
  */
 
-// 导出配置
-export {
-  adminLocales,
-  adminDefaultLocale,
-  adminLocaleNames,
-  adminLocaleFlags,
-  type AdminLocale,
-} from './config';
+// 从统一配置导入
+import { 
+  locales, 
+  defaultLocale, 
+  localeNames, 
+  localeFlags,
+  type Locale 
+} from '../config';
+
+// 导出带 admin 前缀的别名（保持向后兼容）
+export const adminLocales = locales;
+export const adminDefaultLocale = defaultLocale;
+export const adminLocaleNames = localeNames;
+export const adminLocaleFlags = localeFlags;
+export type AdminLocale = Locale;
 
 // 导出辅助函数
 export { getAdminTranslation } from './translation-helper';
@@ -29,10 +35,8 @@ import pt from './pt.json';
 import ru from './ru.json';
 import ar from './ar.json';
 
-import type { AdminLocale } from './config';
-
 // 合并翻译
-export const adminTranslations: Record<AdminLocale, Record<string, any>> = {
+export const adminTranslations: Record<Locale, Record<string, any>> = {
   en,
   zh,
   ja,
