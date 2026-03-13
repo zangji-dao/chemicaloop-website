@@ -27,11 +27,22 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
       [userId]
     );
 
-    console.log('[Circle Contacts] Fetched contacts for user:', userId, 'Count:', result.rows.length);
+    // 映射字段名以匹配前端期望
+    const members = result.rows.map(row => ({
+      id: row.contact_user_id,
+      contactUserId: row.contact_user_id,
+      userName: row.name,
+      userEmail: row.email,
+      role: row.role,
+      contactDetails: row.contact_details,
+      createdAt: row.created_at
+    }));
+
+    console.log('[Circle Contacts] Fetched contacts for user:', userId, 'Count:', members.length);
 
     res.json({
       success: true,
-      data: result.rows
+      data: members
     });
   } catch (error: any) {
     console.error('[Circle Contacts] Fetch error:', error);
