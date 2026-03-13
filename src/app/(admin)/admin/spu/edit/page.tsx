@@ -279,12 +279,20 @@ function SPUEditContent() {
           setProductImageUrl(spuData.image_url);
         }
       } else {
-        alert(locale === 'zh' ? '加载失败' : 'Failed to load');
+        setDialogConfig({
+          type: 'error',
+          title: locale === 'zh' ? '加载失败' : 'Load Failed',
+          message: locale === 'zh' ? '加载数据失败' : 'Failed to load data',
+        });
         router.push('/admin/spu');
       }
     } catch (error) {
       console.error('Error fetching SPU:', error);
-      alert(locale === 'zh' ? '加载失败' : 'Failed to load');
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '加载失败' : 'Load Failed',
+        message: locale === 'zh' ? '加载数据失败' : 'Failed to load data',
+      });
       router.push('/admin/spu');
     } finally {
       setLoading(false);
@@ -351,7 +359,11 @@ function SPUEditContent() {
   // 同步 PubChem 数据
   const handleSyncPubChem = async () => {
     if (!formData.cas) {
-      alert(locale === 'zh' ? '请先输入CAS号' : 'Please enter CAS number first');
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '提示' : 'Notice',
+        message: locale === 'zh' ? '请先输入CAS号' : 'Please enter CAS number first',
+      });
       return;
     }
 
@@ -376,9 +388,13 @@ function SPUEditContent() {
       if (!connectionData.connected) {
         setSyncingPubChem(false);
         setSyncProgress({ step: 'connecting', message: '' });
-        alert(locale === 'zh' 
-          ? `PubChem 连接失败: ${connectionData.message}` 
-          : `PubChem connection failed: ${connectionData.message}`);
+        setDialogConfig({
+          type: 'error',
+          title: locale === 'zh' ? '连接失败' : 'Connection Failed',
+          message: locale === 'zh' 
+            ? `PubChem 连接失败: ${connectionData.message}` 
+            : `PubChem connection failed: ${connectionData.message}`,
+        });
         return;
       }
 
@@ -708,11 +724,19 @@ function SPUEditContent() {
   // 保存
   const handleSave = async () => {
     if (!formData.cas) {
-      alert(locale === 'zh' ? 'CAS号不能为空' : 'CAS number is required');
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '提示' : 'Notice',
+        message: locale === 'zh' ? 'CAS号不能为空' : 'CAS number is required',
+      });
       return;
     }
     if (!formData.name && !formData.nameEn) {
-      alert(locale === 'zh' ? '产品名称不能为空' : 'Product name is required');
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '提示' : 'Notice',
+        message: locale === 'zh' ? '产品名称不能为空' : 'Product name is required',
+      });
       return;
     }
 
@@ -772,14 +796,26 @@ function SPUEditContent() {
       const result = await response.json();
 
       if (result.success) {
-        alert(locale === 'zh' ? '保存成功！' : 'Saved successfully!');
-        router.push('/admin/spu');
+        setDialogConfig({
+          type: 'success',
+          title: locale === 'zh' ? '保存成功' : 'Success',
+          message: locale === 'zh' ? '保存成功！' : 'Saved successfully!',
+          onConfirm: () => router.push('/admin/spu'),
+        });
       } else {
-        alert(`${locale === 'zh' ? '保存失败' : 'Save failed'}: ${result.error}`);
+        setDialogConfig({
+          type: 'error',
+          title: locale === 'zh' ? '保存失败' : 'Save Failed',
+          message: `${locale === 'zh' ? '保存失败' : 'Save failed'}: ${result.error}`,
+        });
       }
     } catch (error) {
       console.error('Error saving SPU:', error);
-      alert(locale === 'zh' ? '保存失败' : 'Save failed');
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '保存失败' : 'Save Failed',
+        message: locale === 'zh' ? '保存失败' : 'Save failed',
+      });
     } finally {
       setSaving(false);
     }
