@@ -2531,7 +2531,10 @@ export default function MessagesPage() {
                   </div>
                 ) : (
                   <div className="p-4 space-y-3">
-                    {contactRequests.map((request) => (
+                    {contactRequests.map((request) => {
+                      const requesterName = request.user?.name || request.requesterName || 'Unknown';
+                      const requesterEmail = request.user?.email || request.requesterEmail || '';
+                      return (
                       <div
                         key={request.id}
                         className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -2539,11 +2542,11 @@ export default function MessagesPage() {
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white font-semibold">
-                              {request.requesterName?.[0] || 'U'}
+                              {requesterName?.[0] || 'U'}
                             </div>
                             <div>
-                              <h3 className="font-medium text-gray-900">{request.requesterName}</h3>
-                              <p className="text-sm text-gray-500">{request.requesterEmail}</p>
+                              <h3 className="font-medium text-gray-900">{requesterName}</h3>
+                              <p className="text-sm text-gray-500">{requesterEmail}</p>
                             </div>
                           </div>
                           <div className="flex gap-2">
@@ -2608,7 +2611,8 @@ export default function MessagesPage() {
                           <p className="text-sm text-gray-600 mt-2">{request.message}</p>
                         )}
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 )
               ) : contactSubTab === 'sent' ? (
@@ -2623,7 +2627,10 @@ export default function MessagesPage() {
                   </div>
                 ) : (
                   <div className="p-4 space-y-3">
-                    {contactSentRequests.map((request) => (
+                    {contactSentRequests.map((request) => {
+                      const receiverName = request.user?.name || request.receiverName || 'Unknown';
+                      const receiverEmail = request.user?.email || request.receiverEmail || '';
+                      return (
                       <div
                         key={request.id}
                         className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -2631,11 +2638,11 @@ export default function MessagesPage() {
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                              {request.receiverName?.[0] || 'U'}
+                              {receiverName?.[0] || 'U'}
                             </div>
                             <div>
-                              <h3 className="font-medium text-gray-900">{request.receiverName}</h3>
-                              <p className="text-sm text-gray-500">{request.receiverEmail}</p>
+                              <h3 className="font-medium text-gray-900">{receiverName}</h3>
+                              <p className="text-sm text-gray-500">{receiverEmail}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -2654,7 +2661,8 @@ export default function MessagesPage() {
                           <p className="text-sm text-gray-600 mt-2">{request.message}</p>
                         )}
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 )
               ) : (
