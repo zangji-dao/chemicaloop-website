@@ -434,7 +434,6 @@ public/
 │   ├── images/      # 图片
 │   ├── logos/       # Logo
 │   └── social/      # 社交分享图
-└── dev-tools/       # 开发工具（部署时排除）
 ```
 
 ### 10.2 资源分类
@@ -447,13 +446,15 @@ public/
 | `logos/` | 品牌 Logo | `logo-blue-bg.png` |
 | `social/` | 社交分享预览图 | `og-image.png` |
 
-### 10.3 开发工具目录
+### 10.3 禁止事项
 
-`dev-tools/` 存放测试页面，**部署时必须排除**：
+| 禁止 | 原因 |
+|------|------|
+| 放置测试 HTML 文件 | 暴露测试账号密码 |
+| 硬编码 Token | 安全风险 |
+| 放置调试工具 | 信息泄露 |
 
-- `test-accounts.html` - 测试账号清单
-- `test-login.html` - 登录测试
-- `token-debug.html` - Token 调试
+**测试账号信息应放在内部文档，不要提交到代码库。**
 
 ---
 
