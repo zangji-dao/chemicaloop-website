@@ -422,4 +422,39 @@ assertDevEnvironment();
 
 ---
 
+## 10. Public 目录规范
+
+### 10.1 目录结构
+
+```
+public/
+├── assets/          # 静态资源
+│   ├── flags/       # 国旗图标
+│   ├── icons/       # 图标
+│   ├── images/      # 图片
+│   ├── logos/       # Logo
+│   └── social/      # 社交分享图
+└── dev-tools/       # 开发工具（部署时排除）
+```
+
+### 10.2 资源分类
+
+| 目录 | 内容 | 示例 |
+|------|------|------|
+| `flags/` | 语言国旗图标 | `zh.png`, `en.png` |
+| `icons/` | UI 图标 | `favicon.ico` |
+| `images/` | 通用图片 | `banner/` 轮播图 |
+| `logos/` | 品牌 Logo | `logo-blue-bg.png` |
+| `social/` | 社交分享预览图 | `og-image.png` |
+
+### 10.3 开发工具目录
+
+`dev-tools/` 存放测试页面，**部署时必须排除**：
+
+- `test-accounts.html` - 测试账号清单
+- `test-login.html` - 登录测试
+- `token-debug.html` - Token 调试
+
+---
+
 > **更新记录**：每次对话结束前，根据新增的关键决策更新此文档。
