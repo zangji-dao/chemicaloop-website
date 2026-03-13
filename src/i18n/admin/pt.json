@@ -121,6 +121,7 @@
     "active": "Listado",
     "inactive": "Não listado",
     "pubchem": "PubChem",
+    "pubchemData": "Dados PubChem",
     "pubchemSynced": "Sincronizado",
     "pubchemNotSynced": "Não sincronizado",
     "skuCount": "Quantidade de SKU",

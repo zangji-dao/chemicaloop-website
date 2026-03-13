@@ -311,6 +311,92 @@ function SPUEditContent() {
     router.push('/admin/spu');
   };
 
+  // 同步 PubChem 数据（新建模式）
+  const handleSyncPubChem = async () => {
+    if (!formData.cas) {
+      alert(locale === 'zh' ? '请先输入CAS号' : 'Please enter CAS number first');
+      return;
+    }
+
+    setSyncingPubChem(true);
+    try {
+      const token = getAdminToken();
+      const response = await fetch('/api/admin/spu/sync-pubchem', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          preview: true,
+          cas: formData.cas,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const data = result.data;
+        
+        // 设置 PubChem 信息
+        setPubchemInfo({
+          cid: data.pubchemCid,
+          syncedAt: data.pubchemSyncedAt,
+        });
+
+        // 设置结构图
+        if (data.structureUrl) {
+          setStructureImageUrl(data.structureUrl);
+        }
+
+        // 填充表单数据（只填充空字段）
+        setFormData(prev => ({
+          ...prev,
+          name: prev.name || data.nameZh || '',
+          nameEn: prev.nameEn || data.nameEn || '',
+          formula: prev.formula || data.formula || '',
+          molecularWeight: prev.molecularWeight || data.molecularWeight || '',
+          exactMass: prev.exactMass || data.exactMass || '',
+          smiles: prev.smiles || data.smiles || '',
+          smilesCanonical: prev.smilesCanonical || data.smilesCanonical || '',
+          smilesIsomeric: prev.smilesIsomeric || data.smilesIsomeric || '',
+          inchi: prev.inchi || data.inchi || '',
+          inchiKey: prev.inchiKey || data.inchiKey || '',
+          xlogp: prev.xlogp || data.xlogp || '',
+          tpsa: prev.tpsa || data.tpsa || '',
+          boilingPoint: prev.boilingPoint || data.boilingPoint || '',
+          meltingPoint: prev.meltingPoint || data.meltingPoint || '',
+          flashPoint: prev.flashPoint || data.flashPoint || '',
+          density: prev.density || data.density || '',
+          solubility: prev.solubility || data.solubility || '',
+          vaporPressure: prev.vaporPressure || data.vaporPressure || '',
+          refractiveIndex: prev.refractiveIndex || data.refractiveIndex || '',
+          physicalDescription: prev.physicalDescription || data.physicalDescription || '',
+          colorForm: prev.colorForm || data.colorForm || '',
+          odor: prev.odor || data.odor || '',
+          hazardClasses: prev.hazardClasses || data.hazardClasses || '',
+          healthHazards: prev.healthHazards || data.healthHazards || '',
+          ghsClassification: prev.ghsClassification || data.ghsClassification || '',
+          firstAid: prev.firstAid || data.firstAid || '',
+          storageConditions: prev.storageConditions || data.storageConditions || '',
+          incompatibleMaterials: prev.incompatibleMaterials || data.incompatibleMaterials || '',
+          description: prev.description || data.description || '',
+          synonyms: prev.synonyms.length > 0 ? prev.synonyms : (data.synonyms || []),
+          applications: prev.applications.length > 0 ? prev.applications : (data.applications || []),
+        }));
+
+        alert(locale === 'zh' ? 'PubChem 数据同步成功！' : 'PubChem data synced successfully!');
+      } else {
+        alert(result.error || (locale === 'zh' ? '同步失败，未找到 PubChem 数据' : 'Sync failed, PubChem data not found'));
+      }
+    } catch (error) {
+      console.error('Error syncing PubChem:', error);
+      alert(locale === 'zh' ? '同步失败' : 'Sync failed');
+    } finally {
+      setSyncingPubChem(false);
+    }
+  };
+
   // 保存
   const handleSave = async () => {
     if (!formData.cas) {
@@ -433,62 +519,83 @@ function SPUEditContent() {
       {/* 内容区域 */}
       <div className="max-w-4xl mx-auto p-5 pb-20">
           {/* 图片展示区域 */}
-          {(pubchemInfo.cid || structureImageUrl) && (
-            <div className="mb-6 p-4 bg-slate-700/30 border border-slate-600 rounded-lg">
-              <div className="grid grid-cols-2 gap-6">
-                {/* 2D 结构图 */}
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm text-slate-400">{t('spu.structure2D')}</span>
-                    {pubchemInfo.cid && (
-                      <a
-                        href={`https://pubchem.ncbi.nlm.nih.gov/compound/${pubchemInfo.cid}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:underline"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                    )}
-                  </div>
-                  <div className="aspect-square bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
-                    {structureImageUrl ? (
-                      <img src={structureImageUrl} alt="2D Structure" className="max-w-full max-h-full object-contain" />
-                    ) : (
-                      <div className="text-center text-slate-500">
-                        <Database className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p>{t('spu.syncPubchemToDisplay')}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* 产品图 */}
-                <div>
-                  <div className="text-sm text-slate-400 mb-2">{t('spu.productImage')}</div>
-                  <div className="aspect-square bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-lg border border-slate-600/50 flex items-center justify-center overflow-hidden">
-                    {productImageUrl ? (
-                      <img src={productImageUrl} alt="Product" className="max-w-full max-h-full object-contain" />
-                    ) : (
-                      <div className="text-center text-slate-500">
-                        <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-xs">{t('spu.noData')}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {pubchemInfo.cid && (
-                <div className="mt-4 text-sm text-slate-400">
-                  CID: <span className="text-blue-400">{pubchemInfo.cid}</span>
-                  {pubchemInfo.syncedAt && (
-                    <span className="ml-3 text-slate-500">
-                      {t('spu.syncedOn')}: {new Date(pubchemInfo.syncedAt).toLocaleDateString()}
-                    </span>
+          <div className="mb-6 p-4 bg-slate-700/30 border border-slate-600 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-slate-400">{t('spu.pubchemData')}</span>
+              {/* 新建模式或无数据时显示同步按钮 */}
+              {(isNewMode || !pubchemInfo.cid) && (
+                <button
+                  onClick={handleSyncPubChem}
+                  disabled={syncingPubChem || !formData.cas}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {syncingPubChem ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {locale === 'zh' ? '同步中...' : 'Syncing...'}
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4" />
+                      {t('spu.syncPubchem')}
+                    </>
                   )}
-                </div>
+                </button>
               )}
             </div>
-          )}
+            <div className="grid grid-cols-2 gap-6">
+              {/* 2D 结构图 */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm text-slate-400">{t('spu.structure2D')}</span>
+                  {pubchemInfo.cid && (
+                    <a
+                      href={`https://pubchem.ncbi.nlm.nih.gov/compound/${pubchemInfo.cid}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:underline"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
+                <div className="aspect-square bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
+                  {structureImageUrl ? (
+                    <img src={structureImageUrl} alt="2D Structure" className="max-w-full max-h-full object-contain" />
+                  ) : (
+                    <div className="text-center text-slate-500">
+                      <Database className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>{t('spu.syncPubchemToDisplay')}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* 产品图 */}
+              <div>
+                <div className="text-sm text-slate-400 mb-2">{t('spu.productImage')}</div>
+                <div className="aspect-square bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-lg border border-slate-600/50 flex items-center justify-center overflow-hidden">
+                  {productImageUrl ? (
+                    <img src={productImageUrl} alt="Product" className="max-w-full max-h-full object-contain" />
+                  ) : (
+                    <div className="text-center text-slate-500">
+                      <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-xs">{t('spu.noData')}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            {pubchemInfo.cid && (
+              <div className="mt-4 text-sm text-slate-400">
+                CID: <span className="text-blue-400">{pubchemInfo.cid}</span>
+                {pubchemInfo.syncedAt && (
+                  <span className="ml-3 text-slate-500">
+                    {t('spu.syncedOn')}: {new Date(pubchemInfo.syncedAt).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* 基本信息 */}
           <div className="mb-8">

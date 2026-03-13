@@ -192,6 +192,7 @@
     "active": "已上架",
     "inactive": "已下架",
     "pubchem": "PubChem",
+    "pubchemData": "PubChem 数据",
     "pubchemSynced": "已同步",
     "pubchemNotSynced": "未同步",
     "skuCount": "SKU 数量",

@@ -121,6 +121,7 @@
     "active": "게시중",
     "inactive": "게시중지",
     "pubchem": "PubChem",
+    "pubchemData": "PubChem 데이터",
     "pubchemSynced": "동기화됨",
     "pubchemNotSynced": "미동기화",
     "skuCount": "SKU 수",

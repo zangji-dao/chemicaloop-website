@@ -120,6 +120,7 @@
     "active": "公開中",
     "inactive": "非公開",
     "pubchem": "PubChem",
+    "pubchemData": "PubChem データ",
     "pubchemSynced": "同期済み",
     "pubchemNotSynced": "未同期",
     "skuCount": "SKU数",

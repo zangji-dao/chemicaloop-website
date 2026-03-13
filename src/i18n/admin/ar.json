@@ -121,6 +121,7 @@
     "active": "مدرج",
     "inactive": "غير مدرج",
     "pubchem": "PubChem",
+    "pubchemData": "بيانات PubChem",
     "pubchemSynced": "تمت المزامنة",
     "pubchemNotSynced": "غير متزامن",
     "skuCount": "عدد SKU",
