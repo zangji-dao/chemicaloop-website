@@ -237,6 +237,21 @@ function SPUEditContent() {
     onConfirm?: () => void;
   } | null>(null);
 
+  // 禁止滚动 - 当遮罩层或弹窗显示时
+  useEffect(() => {
+    const shouldLockScroll = syncingPubChem || translating || dialogConfig;
+    
+    if (shouldLockScroll) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [syncingPubChem, translating, dialogConfig]);
+
   // 加载 SPU 数据
   useEffect(() => {
     if (isEditMode && spuId) {
@@ -1423,7 +1438,11 @@ function SPUEditContent() {
               </div>
               <p className="text-sm text-slate-300 mb-6">{dialogConfig.message}</p>
               <button
-                onClick={() => setDialogConfig(null)}
+                onClick={() => {
+                  const callback = dialogConfig.onConfirm;
+                  setDialogConfig(null);
+                  callback?.();
+                }}
                 className="w-full py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 {locale === 'zh' ? '确定' : 'OK'}
