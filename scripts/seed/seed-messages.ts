@@ -1,237 +1,530 @@
-import { messageRepository } from '@/repositories/messageRepository';
+import { getDb } from 'coze-coding-dev-sdk';
+import { assertDevEnvironment } from '../lib/env-check';
 
-const CURRENT_USER_ID = 'c4ca4238-a0b9-2382-0dcc-509a6f75849b';
+// 安全检查：禁止生产环境运行
+assertDevEnvironment();
 
-const TEST_INQUIRIES = [
-  {
-    subject: 'Inquiry for Acetone (CAS: 67-64-1)',
-    content: 'Dear Supplier,\n\nWe are interested in purchasing Acetone (CAS: 67-64-1) with purity ≥99.5%.\n\nQuantity: 1000 kg\nDelivery: 30 days\n\nPlease provide your best offer.\n\nBest regards',
-    productName: 'Acetone',
-    cas: '67-64-1',
-    quantity: '1000 kg',
-  },
-  {
-    subject: 'RFQ for Methanol (CAS: 67-56-1)',
-    content: 'Hello,\n\nWe would like to request a quotation for Methanol (CAS: 67-56-1).\n\nSpecifications:\n- Purity: ≥99.9%\n- Packaging: 200L drums\n- Quantity: 2000 L\n\nThank you for your time.',
-    productName: 'Methanol',
-    cas: '67-56-1',
-    quantity: '2000 L',
-  },
-  {
-    subject: 'Bulk Order: Ethanol (CAS: 64-17-5)',
-    content: 'Dear Team,\n\nWe are looking for a long-term supplier for Ethanol.\n\nRequirements:\n- Purity: ≥99.8%\n- Quantity: 5000 L/month\n- Contract duration: 12 months\n\nPlease send your quotation.\n\nRegards',
-    productName: 'Ethanol',
-    cas: '64-17-5',
-    quantity: '5000 L/month',
-  },
-  {
-    subject: 'Price Inquiry: Isopropanol',
-    content: 'Hi,\n\nCould you please provide current pricing for Isopropanol (CAS: 67-63-0)?\n\nWe need:\n- 500 L (immediate)\n- Optional: additional 2000 L in Q2\n\nBest,\nChemicaloop Team',
-    productName: 'Isopropanol',
-    cas: '67-63-0',
-    quantity: '500 L',
-  },
-  {
-    subject: 'Toluene Supply - Urgent',
-    content: 'Dear Supplier,\n\nUrgent inquiry for Toluene (CAS: 108-88-3).\n\nWe need 800 kg delivered within 7 days.\n\nPlease confirm availability and pricing.\n\nThanks!',
-    productName: 'Toluene',
-    cas: '108-88-3',
-    quantity: '800 kg',
-  },
-];
+import * as schema from '../../src/storage/database/shared/schema';
+import { messages, users } from '../../src/storage/database/shared/schema';
+import { sql } from 'drizzle-orm';
 
-const TEST_REPLIES = [
+// 当前用户ID
+const currentUserId = 'c4ca4238-a0b9-2382-0dcc-509a6f75849b';
+
+// 生成多语言邮件数据
+const mockMessages = [
+  // 英文邮件
   {
-    subject: '中文回复：丙酮报价',
-    content: '尊敬的客户，\n\n感谢您的询价。\n\n我们可以为您提供：\n- 丙酮 ≥99.5%\n- 价格：$2.50/kg\n- 交货：15天\n\n期待您的订单。\n\n此致\n敬礼',
-    senderName: '中国供应商',
-    language: 'zh',
-  },
-  {
-    subject: 'English Reply: Methanol Quote',
-    content: 'Hello,\n\nThank you for your RFQ.\n\nOur quotation:\n- Methanol ≥99.9%\n- Price: $1.80/L\n- Packaging: 200L drums\n\nPlease let us know if you need more information.',
-    senderName: 'UK Supplier',
+    id: 'msg-en-short-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'Acetone Quote',
+    content: 'Dear Customer, thank you for your inquiry. We can offer acetone ≥99.5% at $2.50/kg. Delivery: 15 days.',
     language: 'en',
+    translations: {},
+    sender_id: null,
+    sender_name: 'John Smith',
+    sender_address: 'john.smith@chemical-us.com',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'unread',
+    unread: true,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date().toISOString(),
+    sent_at: new Date().toISOString(),
+    read_at: null
   },
   {
-    subject: '日本語返信：エタノール見積もり',
-    content: 'お客様へ\n\nお問い合わせありがとうございます。\n\nエタノールの見積もり：\n- 純度 ≥99.8%\n- 価格：$3.00/L\n- 納期：20日\n\nご注文をお待ちしております。\n\nよろしくお願いいたします',
-    senderName: '日本のサプライヤー',
+    id: 'msg-en-medium-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'Hydrochloric Acid RFQ Response',
+    content: 'Dear Customer,\n\nThank you for your RFQ regarding hydrochloric acid. We are pleased to provide our quotation:\n\nProduct: Hydrochloric Acid (HCl)\n- Purity: ≥36%\n- Package: 30kg HDPE drum\n- Price: $1.80/kg\n- MOQ: 500kg\n\nPayment: 30% deposit by T/T\nDelivery: FOB Shanghai, 7-10 working days\n\nBest regards,\nSales Team',
+    language: 'en',
+    translations: {},
+    sender_id: null,
+    sender_name: 'US Chemical Corp',
+    sender_address: 'info@chemical-us.com',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'read',
+    unread: false,
+    starred: true,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  // 中文邮件
+  {
+    id: 'msg-zh-short-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: '甲醇报价',
+    content: '尊敬的客户，感谢您的询价。我们可以提供甲醇≥99.9%，价格1.80美元/升，交货期15天。',
+    language: 'zh',
+    translations: {},
+    sender_id: null,
+    sender_name: '张三',
+    sender_address: 'zhangsan@chemical-cn.com',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'unread',
+    unread: true,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: null
+  },
+  {
+    id: 'msg-zh-medium-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: '盐酸询价回复',
+    content: '尊敬的客户，\n\n感谢您的盐酸询价。我们很高兴提供我们的报价：\n\n产品：盐酸（HCl）\n- 纯度：≥36%\n- 包装：30公斤 HDPE 桶\n- 价格：1.80美元/公斤\n- 最小起订量：500公斤\n\n付款：30% 预付款通过电汇\n交货：FOB 上海，7-10 个工作日\n\n此致，\n销售团队',
+    language: 'zh',
+    translations: {},
+    sender_id: null,
+    sender_name: '中国化工进出口公司',
+    sender_address: 'sales@chemical-cn.com',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'read',
+    unread: false,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  // 日文邮件
+  {
+    id: 'msg-ja-short-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'アセトンの見積もり',
+    content: 'お客様へ、お問い合わせありがとうございます。アセトン≥99.5%を2.50ドル/kgで提供できます。納期：15日。',
     language: 'ja',
+    translations: {},
+    sender_id: null,
+    sender_name: '田中太郎',
+    sender_address: 'tanaka@japan-chem.co.jp',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'unread',
+    unread: true,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: null
   },
   {
-    subject: '한국어 답변: 아세트산 견적',
-    content: '존경하는 고객님,\n\n문의해 주셔서 감사합니다.\n\n저희의 제안:\n- 아세트산 ≥99.5%\n- 가격: $2.30/kg\n- 납기: 12일\n\n주문을 기다리겠습니다.\n\n감사합니다',
-    senderName: '한국 공급업체',
+    id: 'msg-ja-medium-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: '塩酸の見積もり',
+    content: 'お客様へ、\n\n塩酸に関するお見積もり依頼ありがとうございます。以下の通りお見積もりをご提案いたします：\n\n製品：塩酸（HCl）\n- 純度：≥36%\n- 包装：30kg HDPEドラム\n- 価格：1.80ドル/kg\n- 最小発注量：500kg\n\n支払い：前払い30%（T/T）\n納期：FOB 上海、7-10営業日\n\nよろしくお願いいたします。\n販売チーム',
+    language: 'ja',
+    translations: {},
+    sender_id: null,
+    sender_name: '日本化学株式会社',
+    sender_address: 'sales@japan-chem.co.jp',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'read',
+    unread: false,
+    starred: true,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  // 韩文邮件
+  {
+    id: 'msg-ko-short-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: '아세톤 견적',
+    content: '고객님께, 문의해 주셔서 감사합니다. 아세톤 ≥99.5%를 $2.50/kg에 제공할 수 있습니다. 납기: 15일.',
     language: 'ko',
+    translations: {},
+    sender_id: null,
+    sender_name: '김철수',
+    sender_address: 'kim.cheolsu@korea-chem.co.kr',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'unread',
+    unread: true,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: null
   },
   {
-    subject: 'Deutsche Antwort: Formaldehyd Angebot',
-    content: 'Sehr geehrter Kunde,\n\nVielen Dank für Ihre Anfrage.\n\nUnser Angebot:\n- Formaldehyd 37% Lösung\n- Preis: €2.80/L\n- Lieferzeit: 14 Tage\n\nWir freuen uns auf Ihre Bestellung.\n\nMit freundlichen Grüßen',
-    senderName: 'Deutscher Lieferant',
+    id: 'msg-ko-medium-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: '염산 견적',
+    content: '고객님께,\n\n염산에 대한 견적 요청에 감사드립니다. 다음과 같이 견적을 제공해 드립니다:\n\n제품: 염산 (HCl)\n- 순도: ≥36%\n- 포장: 30kg HDPE 드럼\n- 가격: $1.80/kg\n- 최소 주문량: 500kg\n\n결제: 선금 30% (T/T)\n납품: FOB 상하이, 7-10 영업일\n\n감사합니다.\n영업팀',
+    language: 'ko',
+    translations: {},
+    sender_id: null,
+    sender_name: '한국화학공업',
+    sender_address: 'sales@korea-chem.co.kr',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'read',
+    unread: false,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  // 德文邮件
+  {
+    id: 'msg-de-short-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'Aceton Angebot',
+    content: 'Sehr geehrter Kunde, vielen Dank für Ihre Anfrage. Wir können Aceton ≥99.5% zum Preis von 2,50 USD/kg anbieten. Lieferzeit: 15 Tage.',
     language: 'de',
+    translations: {},
+    sender_id: null,
+    sender_name: 'Hans Müller',
+    sender_address: 'hans.mueller@german-chem.de',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'unread',
+    unread: true,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: null
   },
   {
-    subject: 'Réponse Française: Acide Acétique',
-    content: "Cher client,\n\nMerci pour votre demande.\n\nNotre proposition:\n- Acide acétique ≥99.5%\n- Prix: €2.70/kg\n- Délai de livraison: 16 jours\n\nDans l'attente de votre commande.\n\nCordialement",
-    senderName: 'Fournisseur Français',
+    id: 'msg-de-medium-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'Angebot für Salzsäure',
+    content: 'Sehr geehrter Kunde,\n\nvielen Dank für Ihre Anfrage bezüglich Salzsäure. Wir freuen uns, Ihnen unser Angebot zu unterbreiten:\n\nProdukt: Salzsäure (HCl)\n- Reinheit: ≥36%\n- Verpackung: 30 kg HDPE-Fass\n- Preis: 1,80 USD/kg\n- Mindestbestellmenge: 500 kg\n\nZahlung: 30% Anzahlung per T/T\nLieferung: FOB Shanghai, 7-10 Werktage\n\nMit freundlichen Grüßen\nVerkaufsteam',
+    language: 'de',
+    translations: {},
+    sender_id: null,
+    sender_name: 'German Chemical GmbH',
+    sender_address: 'sales@german-chem.de',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'read',
+    unread: false,
+    starred: true,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  // 法文邮件
+  {
+    id: 'msg-fr-short-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'Devis d\'acétone',
+    content: 'Cher client, merci pour votre demande. Nous pouvons offrir de l\'acétone ≥99,5% à 2,50 $/kg. Livraison : 15 jours.',
     language: 'fr',
+    translations: {},
+    sender_id: null,
+    sender_name: 'Pierre Dupont',
+    sender_address: 'pierre.dupont@france-chem.fr',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'unread',
+    unread: true,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: null
   },
   {
-    subject: 'Respuesta Española: Etanol Cotización',
-    content: 'Estimado cliente,\n\nGracias por su consulta.\n\nNuestra oferta:\n- Etanol ≥99.8%\n- Precio: $3.20/L\n- Tiempo de entrega: 18 días\n\nEsperamos su pedido.\n\nSaludos cordiales',
-    senderName: 'Proveedor Español',
+    id: 'msg-fr-medium-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'Offre pour l\'acide chlorhydrique',
+    content: 'Cher client,\n\nNous vous remercions pour votre demande de devis concernant l\'acide chlorhydrique. Nous sommes heureux de vous proposer notre offre :\n\nProduit : Acide chlorhydrique (HCl)\n- Pureté : ≥36%\n- Conditionnement : Fût HDPE de 30 kg\n- Prix : 1,80 $/kg\n- Quantité minimale : 500 kg\n\nPaiement : 30% d\'acompte par T/T\nLivraison : FOB Shanghï, 7 à 10 jours ouvrables\n\nCordialement,\nL\'équipe commerciale',
+    language: 'fr',
+    translations: {},
+    sender_id: null,
+    sender_name: 'France Chimie SA',
+    sender_address: 'sales@france-chem.fr',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'read',
+    unread: false,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  // 西班牙文邮件
+  {
+    id: 'msg-es-short-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'Cotización de acetona',
+    content: 'Estimado cliente, gracias por su consulta. Podemos ofrecer acetona ≥99,5% a 2,50 $/kg. Entrega: 15 días.',
     language: 'es',
+    translations: {},
+    sender_id: null,
+    sender_name: 'Carlos García',
+    sender_address: 'carlos.garcia@spain-chem.es',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'unread',
+    unread: true,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: null
   },
+  // 葡萄牙文邮件
   {
-    subject: 'Resposta Portuguesa: Metanol Cotação',
-    content: 'Prezado cliente,\n\nObrigado pela sua consulta.\n\nNossa proposta:\n- Metanol ≥99.9%\n- Preço: R$9.50/L\n- Prazo de entrega: 15 dias\n\nAguardamos seu pedido.\n\nAtenciosamente',
-    senderName: 'Fornecedor Português',
+    id: 'msg-pt-short-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'Cotação de acetona',
+    content: 'Prezado cliente, obrigado pelo seu pedido de cotação. Podemos oferecer acetona ≥99,5% a US$ 2,50/kg. Entrega: 15 dias.',
     language: 'pt',
+    translations: {},
+    sender_id: null,
+    sender_name: 'João Silva',
+    sender_address: 'joao.silva@brazil-chem.com.br',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'unread',
+    unread: true,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: null
   },
+  // 俄文邮件
   {
-    subject: 'Русский ответ: Ацетон предложение',
-    content: 'Уважаемый клиент,\n\nСпасибо за ваш запрос.\n\nНаше предложение:\n- Ацетон ≥99.5%\n- Цена: $2.40/kg\n- Срок поставки: 17 дней\n\nЖдем вашего заказа.\n\nС уважением',
-    senderName: 'Русский поставщик',
+    id: 'msg-ru-short-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'Предложение по ацетону',
+    content: 'Уважаемый клиент, спасибо за ваш запрос. Мы можем предложить ацетон ≥99,5% по цене 2,50 долл. США за кг. Срок поставки: 15 дней.',
     language: 'ru',
+    translations: {},
+    sender_id: null,
+    sender_name: 'Иван Петров',
+    sender_address: 'ivan.petrov@russia-chem.ru',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'unread',
+    unread: true,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: null
   },
+  // 阿拉伯文邮件
   {
-    subject: 'رد عربي: الميثانول عرض',
-    content: 'عزيزي العميل،\n\nشكرًا لاستفسارك.\n\nعرضنا:\n- الميثانول ≥99.9%\n- السعر: $3.50/L\n- وقت التسليم: 20 يومًا\n\nنتطلع إلى طلبك.\n\nشكرًا جزيلًا',
-    senderName: 'مورد عربي',
+    id: 'msg-ar-short-1',
+    user_id: currentUserId,
+    type: 'inquiry',
+    folder: 'inbox',
+    title: 'عرض سعر الأسيتون',
+    content: 'عزيزي العميل، نشكرك على استفسارك. يمكننا تزويدك بأسيتون ≥99.5% بسعر 2.50 دولار أمريكي للكيلوغرام. التسليم: 15 يومًا.',
     language: 'ar',
-  },
+    translations: {},
+    sender_id: null,
+    sender_name: 'محمد أحمد',
+    sender_address: 'mohammed.ahmed@uae-chem.ae',
+    recipient_id: currentUserId,
+    recipient_name: 'Normal User',
+    recipient_address: 'user@company.com',
+    product_name: null,
+    cas: null,
+    quantity: null,
+    status: 'unread',
+    unread: true,
+    starred: false,
+    deleted: false,
+    archived: false,
+    attachments: [],
+    created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    sent_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    read_at: null
+  }
 ];
 
 async function seedMessages() {
-  console.log('=== Seeding Test Messages ===\n');
+  console.log('🌱 Starting to seed messages...');
 
   try {
-    // 1. 添加询价消息（用户发送的）- 这些会显示在 Inquiries 和 Sent 文件夹
-    console.log('1. Creating inquiry messages (Inquiries + Sent)...');
-    for (let i = 0; i < TEST_INQUIRIES.length; i++) {
-      const inquiry = TEST_INQUIRIES[i];
-      
-      const message = await messageRepository.createMessage({
-        userId: CURRENT_USER_ID,
-        type: 'inquiry',
-        folder: 'sent',
-        title: inquiry.subject,
-        content: inquiry.content,
-        senderId: CURRENT_USER_ID,
-        senderName: 'Normal User',
-        senderAddress: CURRENT_USER_ID,
-        recipientId: `agent-${String(i + 1).padStart(3, '0')}`,
-        recipientName: `Chemical Supplier ${i + 1}`,
-        recipientAddress: `agent-${String(i + 1).padStart(3, '0')}`,
-        productName: inquiry.productName,
-        cas: inquiry.cas,
-        quantity: inquiry.quantity,
-        status: 'sent',
-        unread: false,
-        starred: i < 2, // 标记前2个为星标
-        deleted: false,
-        archived: false,
-        createdAt: new Date(Date.now() - i * 86400000), // 每天一条
-        sentAt: new Date(Date.now() - i * 86400000),
-      });
+    const db = await getDb(schema);
 
-      console.log(`  ✓ Created: ${inquiry.subject.substring(0, 50)}...`);
+    // 清空现有邮件
+    console.log('🗑️  Clearing existing messages...');
+    await db.execute(sql`DELETE FROM messages WHERE user_id = ${currentUserId}`);
+
+    // 插入新邮件
+    console.log('📧 Inserting messages...');
+    for (const message of mockMessages) {
+      const query = sql`
+        INSERT INTO messages (
+          id, user_id, type, folder, title, content, language,
+          translations, sender_id, sender_name, sender_address,
+          recipient_id, recipient_name, recipient_address,
+          product_name, cas, quantity, status, unread, starred, deleted, archived,
+          attachments, created_at, sent_at, read_at
+        ) VALUES (
+          ${message.id}, ${message.user_id}, ${message.type}, ${message.folder},
+          ${message.title}, ${message.content}, ${message.language},
+          ${JSON.stringify(message.translations)},
+          ${message.sender_id}, ${message.sender_name}, ${message.sender_address},
+          ${message.recipient_id}, ${message.recipient_name}, ${message.recipient_address},
+          ${message.product_name}, ${message.cas}, ${message.quantity}, ${message.status},
+          ${message.unread}, ${message.starred}, ${message.deleted}, ${message.archived},
+          ${JSON.stringify(message.attachments)}, ${message.created_at}, ${message.sent_at},
+          ${message.read_at}
+        )
+      `;
+      await db.execute(query);
+      console.log(`✓ ${message.id} (${message.language})`);
     }
 
-    // 2. 添加回复消息（用户收到的）- 这些会显示在 Inbox 文件夹
-    console.log('\n2. Creating reply messages (Inbox)...');
-    for (let i = 0; i < TEST_REPLIES.length; i++) {
-      const reply = TEST_REPLIES[i];
-
-      const message = await messageRepository.createMessage({
-        userId: CURRENT_USER_ID,
-        type: 'reply',
-        folder: 'inbox',
-        title: reply.subject,
-        content: reply.content,
-        language: reply.language,
-        senderId: `agent-${String(i + 1).padStart(3, '0')}`,
-        senderName: reply.senderName,
-        senderAddress: `agent-${String(i + 1).padStart(3, '0')}`,
-        recipientId: CURRENT_USER_ID,
-        recipientName: 'Normal User',
-        recipientAddress: CURRENT_USER_ID,
-        status: 'sent',
-        unread: true, // 所有回复都设为未读
-        starred: false,
-        deleted: false,
-        archived: false,
-        createdAt: new Date(Date.now() - (i + 1) * 3600000), // 每小时一条
-        sentAt: new Date(Date.now() - (i + 1) * 3600000),
-      });
-
-      console.log(`  ✓ Created: ${reply.subject.substring(0, 50)}... (${reply.language})`);
-    }
-
-    // 3. 添加草稿消息
-    console.log('\n3. Creating draft messages...');
-    const drafts = [
-      {
-        title: 'Draft: Acetic Acid Inquiry',
-        content: 'Dear Supplier,\n\nWe would like to inquire about Acetic Acid...',
-        productName: 'Acetic Acid',
-        cas: '64-19-7',
-      },
-      {
-        title: 'Draft: Formaldehyde Quote',
-        content: 'Hello,\n\nPlease provide quotation for Formaldehyde...',
-        productName: 'Formaldehyde',
-        cas: '50-00-0',
-      },
-    ];
-
-    for (const draft of drafts) {
-      const message = await messageRepository.createMessage({
-        userId: CURRENT_USER_ID,
-        type: 'inquiry',
-        folder: 'drafts',
-        title: draft.title,
-        content: draft.content,
-        senderId: CURRENT_USER_ID,
-        senderName: 'Normal User',
-        senderAddress: CURRENT_USER_ID,
-        recipientId: 'agent-001',
-        recipientName: 'Chemical Supplier 1',
-        recipientAddress: 'agent-001',
-        productName: draft.productName,
-        cas: draft.cas,
-        quantity: 'TBD',
-        status: 'pending', // pending 表示草稿
-        unread: false,
-        starred: false,
-        deleted: false,
-        archived: false,
-        createdAt: new Date(),
-        sentAt: new Date(),
-      });
-
-      console.log(`  ✓ Created: ${draft.title.substring(0, 50)}...`);
-    }
-
-    console.log('\n✅ Test messages seeded successfully!');
-    console.log('\nSummary:');
-    console.log(`  - ${TEST_INQUIRIES.length} inquiry messages (Inquiries + Sent folder)`);
-    console.log(`  - ${TEST_REPLIES.length} reply messages (Inbox folder, ${TEST_REPLIES.length} unread, 10 languages)`);
-    console.log(`  - ${drafts.length} draft messages (Drafts folder)`);
-    console.log(`\nLanguages: ${TEST_REPLIES.map(r => r.language).join(', ')}`);
-    console.log(`\nTotal messages: ${TEST_INQUIRIES.length + TEST_REPLIES.length + drafts.length}`);
+    console.log('\\n✅ Messages seeded successfully!');
+    console.log(`\\n📊 Summary:`);
+    console.log(`   Total messages: ${mockMessages.length}`);
+    console.log(`   Languages: ${[...new Set(mockMessages.map(m => m.language))].join(', ')}`);
+    console.log(`   Unread: ${mockMessages.filter(m => m.unread).length}`);
+    console.log(`   Read: ${mockMessages.filter(m => !m.unread).length}`);
+    console.log(`   Starred: ${mockMessages.filter(m => m.starred).length}`);
 
   } catch (error) {
-    console.error('❌ Error seeding messages:', error);
-    throw error;
+    console.error('\\n❌ Error seeding messages:', error);
+    process.exit(1);
   }
 }
 
-// 导出函数供外部调用
-export { seedMessages };
-
-// 如果直接运行此文件，执行种子数据生成
-if (require.main === module) {
-  seedMessages().catch(console.error);
-}
+// 运行种子脚本
+seedMessages().then(() => {
+  console.log('\\n🎉 Done!');
+  process.exit(0);
+});
