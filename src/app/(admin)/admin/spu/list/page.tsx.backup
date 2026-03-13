@@ -1799,7 +1799,7 @@ export default function AdminSPUPage() {
                           )}
                         </button>
                         <button
-                          onClick={() => window.location.href = `/admin/spu/edit?id=${spu.id}`}
+                          onClick={() => openEditModal(spu)}
                           className="p-1.5 hover:bg-slate-600 rounded transition-colors"
                           title={t('common.edit')}
                         >
