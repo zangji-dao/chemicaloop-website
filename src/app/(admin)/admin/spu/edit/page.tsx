@@ -1450,7 +1450,7 @@ function SPUEditContent() {
         {/* Dialog 弹窗 */}
         {dialogConfig && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
-            <div className="bg-slate-800 rounded-xl p-6 shadow-xl max-w-md mx-4 border border-slate-700">
+            <div className="bg-slate-800 rounded-xl p-6 shadow-xl w-[420px] max-w-[calc(100vw-2rem)] border border-slate-700">
               <div className="flex items-center gap-3 mb-4">
                 {dialogConfig.type === 'success' && <CheckCircle className="w-6 h-6 text-green-400" />}
                 {dialogConfig.type === 'error' && <X className="w-6 h-6 text-red-400" />}
