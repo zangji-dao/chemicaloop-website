@@ -2533,7 +2533,7 @@ export default function MessagesPage() {
                   <div className="p-4 space-y-3">
                     {contactRequests.map((request) => {
                       const requesterName = request.user?.name || request.requesterName || 'Unknown';
-                      const requesterEmail = request.user?.email || request.requesterEmail || '';
+                      const requesterEmail = request.user?.internalEmail || request.user?.email || request.requesterEmail || '';
                       return (
                       <div
                         key={request.id}
@@ -2629,7 +2629,7 @@ export default function MessagesPage() {
                   <div className="p-4 space-y-3">
                     {contactSentRequests.map((request) => {
                       const receiverName = request.user?.name || request.receiverName || 'Unknown';
-                      const receiverEmail = request.user?.email || request.receiverEmail || '';
+                      const receiverEmail = request.user?.internalEmail || request.user?.email || request.receiverEmail || '';
                       return (
                       <div
                         key={request.id}

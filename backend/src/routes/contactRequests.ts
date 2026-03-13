@@ -102,6 +102,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
         cr.responded_at,
         u.id as "user.id",
         u.email as "user.email",
+        u.internal_email as "user.internalEmail",
         u.username as "user.username",
         u.name as "user.name",
         u.avatar_url as "user.avatarUrl"
@@ -137,6 +138,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
       user: {
         id: row['user.id'],
         email: row['user.email'],
+        internalEmail: row['user.internalEmail'],
         username: row['user.username'],
         name: row['user.name'],
         avatarUrl: row['user.avatarUrl'],
