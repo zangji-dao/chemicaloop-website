@@ -11,6 +11,7 @@ import {
   CheckCircle,
   ExternalLink,
   ArrowLeft,
+  Languages,
 } from 'lucide-react';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
 import { getAdminToken } from '@/services/adminAuthService';
@@ -477,28 +478,16 @@ function SPUEditContent() {
           .filter(({ value }) => value)
           .map(({ key }) => key);
         
-        // 标记为刚同步完成
-        if (fieldsToTranslate.length > 0) {
-          setJustSynced(true);
-          setSyncedFields(new Set(fieldsToTranslate));
-          setPendingTranslations({});
-          setDialogConfig({
-            type: 'success',
-            title: t('spu.syncSuccess'),
-            message: locale === 'zh' 
-              ? `PubChem 数据已获取，${fieldsToTranslate.length} 个字段需要翻译。点击"翻译并保存"按钮开始翻译，或直接点击"保存"保存数据。` 
-              : `PubChem data fetched, ${fieldsToTranslate.length} fields need translation. Click "Translate & Save" or "Save" to save.`,
-          });
-        } else {
-          setJustSynced(true);
-          setDialogConfig({
-            type: 'success',
-            title: t('spu.syncSuccess'),
-            message: locale === 'zh' 
-              ? 'PubChem 数据已获取，点击"保存"保存数据。' 
-              : 'PubChem data fetched. Click "Save" to save.',
-          });
-        }
+        // 同步成功提示
+        setSyncedFields(new Set(fieldsToTranslate));
+        setPendingTranslations({});
+        setDialogConfig({
+          type: 'success',
+          title: t('spu.syncSuccess'),
+          message: locale === 'zh' 
+            ? `PubChem 数据已同步，${fieldsToTranslate.length} 个字段可翻译。您可以点击"翻译"按钮翻译后查看修改，或直接点击"保存"保存数据。` 
+            : `PubChem data synced, ${fieldsToTranslate.length} fields can be translated. Click "Translate" button to translate and review, or click "Save" directly.`,
+        });
       } else {
         setDialogConfig({
           type: 'error',
@@ -593,8 +582,61 @@ function SPUEditContent() {
     setTranslating(false);
     setTranslationProgress(prev => ({ ...prev, status: 'completed' }));
     setPendingTranslations({ ...translations });
+    setJustSynced(false); // 翻译完成后清除同步状态
     
     return translations;
+  };
+
+  // 手动翻译当前表单中所有需要翻译的字段
+  const handleTranslate = async () => {
+    // 定义可翻译的字段
+    const translatableFields = [
+      'description',
+      'physicalDescription',
+      'colorForm',
+      'odor',
+      'density',
+      'boilingPoint',
+      'meltingPoint',
+      'flashPoint',
+      'hazardClasses',
+      'healthHazards',
+      'ghsClassification',
+      'firstAid',
+      'storageConditions',
+      'incompatibleMaterials',
+      'solubility',
+      'vaporPressure',
+      'refractiveIndex',
+    ];
+    
+    // 筛选出有内容的字段
+    const fieldsToTranslate = translatableFields.filter(field => {
+      const value = formData[field as keyof typeof formData];
+      return value && typeof value === 'string' && value.trim().length > 0;
+    });
+    
+    if (fieldsToTranslate.length === 0) {
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '无可翻译内容' : 'No Content to Translate',
+        message: locale === 'zh' 
+          ? '当前表单中没有需要翻译的字段，请先同步 PubChem 数据或手动填写内容。' 
+          : 'No fields with content to translate. Please sync PubChem data or fill in content first.',
+      });
+      return;
+    }
+    
+    const translations: Record<string, any> = { ...pendingTranslations };
+    await translateFields(fieldsToTranslate, translations);
+    
+    setDialogConfig({
+      type: 'success',
+      title: locale === 'zh' ? '翻译完成' : 'Translation Completed',
+      message: locale === 'zh' 
+        ? `已翻译 ${fieldsToTranslate.length} 个字段。您可以查看和修改翻译结果，然后点击保存按钮。` 
+        : `Translated ${fieldsToTranslate.length} fields. You can review and modify the translations, then click Save.`,
+    });
   };
 
   // 生成产品图
@@ -675,13 +717,7 @@ function SPUEditContent() {
     }
 
     const token = getAdminToken();
-    let translations: Record<string, any> = { ...pendingTranslations };
-
-    // 如果刚同步完成且有需要翻译的字段，先翻译
-    if (justSynced && syncedFields.size > 0) {
-      const fieldsToTranslate = Array.from(syncedFields);
-      translations = await translateFields(fieldsToTranslate, translations);
-    }
+    const translations: Record<string, any> = { ...pendingTranslations };
 
     setSaving(true);
     try {
@@ -890,41 +926,35 @@ function SPUEditContent() {
               {spu && <span className="ml-2 text-sm text-slate-500 font-mono">CAS: {spu.cas}</span>}
             </h2>
             
-            {/* 右侧：翻译状态 + 保存按钮 */}
+            {/* 右侧：翻译按钮 + 保存按钮 */}
             <div className="flex items-center gap-3">
-              {/* 翻译状态 */}
-              {translating && (
-                <span className="flex items-center gap-2 text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  <span>{t('spu.translating')}</span>
-                  <span className="text-blue-300">{translationProgress.current}/{translationProgress.total}</span>
-                </span>
-              )}
-              {translationProgress.status === 'completed' && !saving && (
-                <span className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-full">
-                  <CheckCircle className="w-3 h-3" />
-                  <span>{t('spu.translationDoneClickSave')}</span>
-                </span>
-              )}
+              {/* 翻译按钮 */}
+              <button
+                type="button"
+                onClick={handleTranslate}
+                disabled={translating || saving || syncingPubChem}
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-sm transition-colors disabled:opacity-50"
+              >
+                {translating ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                ) : (
+                  <Languages className="w-4 h-4 text-blue-400" />
+                )}
+                <span>{t('spu.translate')}</span>
+              </button>
               
               {/* 保存按钮 */}
               <button
                 onClick={handleSave}
                 disabled={saving || translating || syncingPubChem}
-                className={`flex items-center gap-2 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 ${
-                  justSynced 
-                    ? 'bg-amber-600 hover:bg-amber-700' 
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors disabled:opacity-50"
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
-                ) : translating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Save className="w-4 w-4" />
+                  <Save className="w-4 h-4" />
                 )}
-                <span>{justSynced ? t('spu.translateAndSave') : t('spu.save')}</span>
+                <span>{t('spu.save')}</span>
               </button>
             </div>
           </div>
