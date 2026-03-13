@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Search,
   ChevronLeft,
@@ -164,6 +165,7 @@ function getEnglishName(
 }
 
 export default function AdminSPUPage() {
+  const router = useRouter();
   const { t, locale } = useAdminLocale();
   
   const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
@@ -1799,7 +1801,7 @@ export default function AdminSPUPage() {
                           )}
                         </button>
                         <button
-                          onClick={() => window.location.href = `/admin/spu/edit?id=${spu.id}`}
+                          onClick={() => router.push(`/admin/spu/edit?id=${spu.id}`)}
                           className="p-1.5 hover:bg-slate-600 rounded transition-colors"
                           title={t('common.edit')}
                         >

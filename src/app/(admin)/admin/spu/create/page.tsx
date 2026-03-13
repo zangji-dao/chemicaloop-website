@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Search,
   Database,
@@ -23,6 +24,7 @@ interface SPUItem {
 }
 
 function ProductCreateContent() {
+  const router = useRouter();
   const { locale, t } = useAdminLocale();
 
   // ========== 搜索相关状态 ==========
@@ -68,7 +70,7 @@ function ProductCreateContent() {
         setExistingSPU(data.data[0]);
       } else {
         // 本地不存在 → 跳转到编辑页面
-        window.location.href = `/admin/spu/edit?cas=${encodeURIComponent(cas)}`;
+        router.push(`/admin/spu/edit?cas=${encodeURIComponent(cas)}`);
       }
     } catch (err) {
       console.error('Search error:', err);
@@ -175,7 +177,7 @@ function ProductCreateContent() {
               </p>
 
               <button
-                onClick={() => window.location.href = '/admin/spu'}
+                onClick={() => router.push('/admin/spu')}
                 className="w-full py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors font-medium"
               >
                 {locale === 'zh' ? '前往产品列表' : 'Go to Product List'}
