@@ -4,7 +4,9 @@ import { API_CONFIG } from '@/lib/config';
 
 async function proxyToBackend(request: NextRequest, userId: string): Promise<NextResponse> {
   const url = new URL(request.url);
-  const backendUrl = `${API_CONFIG.backendURL}${url.pathname}${url.search}`;
+  // 前端 /api/www/messages/... → 后端 /api/messages/...
+  const backendPath = url.pathname.replace('/api/www/', '/api/');
+  const backendUrl = `${API_CONFIG.backendURL}${backendPath}${url.search}`;
 
   const headers = new Headers(request.headers);
   headers.set('X-User-ID', userId);

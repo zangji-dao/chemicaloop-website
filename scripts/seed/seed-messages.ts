@@ -4,8 +4,8 @@ import { assertDevEnvironment } from '../lib/env-check';
 // 安全检查：禁止生产环境运行
 assertDevEnvironment();
 
-import * as schema from '../../src/storage/database/shared/schema';
-import { messages, users } from '../../src/storage/database/shared/schema';
+import * as schema from '@/db';
+import { messages, users } from '@/db';
 import { sql } from 'drizzle-orm';
 
 // 当前用户ID

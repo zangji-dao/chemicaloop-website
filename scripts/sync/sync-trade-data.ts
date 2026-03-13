@@ -15,10 +15,10 @@ import { assertDevEnvironment } from '../lib/env-check';
 assertDevEnvironment();
 
 import { getDb } from 'coze-coding-dev-sdk';
-import * as schema from '../../src/storage/database/shared/schema';
+import * as schema from '@/db';
 import { eq, and, sql } from 'drizzle-orm';
-import { getHSCodeByCAS } from '../../src/lib/cas-hs-mapping';
-import { REPORTER_COUNTRIES, getCountryName } from '../../src/lib/country-codes';
+import { getHSCodeByCAS } from '@/services/cas-hs-mapping';
+import { REPORTER_COUNTRIES, getCountryName } from '@/data/country-codes';
 
 // UN Comtrade API 配置
 const UN_COMTRADE_API_BASE = 'https://comtradeapi.un.org/data/v1';

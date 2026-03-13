@@ -8,7 +8,7 @@ assertDevEnvironment();
 
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
-import * as schema from '@/storage/database/shared/schema';
+import * as schema from '@/db';
 
 async function seedCircleData() {
   console.log('开始模拟即时通讯数据...');
