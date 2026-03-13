@@ -51,6 +51,59 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
 });
 
 /**
+ * 获取单个联系人详情
+ * GET /api/contact-members/:contactId
+ */
+router.get('/:contactId', authMiddleware, async (req: AuthRequest, res) => {
+  const { contactId } = req.params;
+
+  try {
+    // 检查是否是当前用户的联系人
+    const contactResult = await pool.query(
+      `SELECT cm.contact_user_id, cm.contact_details, cm.created_at,
+              u.id, u.name, u.email, u.role, u.avatar_url, u.username
+       FROM contact_members cm
+       JOIN users u ON cm.contact_user_id = u.id
+       WHERE cm.user_id = $1 AND cm.contact_user_id = $2`,
+      [req.userId, contactId]
+    );
+
+    if (contactResult.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Contact not found' });
+    }
+
+    const row = contactResult.rows[0];
+    
+    // 获取用户详细资料
+    const profileResult = await pool.query(
+      `SELECT * FROM user_profiles WHERE user_id = $1`,
+      [contactId]
+    );
+
+    const contact = {
+      id: row.contact_user_id,
+      contactUserId: row.contact_user_id,
+      userName: row.name,
+      userEmail: row.email,
+      role: row.role,
+      avatarUrl: row.avatar_url,
+      username: row.username,
+      contactDetails: row.contact_details,
+      createdAt: row.created_at,
+      profile: profileResult.rows[0] || null
+    };
+
+    res.json({
+      success: true,
+      contact
+    });
+  } catch (error: any) {
+    console.error('[Circle Contacts] Get contact detail error:', error);
+    res.status(500).json({ success: false, error: 'Failed to get contact detail' });
+  }
+});
+
+/**
  * 删除圈子联系人（拉黑/移除）
  * DELETE /api/circle-contacts/:contactId
  */
