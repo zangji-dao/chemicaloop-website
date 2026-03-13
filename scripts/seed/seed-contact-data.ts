@@ -15,8 +15,9 @@ async function seedCircleData() {
   
   const db = await getDb(schema);
   
-  // 当前用户ID（测试用户）
-  const currentUserId = 'c4ca4238-a0b9-2382-0dcc-509a6f75849b';
+  // 当前用户ID（测试用户 normaluser）
+  // 注意：必须与 create-test-users.js 中的 ID 一致
+  const currentUserId = 'c4ca4238a0b923820dcc509a6f75849b';
   
   // 创建测试用户（如果不存在）
   const testUsers = [

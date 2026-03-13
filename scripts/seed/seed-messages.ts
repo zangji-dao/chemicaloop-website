@@ -8,7 +8,8 @@ import * as schema from '@/db';
 import { messages, users } from '@/db';
 import { sql } from 'drizzle-orm';
 
-// 当前用户ID
+// 当前用户ID（normaluser）
+// 注意：这是 c4ca4238a0b923820dcc509a6f75849b 的标准 UUID 格式
 const currentUserId = 'c4ca4238-a0b9-2382-0dcc-509a6f75849b';
 
 // 生成多语言邮件数据

@@ -26,8 +26,8 @@ async function createTestUsers() {
          internal_email = EXCLUDED.internal_email,
          verified = EXCLUDED.verified`,
       [
-        'c4ca4238a0b923820dcc509a6f75849b', // UUID
-        'normal@example.com', // 注册邮箱（外网邮箱）
+        'c4ca4238-a0b9-2382-0dcc-509a6f75849b', // UUID (标准格式)
+        'normaluser@example.com', // 注册邮箱（外网邮箱）
         passwordHash,
         'normaluser', // name = username
         'normaluser', // username
@@ -47,7 +47,7 @@ async function createTestUsers() {
          internal_email = EXCLUDED.internal_email,
          verified = EXCLUDED.verified`,
       [
-        'c81e728d9d4c2f636f067f89cc14862c', // UUID
+        'c81e728d-9d4c-2f63-6f06-7f89cc14862c', // UUID (标准格式)
         'agent@example.com', // 注册邮箱（外网邮箱）
         passwordHash,
         'agentuser', // name = username
@@ -61,7 +61,7 @@ async function createTestUsers() {
     // 验证创建结果
     const result = await pool.query(
       `SELECT id, email, name, username, internal_email, role, verified FROM users WHERE email IN ($1, $2)`,
-      ['normal@example.com', 'agent@example.com']
+      ['normaluser@example.com', 'agent@example.com']
     );
 
     console.log('\n✅ Test users created successfully:');
