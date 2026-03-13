@@ -19,7 +19,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
   try {
     // 获取用户的联系人列表
     const result = await pool.query(
-      `SELECT cm.contact_user_id, u.name, u.email, u.role, cm.contact_details, cm.created_at
+      `SELECT cm.contact_user_id, u.name, u.email, u.internal_email, u.role, cm.contact_details, cm.created_at
        FROM contact_members cm
        JOIN users u ON cm.contact_user_id = u.id
        WHERE cm.user_id = $1
@@ -32,7 +32,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
       id: row.contact_user_id,
       contactUserId: row.contact_user_id,
       userName: row.name,
-      userEmail: row.email,
+      userEmail: row.internal_email || row.email,  // 优先使用内网邮箱
+      internalEmail: row.internal_email,
       role: row.role,
       contactDetails: row.contact_details,
       createdAt: row.created_at
@@ -61,7 +62,7 @@ router.get('/:contactId', authMiddleware, async (req: AuthRequest, res) => {
     // 检查是否是当前用户的联系人
     const contactResult = await pool.query(
       `SELECT cm.contact_user_id, cm.contact_details, cm.created_at,
-              u.id, u.name, u.email, u.role, u.avatar_url, u.username
+              u.id, u.name, u.email, u.internal_email, u.role, u.avatar_url, u.username
        FROM contact_members cm
        JOIN users u ON cm.contact_user_id = u.id
        WHERE cm.user_id = $1 AND cm.contact_user_id = $2`,
@@ -110,9 +111,11 @@ router.get('/:contactId', authMiddleware, async (req: AuthRequest, res) => {
       contactUserId: row.contact_user_id,
       // 兼容前端期望的字段名
       name: row.name,
-      email: row.email,
+      email: row.internal_email || row.email,  // 优先使用内网邮箱
+      internalEmail: row.internal_email,        // 内网邮箱
+      externalEmail: row.email,                 // 外部邮箱
       userName: row.name,
-      userEmail: row.email,
+      userEmail: row.internal_email || row.email,  // 优先使用内网邮箱
       role: row.role,
       avatarUrl: row.avatar_url,
       username: row.username,
