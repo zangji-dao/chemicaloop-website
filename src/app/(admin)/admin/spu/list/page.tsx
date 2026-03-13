@@ -256,7 +256,7 @@ export default function AdminSPUPage() {
               <thead>
                 <tr className="border-b border-slate-700">
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">CAS</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.nameZh')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.name')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.formula')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.mw')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.hsCode')}</th>
