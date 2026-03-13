@@ -215,7 +215,7 @@ export default function ChatWidget() {
     if (!userId) return;
 
     try {
-      const response = await fetch(`/api/messages?userId=${userId}&type=inbox`);
+      const response = await fetch(`/api/www/messages?userId=${userId}&type=inbox`);
       if (response.ok) {
         const data = await response.json();
         const messagesList = data.data || [];
@@ -259,7 +259,7 @@ export default function ChatWidget() {
     if (!userId) return;
 
     try {
-      const response = await fetch(`/api/messages?userId=${userId}&type=inbox`);
+      const response = await fetch(`/api/www/messages?userId=${userId}&type=inbox`);
       if (response.ok) {
         const data = await response.json();
         const unreadMessages = (data.data || []).filter((m: any) => !m.isRead);
@@ -276,7 +276,7 @@ export default function ChatWidget() {
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/messages?userId=${userId}&contactId=${contactId}`);
+      const response = await fetch(`/api/www/messages?userId=${userId}&contactId=${contactId}`);
       if (response.ok) {
         const data = await response.json();
         setMessages((data.data || []).map((msg: any) => ({
@@ -312,7 +312,7 @@ export default function ChatWidget() {
     setInputText('');
 
     try {
-      const response = await fetch('/api/messages', {
+      const response = await fetch('/api/www/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

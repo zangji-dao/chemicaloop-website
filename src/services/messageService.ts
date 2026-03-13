@@ -151,17 +151,17 @@ export const getMessages = async (
   if (params.limit) queryParams.append('limit', params.limit.toString());
   if (params.offset) queryParams.append('offset', params.offset.toString());
 
-  return apiRequest(`/api/messages?${queryParams}`);
+  return apiRequest(`/api/www/messages?${queryParams}`);
 };
 
 // 获取单个消息详情
 export const getMessage = async (id: string): Promise<Message> => {
-  return apiRequest(`/api/messages/${id}`);
+  return apiRequest(`/api/www/messages/${id}`);
 };
 
 // 创建新消息
 export const createMessage = async (data: Partial<Message>): Promise<Message> => {
-  return apiRequest('/api/messages', {
+  return apiRequest('/api/www/messages', {
     method: 'POST',
     body: JSON.stringify(data),
   });
@@ -177,7 +177,7 @@ export const saveDraft = async (data: {
   cas?: string;
   quantity?: string;
 }): Promise<Message> => {
-  return apiRequest('/api/messages/draft', {
+  return apiRequest('/api/www/messages/draft', {
     method: 'POST',
     body: JSON.stringify(data),
   });
@@ -185,7 +185,7 @@ export const saveDraft = async (data: {
 
 // 发送消息
 export const sendMessage = async (id: string): Promise<Message> => {
-  return apiRequest(`/api/messages/${id}/send`, {
+  return apiRequest(`/api/www/messages/${id}/send`, {
     method: 'POST',
   });
 };
@@ -196,7 +196,7 @@ export const uploadMessageAttachment = async (file: File): Promise<{ success: bo
   formData.append('file', file);
 
   const token = getAuthToken();
-  const url = API_BASE_URL ? `${API_BASE_URL}/api/messages/upload` : '/api/messages/upload';
+  const url = API_BASE_URL ? `${API_BASE_URL}/api/www/messages/upload` : '/api/www/messages/upload';
 
   const response = await fetch(url, {
     method: 'POST',
@@ -224,20 +224,20 @@ export const getUploadConfig = async (): Promise<{
     allowedTypes: string[];
   };
 }> => {
-  const url = API_BASE_URL ? `${API_BASE_URL}/api/messages/upload` : '/api/messages/upload';
+  const url = API_BASE_URL ? `${API_BASE_URL}/api/www/messages/upload` : '/api/www/messages/upload';
   return fetch(url).then(res => res.json());
 };
 
 // 删除消息
 export const deleteMessage = async (id: string): Promise<{ success: boolean; message: string }> => {
-  return apiRequest(`/api/messages/${id}`, {
+  return apiRequest(`/api/www/messages/${id}`, {
     method: 'DELETE',
   });
 };
 
 // 星标/取消星标
 export const starMessage = async (id: string, starred: boolean): Promise<Message> => {
-  return apiRequest(`/api/messages/${id}`, {
+  return apiRequest(`/api/www/messages/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ starred }),
   });
@@ -248,7 +248,7 @@ export const batchMessages = async (
   ids: string[],
   action: 'delete' | 'archive' | 'mark_read' | 'star'
 ): Promise<{ success: boolean }> => {
-  return apiRequest('/api/messages/batch', {
+  return apiRequest('/api/www/messages/batch', {
     method: 'POST',
     body: JSON.stringify({ ids, action }),
   });
@@ -256,7 +256,7 @@ export const batchMessages = async (
 
 // 获取未读数量
 export const getUnreadCount = async (folder?: string): Promise<{ unreadCount: number }> => {
-  let url = '/api/messages/unread/count';
+  let url = '/api/www/messages/unread/count';
   if (folder) {
     url += `?folder=${folder}`;
   }

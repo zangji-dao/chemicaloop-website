@@ -1224,7 +1224,7 @@ export default function ComposeMessage({
 // 辅助函数 - 需要从外部传入或全局定义
 async function getUploadConfig() {
   const token = getToken();
-  const response = await fetch('/api/messages/upload', {
+  const response = await fetch('/api/www/messages/upload', {
     headers: { 'Authorization': `Bearer ${token}` },
   });
   if (!response.ok) throw new Error('Failed to get upload config');

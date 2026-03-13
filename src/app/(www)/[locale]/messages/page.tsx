@@ -666,7 +666,7 @@ export default function MessagesPage() {
       // 后端会智能判断：如果内容已是目标语言，直接返回原文（不调用 LLM）
       console.log(`[Translation] Requesting translation for message ${messageId} to ${locale}`);
       const response = await authFetch(
-        `/api/messages/${messageId}/translate?lang=${locale}`
+        `/api/www/messages/${messageId}/translate?lang=${locale}`
       );
 
       if (!response.ok) {
@@ -960,7 +960,7 @@ export default function MessagesPage() {
 
       // 异步调用 API 标记消息为已读
       console.log('[markAsRead] Calling API...');
-      const response = await authFetch(`/api/messages/${messageId}/read`, {
+      const response = await authFetch(`/api/www/messages/${messageId}/read`, {
         method: 'PATCH',
       });
 
@@ -1463,7 +1463,7 @@ export default function MessagesPage() {
   // 归档消息
   const archiveMessage = async (messageId: string) => {
     try {
-      await authFetch(`/api/messages/${messageId}`, {
+      await authFetch(`/api/www/messages/${messageId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -1543,7 +1543,7 @@ export default function MessagesPage() {
       const targetFolder = selectedMessage?.sender_id === selectedMessage?.user_id ? 'sent' : 'inbox';
       
       // 调用恢复 API
-      const response = await authFetch(`/api/messages/${messageId}/restore`, {
+      const response = await authFetch(`/api/www/messages/${messageId}/restore`, {
         method: 'POST',
         body: JSON.stringify({ folder: targetFolder }),
       });
