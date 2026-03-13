@@ -79,6 +79,81 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
 });
 
 /**
+ * 获取联系人请求列表
+ * GET /api/contact-requests?role=receiver|requester&status=pending|approved|rejected
+ */
+router.get('/', authMiddleware, async (req: AuthRequest, res) => {
+  const { role, status } = req.query;
+  const userId = req.userId;
+
+  try {
+    let query = `
+      SELECT 
+        cr.id,
+        cr.requester_id,
+        cr.receiver_id,
+        cr.message_id,
+        cr.requested_contact_ids,
+        cr.requester_shared_contacts,
+        cr.message,
+        cr.status,
+        cr.rejection_reason,
+        cr.created_at,
+        cr.responded_at,
+        u.id as "user.id",
+        u.email as "user.email",
+        u.username as "user.username",
+        u.name as "user.name",
+        u.avatar_url as "user.avatarUrl"
+      FROM contact_requests cr
+      INNER JOIN users u ON ${role === 'requester' ? 'cr.receiver_id' : 'cr.requester_id'} = u.id
+      WHERE ${role === 'requester' ? 'cr.requester_id' : 'cr.receiver_id'} = $1
+    `;
+    const params: any[] = [userId];
+    let paramIndex = 2;
+
+    if (status) {
+      query += ` AND cr.status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+
+    query += ' ORDER BY cr.created_at DESC';
+
+    const result = await pool.query(query, params);
+
+    const requests = result.rows.map((row: any) => ({
+      id: row.id,
+      requesterId: row.requester_id,
+      receiverId: row.receiver_id,
+      messageId: row.message_id,
+      requestedContactIds: row.requested_contact_ids || [],
+      requesterSharedContacts: row.requester_shared_contacts || {},
+      message: row.message,
+      status: row.status,
+      rejectionReason: row.rejection_reason,
+      createdAt: row.created_at,
+      respondedAt: row.responded_at,
+      user: {
+        id: row['user.id'],
+        email: row['user.email'],
+        username: row['user.username'],
+        name: row['user.name'],
+        avatarUrl: row['user.avatarUrl'],
+      }
+    }));
+
+    res.json({
+      success: true,
+      requests,
+    });
+  } catch (error: any) {
+    console.error('[Contact Requests] Fetch error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch contact requests' });
+  }
+});
+
+/**
  * 获取待处理的圈子请求列表
  * GET /api/circle-requests/pending
  */
