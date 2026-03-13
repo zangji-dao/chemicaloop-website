@@ -506,7 +506,7 @@ function SPUEditContent() {
                   onChange={(e) => setFormData(prev => ({ ...prev, cas: e.target.value }))}
                   disabled={!!spuId}
                   placeholder="50-00-0"
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 disabled:opacity-50"
+                  className="form-input-dark disabled:opacity-50"
                 />
               </div>
               {/* HS编码 */}
@@ -517,7 +517,7 @@ function SPUEditContent() {
                   value={formData.hsCode}
                   onChange={(e) => setFormData(prev => ({ ...prev, hsCode: e.target.value.replace(/[^0-9.]/g, '').slice(0, 20) }))}
                   placeholder="290241"
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark-mono"
                 />
               </div>
               {/* 状态 */}
@@ -526,7 +526,7 @@ function SPUEditContent() {
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 >
                   <option value="ACTIVE">{t('spu.active')}</option>
                   <option value="INACTIVE">{t('spu.inactive')}</option>
@@ -542,7 +542,7 @@ function SPUEditContent() {
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder={t('spu.placeholderChineseName')}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
               {/* 英文名称 */}
@@ -553,7 +553,7 @@ function SPUEditContent() {
                   value={formData.nameEn}
                   onChange={(e) => setFormData(prev => ({ ...prev, nameEn: e.target.value }))}
                   placeholder="English Name"
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
             </div>
@@ -579,7 +579,7 @@ function SPUEditContent() {
                           hsCodeExtensions: { ...prev.hsCodeExtensions, [country.code]: e.target.value }
                         }))}
                         placeholder={`${country.digits}位编码`}
-                        className="flex-1 bg-slate-900/50 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                        className="form-input-dark-sm font-mono"
                       />
                     </div>
                   ))}
@@ -599,7 +599,7 @@ function SPUEditContent() {
                   value={formData.formula}
                   onChange={(e) => setFormData(prev => ({ ...prev, formula: e.target.value }))}
                   placeholder="C2H5OH"
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark-mono"
                 />
               </div>
               <div>
@@ -609,7 +609,7 @@ function SPUEditContent() {
                   value={formData.molecularWeight}
                   onChange={(e) => setFormData(prev => ({ ...prev, molecularWeight: e.target.value }))}
                   placeholder="46.07"
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark-mono"
                 />
               </div>
               <div>
@@ -619,7 +619,7 @@ function SPUEditContent() {
                   value={formData.smiles}
                   onChange={(e) => setFormData(prev => ({ ...prev, smiles: e.target.value }))}
                   placeholder="CCO"
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark-mono"
                 />
               </div>
               <div>
@@ -629,7 +629,7 @@ function SPUEditContent() {
                   value={formData.inchiKey}
                   onChange={(e) => setFormData(prev => ({ ...prev, inchiKey: e.target.value }))}
                   placeholder="LFQSCWFLJHTTHZ-UHFFFAOYSA-N"
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark-mono"
                 />
               </div>
             </div>
@@ -643,7 +643,7 @@ function SPUEditContent() {
               <textarea
                 value={formData.physicalDescription}
                 onChange={(e) => { autoResizeTextarea(e); setFormData(prev => ({ ...prev, physicalDescription: e.target.value })); }}
-                className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 overflow-hidden"
+                className="form-input-dark overflow-hidden"
                 style={{ height: 'auto' }}
               />
             </div>
@@ -654,7 +654,7 @@ function SPUEditContent() {
                   type="text"
                   value={formData.colorForm}
                   onChange={(e) => setFormData(prev => ({ ...prev, colorForm: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
               <div>
@@ -663,7 +663,7 @@ function SPUEditContent() {
                   type="text"
                   value={formData.odor}
                   onChange={(e) => setFormData(prev => ({ ...prev, odor: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
               <div>
@@ -672,7 +672,7 @@ function SPUEditContent() {
                   type="text"
                   value={formData.density}
                   onChange={(e) => setFormData(prev => ({ ...prev, density: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
               <div>
@@ -681,7 +681,7 @@ function SPUEditContent() {
                   type="text"
                   value={formData.boilingPoint}
                   onChange={(e) => setFormData(prev => ({ ...prev, boilingPoint: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
               <div>
@@ -690,7 +690,7 @@ function SPUEditContent() {
                   type="text"
                   value={formData.meltingPoint}
                   onChange={(e) => setFormData(prev => ({ ...prev, meltingPoint: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
               <div>
@@ -699,7 +699,7 @@ function SPUEditContent() {
                   type="text"
                   value={formData.flashPoint}
                   onChange={(e) => setFormData(prev => ({ ...prev, flashPoint: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
               <div>
@@ -708,7 +708,7 @@ function SPUEditContent() {
                   type="text"
                   value={formData.solubility}
                   onChange={(e) => setFormData(prev => ({ ...prev, solubility: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
               <div>
@@ -717,7 +717,7 @@ function SPUEditContent() {
                   type="text"
                   value={formData.vaporPressure}
                   onChange={(e) => setFormData(prev => ({ ...prev, vaporPressure: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
               <div>
@@ -726,7 +726,7 @@ function SPUEditContent() {
                   type="text"
                   value={formData.refractiveIndex}
                   onChange={(e) => setFormData(prev => ({ ...prev, refractiveIndex: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
             </div>
@@ -742,7 +742,7 @@ function SPUEditContent() {
                   type="text"
                   value={formData.hazardClasses}
                   onChange={(e) => setFormData(prev => ({ ...prev, hazardClasses: e.target.value }))}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                  className="form-input-dark"
                 />
               </div>
               <div>
@@ -750,7 +750,7 @@ function SPUEditContent() {
                 <textarea
                   value={formData.healthHazards}
                   onChange={(e) => { autoResizeTextarea(e); setFormData(prev => ({ ...prev, healthHazards: e.target.value })); }}
-                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 overflow-hidden"
+                  className="form-input-dark overflow-hidden"
                   style={{ height: 'auto' }}
                 />
               </div>
@@ -760,7 +760,7 @@ function SPUEditContent() {
                   <textarea
                     value={formData.firstAid}
                     onChange={(e) => { autoResizeTextarea(e); setFormData(prev => ({ ...prev, firstAid: e.target.value })); }}
-                    className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 overflow-hidden"
+                    className="form-input-dark overflow-hidden"
                     style={{ height: 'auto' }}
                   />
                 </div>
@@ -769,7 +769,7 @@ function SPUEditContent() {
                   <textarea
                     value={formData.storageConditions}
                     onChange={(e) => { autoResizeTextarea(e); setFormData(prev => ({ ...prev, storageConditions: e.target.value })); }}
-                    className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 overflow-hidden"
+                    className="form-input-dark overflow-hidden"
                     style={{ height: 'auto' }}
                   />
                 </div>
@@ -796,7 +796,7 @@ function SPUEditContent() {
                 value={synonymInput}
                 onChange={(e) => setSynonymInput(e.target.value)}
                 onKeyPress={(e) => { if (e.key === 'Enter' && synonymInput.trim()) { setFormData(prev => ({ ...prev, synonyms: [...prev.synonyms, synonymInput.trim()] })); setSynonymInput(''); } }}
-                className="flex-1 bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                className="form-input-dark flex-1"
               />
               <button
                 type="button"
@@ -815,7 +815,7 @@ function SPUEditContent() {
               value={formData.description}
               onChange={(e) => { autoResizeTextarea(e); setFormData(prev => ({ ...prev, description: e.target.value })); }}
               placeholder={t('spu.placeholderDescription')}
-              className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 overflow-hidden"
+              className="form-input-dark overflow-hidden"
               style={{ height: 'auto' }}
             />
           </div>
