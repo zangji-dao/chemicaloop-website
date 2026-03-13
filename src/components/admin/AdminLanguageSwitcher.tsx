@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
-import { AdminLocale, adminLocaleNames, adminLocaleFlags, adminLocales } from '@/lib/admin-i18n';
+import { AdminLocale, adminLocaleNames, adminLocaleFlags, adminLocales } from '@/i18n/admin';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
 
 interface AdminLanguageSwitcherProps {

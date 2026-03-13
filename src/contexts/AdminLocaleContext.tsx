@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { AdminLocale, adminDefaultLocale, adminLocales, adminLocaleNames, adminTranslations } from '@/lib/admin-i18n';
+import { AdminLocale, adminDefaultLocale, adminLocales, adminLocaleNames, adminTranslations } from '@/i18n/admin';
 import { getAdminToken } from '@/services/adminAuthService';
 
 interface AdminLocaleContextType {

@@ -8,13 +8,13 @@ export default getRequestConfig(async ({ locale }) => {
   // 使用动态导入加载 messages
   let messages;
   try {
-    const messagesModule = await import(`./messages/${validLocale}.json`);
+    const messagesModule = await import(`./i18n/www/${validLocale}.json`);
     messages = messagesModule.default;
   } catch (error) {
     console.error(`Failed to load messages for locale "${validLocale}":`, error);
     // 如果当前语言加载失败，fallback 到默认语言
     try {
-      const defaultMessagesModule = await import(`./messages/${defaultLocale}.json`);
+      const defaultMessagesModule = await import(`./i18n/www/${defaultLocale}.json`);
       messages = defaultMessagesModule.default;
       console.warn(`Using default locale "${defaultLocale}" translations`);
     } catch (defaultError) {
