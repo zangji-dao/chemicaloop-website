@@ -28,6 +28,7 @@ interface SPUItem {
   status: string;
   pubchem_cid?: number;
   molecular_weight?: string;
+  sku_count?: number;
   translations?: {
     name?: Record<string, string>;
   };
@@ -260,6 +261,7 @@ export default function AdminSPUPage() {
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.formula')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.mw')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.hsCode')}</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-slate-400">{t('spu.skuCount')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.status')}</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-slate-400">{t('common.actions')}</th>
                 </tr>
@@ -290,6 +292,11 @@ export default function AdminSPUPage() {
                     <td className="px-4 py-3 font-mono text-sm">{spu.formula || '-'}</td>
                     <td className="px-4 py-3 text-sm">{spu.molecular_weight || '-'}</td>
                     <td className="px-4 py-3 font-mono text-sm text-slate-300">{spu.hs_code || '-'}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`px-2 py-0.5 rounded text-sm ${(spu.sku_count || 0) > 0 ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-700 text-slate-400'}`}>
+                        {spu.sku_count || 0}
+                      </span>
+                    </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded text-xs ${statusConfig[spu.status]?.bgColor} ${statusConfig[spu.status]?.color}`}>
                         {statusConfig[spu.status]?.label || spu.status}

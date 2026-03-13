@@ -74,11 +74,17 @@ export async function GET(request: NextRequest) {
     const whereClause = conditions.join(' AND ');
     const countWhereClause = countConditions.join(' AND ');
     
-    // 简化查询：暂时不计算 SKU 数量，提升性能
+    // 查询 SPU 列表，同时计算每个 SPU 的 SKU 数量
     const queryText = `
       SELECT 
-        p.*
+        p.*,
+        COALESCE(sku_counts.sku_count, 0) as sku_count
       FROM products p
+      LEFT JOIN (
+        SELECT spu_id, COUNT(*) as sku_count 
+        FROM agent_products 
+        GROUP BY spu_id
+      ) sku_counts ON sku_counts.spu_id = p.id
       WHERE ${whereClause}
       ORDER BY p.created_at DESC 
       LIMIT ${limit} OFFSET ${offset}
