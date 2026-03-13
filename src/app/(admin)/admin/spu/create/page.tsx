@@ -1552,7 +1552,7 @@ function ProductUploadContent() {
                           href={`https://pubchem.ncbi.nlm.nih.gov/compound/${pubchemData?.cid || selectedSPU?.pubchem_cid}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 flex items-center"
+                          className="px-3 py-2 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 flex items-center"
                         >
                           <ExternalLink className="h-4 w-4" />
                         </a>
@@ -1564,54 +1564,54 @@ function ProductUploadContent() {
 
               {/* 结构信息区块 */}
               {(pubchemData?.smiles || pubchemData?.inchiKey || pubchemData?.inchi || pubchemData?.xlogp) && (
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.structureInfo')}</h3>
+                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.structureInfo')}</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     {/* SMILES */}
                     {pubchemData?.smiles && (
                       <div className="md:col-span-2">
-                        <label className="block text-xs text-gray-500 mb-1">SMILES</label>
+                        <label className="block text-xs text-slate-400 mb-1">SMILES</label>
                         <input
                           type="text"
                           value={pubchemData.smiles}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-sm text-slate-300"
                         />
                       </div>
                     )}
                     {/* InChIKey */}
                     {pubchemData?.inchiKey && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">InChIKey</label>
+                        <label className="block text-xs text-slate-400 mb-1">InChIKey</label>
                         <input
                           type="text"
                           value={pubchemData.inchiKey}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-sm text-slate-300"
                         />
                       </div>
                     )}
                     {/* XLogP */}
                     {pubchemData?.xlogp && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">XLogP</label>
+                        <label className="block text-xs text-slate-400 mb-1">XLogP</label>
                         <input
                           type="text"
                           value={pubchemData.xlogp}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-slate-300"
                         />
                       </div>
                     )}
                     {/* InChI */}
                     {pubchemData?.inchi && (
                       <div className="md:col-span-2">
-                        <label className="block text-xs text-gray-500 mb-1">InChI</label>
+                        <label className="block text-xs text-slate-400 mb-1">InChI</label>
                         <input
                           type="text"
                           value={pubchemData.inchi}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-xs"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg font-mono text-xs text-slate-300"
                         />
                       </div>
                     )}
@@ -1622,72 +1622,72 @@ function ProductUploadContent() {
               {/* 物理化学性质区块 */}
               {(pubchemData?.boilingPoint || pubchemData?.meltingPoint || pubchemData?.flashPoint || 
                 pubchemData?.density || pubchemData?.solubility || pubchemData?.vaporPressure) && (
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.physicochemicalProperties')}</h3>
+                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.physicochemicalProperties')}</h3>
                   <div className="grid md:grid-cols-3 gap-4">
                     {pubchemData?.boilingPoint && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{t('spu.boilingPoint')}</label>
+                        <label className="block text-xs text-slate-400 mb-1">{t('spu.boilingPoint')}</label>
                         <input
                           type="text"
                           value={formData.translations?.boilingPoint?.[locale] || pubchemData.boilingPoint}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                         />
                       </div>
                     )}
                     {pubchemData?.meltingPoint && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{t('spu.meltingPoint')}</label>
+                        <label className="block text-xs text-slate-400 mb-1">{t('spu.meltingPoint')}</label>
                         <input
                           type="text"
                           value={formData.translations?.meltingPoint?.[locale] || pubchemData.meltingPoint}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                         />
                       </div>
                     )}
                     {pubchemData?.flashPoint && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{t('spu.flashPoint')}</label>
+                        <label className="block text-xs text-slate-400 mb-1">{t('spu.flashPoint')}</label>
                         <input
                           type="text"
                           value={formData.translations?.flashPoint?.[locale] || pubchemData.flashPoint}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                         />
                       </div>
                     )}
                     {pubchemData?.density && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{t('spu.density')}</label>
+                        <label className="block text-xs text-slate-400 mb-1">{t('spu.density')}</label>
                         <input
                           type="text"
                           value={formData.translations?.density?.[locale] || pubchemData.density}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                         />
                       </div>
                     )}
                     {pubchemData?.solubility && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{t('spu.solubility')}</label>
+                        <label className="block text-xs text-slate-400 mb-1">{t('spu.solubility')}</label>
                         <input
                           type="text"
                           value={formData.translations?.solubility?.[locale] || pubchemData.solubility}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                         />
                       </div>
                     )}
                     {pubchemData?.vaporPressure && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">{t('spu.vaporPressure')}</label>
+                        <label className="block text-xs text-slate-400 mb-1">{t('spu.vaporPressure')}</label>
                         <input
                           type="text"
                           value={formData.translations?.vaporPressure?.[locale] || pubchemData.vaporPressure}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                         />
                       </div>
                     )}
@@ -1698,37 +1698,37 @@ function ProductUploadContent() {
               {/* 物理描述区块 */}
               {(pubchemData?.physicalDescription || pubchemData?.colorForm || pubchemData?.odor || 
                 selectedSPU?.physicalDescription || selectedSPU?.colorForm || selectedSPU?.odor) && (
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.physicalDescription')}</h3>
+                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.physicalDescription')}</h3>
                   <div className="grid md:grid-cols-3 gap-4">
                     {/* 物理描述 */}
                     <div className="md:col-span-3">
-                      <label className="block text-xs text-gray-500 mb-1">{t('spu.physicalDescription')}</label>
+                      <label className="block text-xs text-slate-400 mb-1">{t('spu.physicalDescription')}</label>
                       <textarea
                         value={formData.translations?.physicalDescription?.[locale] || pubchemData?.physicalDescription || selectedSPU?.physicalDescription || ''}
                         readOnly
                         rows={2}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-slate-300"
                       />
                     </div>
                     {/* 颜色/形态 */}
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">{t('spu.colorForm')}</label>
+                      <label className="block text-xs text-slate-400 mb-1">{t('spu.colorForm')}</label>
                       <input
                         type="text"
                         value={formData.translations?.colorForm?.[locale] || pubchemData?.colorForm || selectedSPU?.colorForm || ''}
                         readOnly
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                       />
                     </div>
                     {/* 气味 */}
                     <div className="md:col-span-2">
-                      <label className="block text-xs text-gray-500 mb-1">{t('spu.odor')}</label>
+                      <label className="block text-xs text-slate-400 mb-1">{t('spu.odor')}</label>
                       <input
                         type="text"
                         value={formData.translations?.odor?.[locale] || pubchemData?.odor || selectedSPU?.odor || ''}
                         readOnly
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300"
                       />
                     </div>
                   </div>
@@ -1737,18 +1737,18 @@ function ProductUploadContent() {
 
               {/* 危险性分类 */}
               {(pubchemData?.hazardClasses || selectedSPU?.hazardClasses) && (
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.hazardClassification')}</h3>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-sm text-red-800">{formData.translations?.hazardClasses?.[locale] || pubchemData?.hazardClasses || selectedSPU?.hazardClasses}</p>
+                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.hazardClassification')}</h3>
+                  <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
+                    <p className="text-sm text-red-300">{formData.translations?.hazardClasses?.[locale] || pubchemData?.hazardClasses || selectedSPU?.hazardClasses}</p>
                   </div>
                 </div>
               )}
 
               {/* 产品描述 */}
               {(pubchemData?.description || selectedSPU?.description) && (
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.description')}</h3>
+                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.description')}</h3>
                   <textarea
                     value={(() => {
                       // 优先显示翻译后的描述
@@ -1760,15 +1760,15 @@ function ProductUploadContent() {
                     })()}
                     readOnly
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-slate-300"
                   />
                 </div>
               )}
 
               {/* 行业应用 */}
               {((pubchemData?.applications && pubchemData.applications.length > 0) || (selectedSPU?.applications && selectedSPU.applications.length > 0)) && (
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.applications')}</h3>
+                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.applications')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {(() => {
                       const apps = pubchemData?.applications || selectedSPU?.applications || [];
@@ -1776,17 +1776,17 @@ function ProductUploadContent() {
                       const translatedApps = formData.translations?.applications?.[locale];
                       if (Array.isArray(translatedApps)) {
                         return translatedApps.map((app: string, index: number) => (
-                          <span key={index} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm border border-blue-200">
+                          <span key={index} className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm border border-blue-500/30">
                             {app}
                           </span>
                         ));
                       }
                       // 否则显示原文
                       return apps.map((app: string, index: number) => (
-                        <span key={index} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm border border-blue-200">
-                          {app}
-                        </span>
-                      ));
+                        <span key={index} className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm border border-blue-500/30">
+                            {app}
+                          </span>
+                        ));
                     })()}
                   </div>
                 </div>
@@ -1794,16 +1794,16 @@ function ProductUploadContent() {
 
               {/* 同义词/别名 */}
               {(pubchemData?.synonyms?.length > 0) && (
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('spu.synonymsAliases')}</h3>
+                <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
+                  <h3 className="text-sm font-semibold text-white mb-4">{t('spu.synonymsAliases')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {pubchemData.synonyms.slice(0, 20).map((synonym: string, index: number) => (
-                      <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                      <span key={index} className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">
                         {synonym}
                       </span>
                     ))}
                     {pubchemData.synonyms.length > 20 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded text-xs">
+                      <span className="px-2 py-1 bg-slate-700 text-slate-500 rounded text-xs">
                         +{pubchemData.synonyms.length - 20} {t('spu.more')}
                       </span>
                     )}
@@ -1812,40 +1812,40 @@ function ProductUploadContent() {
               )}
 
               {/* AI 自动生成的数据 */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="bg-blue-600/10 border border-blue-500/30 rounded-lg p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Database className="h-5 w-5 text-blue-600" />
-                  <span className="font-semibold text-blue-900">
+                  <Database className="h-5 w-5 text-blue-400" />
+                  <span className="font-semibold text-blue-400">
                     {t('spu.aiGeneratedEditable')}
                   </span>
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* 产品图 */}
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="text-sm text-gray-600 mb-2">{t('spu.productImage')}</div>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <div className="text-sm text-slate-300 mb-2">{t('spu.productImage')}</div>
                     {formData.generatedImageUrl ? (
                       <div className="relative">
                         <img 
                           src={formData.generatedImageUrl} 
                           alt="Generated product"
-                          className="w-full h-40 object-contain rounded border border-gray-200 bg-white"
+                          className="w-full h-40 object-contain rounded border border-slate-600 bg-slate-800"
                           loading="lazy"
                         />
                         <button
                           onClick={() => setFormData({ ...formData, generatedImageUrl: '' })}
-                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
                         >
                           <X className="h-4 w-4" />
                         </button>
                       </div>
                     ) : (
-                      <div className="w-full h-40 rounded border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-gray-400">
+                      <div className="w-full h-40 rounded border border-dashed border-slate-600 bg-slate-800 flex items-center justify-center text-slate-500">
                         {t('spu.noProductImage')}
                       </div>
                     )}
                     <div className="mt-2">
-                      <label className="block text-xs text-gray-500 mb-1">
+                      <label className="block text-xs text-slate-400 mb-1">
                         {t('spu.imageUrlReplaceable')}
                       </label>
                       <input
@@ -1853,36 +1853,36 @@ function ProductUploadContent() {
                         value={formData.generatedImageUrl}
                         onChange={(e) => setFormData({ ...formData, generatedImageUrl: e.target.value })}
                         placeholder={t('spu.enterImageUrl')}
-                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                        className="w-full px-2 py-1 text-xs bg-slate-800 border border-slate-600 rounded text-slate-300"
                       />
                     </div>
                   </div>
 
                   {/* HS编码 */}
-                  <div className="bg-white rounded-lg p-4 shadow-sm">
-                    <div className="text-sm text-gray-600 mb-2">{t('spu.hsCode')}</div>
+                  <div className="bg-slate-700/50 rounded-lg p-4">
+                    <div className="text-sm text-slate-300 mb-2">{t('spu.hsCode')}</div>
                     <input
                       type="text"
                       value={formData.hsCode}
                       onChange={(e) => setFormData({ ...formData, hsCode: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg font-mono text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg font-mono text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
                       placeholder={t('spu.hsCode')}
                     />
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-slate-400 mt-2">
                       {t('spu.hsCodeForCustoms')}
                     </p>
                   </div>
 
                   {/* 多语言翻译 */}
-                  <div className="bg-white rounded-lg p-4 shadow-sm md:col-span-2">
-                    <div className="text-sm text-gray-600 mb-3">{t('spu.multiLangTranslations')}</div>
+                  <div className="bg-slate-700/50 rounded-lg p-4 md:col-span-2">
+                    <div className="text-sm text-slate-300 mb-3">{t('spu.multiLangTranslations')}</div>
                     {Object.keys(formData.translations.name || {}).length > 0 ? (
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                         {Object.entries(formData.translations.name || {}).map(([lang, name]) => (
-                          <div key={lang} className={`bg-gray-50 rounded p-2 ${lang === locale ? 'ring-2 ring-blue-400' : ''}`}>
-                            <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                          <div key={lang} className={`bg-slate-800 rounded p-2 ${lang === locale ? 'ring-2 ring-blue-400' : ''}`}>
+                            <div className="text-xs text-slate-400 mb-1 flex items-center gap-1">
                               <span className="font-medium uppercase">{lang}</span>
-                              {lang === locale && <span className="text-blue-600">✓</span>}
+                              {lang === locale && <span className="text-blue-400">✓</span>}
                             </div>
                             <input
                               type="text"
@@ -1899,13 +1899,13 @@ function ProductUploadContent() {
                                   },
                                 }));
                               }}
-                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
+                              className="w-full px-2 py-1 text-sm bg-slate-700 border border-slate-600 rounded text-white"
                             />
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-gray-400 text-sm py-4 text-center">
+                      <div className="text-slate-500 text-sm py-4 text-center">
                         {t('spu.noTranslationData')}
                       </div>
                     )}
@@ -1996,20 +1996,20 @@ function ProductUploadContent() {
       {showDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/50" onClick={() => setShowDialog(false)} />
-          <div className="relative bg-white rounded-lg shadow-lg p-6 max-w-md mx-4 z-10">
+          <div className="relative bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-6 max-w-md mx-4 z-10">
             <div className="flex items-center gap-3 mb-4">
               {dialogContent.type === 'success' ? (
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <Check className="h-5 w-5 text-green-600" />
+                <div className="w-10 h-10 rounded-full bg-green-600/20 flex items-center justify-center">
+                  <Check className="h-5 w-5 text-green-400" />
                 </div>
               ) : (
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                  <AlertCircle className="h-5 w-5 text-red-600" />
+                <div className="w-10 h-10 rounded-full bg-red-600/20 flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5 text-red-400" />
                 </div>
               )}
-              <h3 className="text-lg font-semibold text-gray-900">{dialogContent.title}</h3>
+              <h3 className="text-lg font-semibold text-white">{dialogContent.title}</h3>
             </div>
-            <p className="text-gray-600 mb-6">{dialogContent.message}</p>
+            <p className="text-slate-300 mb-6">{dialogContent.message}</p>
             <button
               onClick={() => setShowDialog(false)}
               className={`w-full py-2 px-4 rounded-lg text-white font-medium ${
