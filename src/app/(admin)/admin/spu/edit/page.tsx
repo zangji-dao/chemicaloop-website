@@ -402,9 +402,9 @@ function SPUEditContent() {
   }
 
   return (
-    <div className="fixed top-16 left-0 right-0 bottom-0 bg-slate-900 z-30 flex flex-col overflow-hidden lg:left-64">
+    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full">
       {/* 顶部导航 */}
-      <div className="bg-slate-800/50 border-b border-slate-700/50 px-5 py-3 flex-shrink-0">
+      <div className="bg-slate-800/50 border-b border-slate-700/50 px-5 py-3 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
             <button
@@ -431,8 +431,7 @@ function SPUEditContent() {
       </div>
 
       {/* 内容区域 */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="max-w-4xl mx-auto p-5">
+      <div className="max-w-4xl mx-auto p-5 pb-20">
           {/* 图片展示区域 */}
           {(pubchemInfo.cid || structureImageUrl) && (
             <div className="mb-6 p-4 bg-slate-700/30 border border-slate-600 rounded-lg">
@@ -820,7 +819,6 @@ function SPUEditContent() {
             />
           </div>
         </div>
-      </div>
     </div>
   );
 }
