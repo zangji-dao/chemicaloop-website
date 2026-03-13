@@ -117,6 +117,7 @@
     "hsCodeHint": "رمز HS لربط بيانات الجمارك",
     "description": "وصف المنتج",
     "status": "الحالة",
+    "allStatus": "جميع الحالات",
     "active": "مدرج",
     "inactive": "غير مدرج",
     "pubchem": "PubChem",

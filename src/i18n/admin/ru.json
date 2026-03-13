@@ -117,6 +117,7 @@
     "hsCodeHint": "Код HS для связи с таможенными данными",
     "description": "Описание продукта",
     "status": "Статус",
+    "allStatus": "Все статусы",
     "active": "В списке",
     "inactive": "Не в списке",
     "pubchem": "PubChem",

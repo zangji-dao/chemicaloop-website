@@ -117,6 +117,7 @@
     "hsCodeHint": "HS-Code für Zolldatenverknüpfung",
     "description": "Produktbeschreibung",
     "status": "Status",
+    "allStatus": "Alle Status",
     "active": "Gelistet",
     "inactive": "Nicht gelistet",
     "pubchem": "PubChem",

@@ -117,6 +117,7 @@
     "hsCodeHint": "Code HS pour l'association aux données douanières",
     "description": "Description du produit",
     "status": "Statut",
+    "allStatus": "Tous les statuts",
     "active": "Listé",
     "inactive": "Non listé",
     "pubchem": "PubChem",

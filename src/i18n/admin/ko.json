@@ -117,6 +117,7 @@
     "hsCodeHint": "통관 데이터 연동용 HS 코드",
     "description": "제품 설명",
     "status": "상태",
+    "allStatus": "모든 상태",
     "active": "게시중",
     "inactive": "게시중지",
     "pubchem": "PubChem",

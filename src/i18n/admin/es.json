@@ -117,6 +117,7 @@
     "hsCodeHint": "Código HS para asociación de datos aduaneros",
     "description": "Descripción del producto",
     "status": "Estado",
+    "allStatus": "Todos los estados",
     "active": "Listado",
     "inactive": "No listado",
     "pubchem": "PubChem",
