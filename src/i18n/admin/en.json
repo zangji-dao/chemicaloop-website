@@ -188,6 +188,7 @@
     "hsCodeHint": "HS Code for customs data association",
     "description": "Description",
     "status": "Status",
+    "allStatus": "All Status",
     "active": "Listed",
     "inactive": "Unlisted",
     "pubchem": "PubChem",

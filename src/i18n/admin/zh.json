@@ -47,6 +47,7 @@
     "pending": "待审核",
     "approved": "已通过",
     "rejected": "已拒绝",
+    "allStatus": "全部状态",
     "active": "已上架",
     "inactive": "已下架",
     "reviewProducts": "审核产品",
