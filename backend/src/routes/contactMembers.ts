@@ -80,9 +80,37 @@ router.get('/:contactId', authMiddleware, async (req: AuthRequest, res) => {
       [contactId]
     );
 
+    const profile = profileResult.rows[0] || null;
+    
+    // 构建社交联系方式
+    const socialContacts: Record<string, string> = {};
+    if (profile) {
+      if (profile.wechat) socialContacts.wechat = profile.wechat;
+      if (profile.whatsapp) socialContacts.whatsapp = profile.whatsapp;
+      if (profile.telegram) socialContacts.telegram = profile.telegram;
+      if (profile.messenger) socialContacts.messenger = profile.messenger;
+      if (profile.skype) socialContacts.skype = profile.skype;
+      if (profile.line) socialContacts.line = profile.line;
+      if (profile.viber) socialContacts.viber = profile.viber;
+      if (profile.instagram) socialContacts.instagram = profile.instagram;
+      if (profile.linkedin) socialContacts.linkedin = profile.linkedin;
+      if (profile.qq) socialContacts.qq = profile.qq;
+    }
+    // 也使用 contact_details 作为备用
+    if (row.contact_details) {
+      Object.assign(socialContacts, row.contact_details);
+    }
+
+    // 构建位置信息
+    const locationParts = [profile?.city, profile?.country].filter(Boolean);
+    const location = locationParts.length > 0 ? locationParts.join(', ') : null;
+
     const contact = {
       id: row.contact_user_id,
       contactUserId: row.contact_user_id,
+      // 兼容前端期望的字段名
+      name: row.name,
+      email: row.email,
       userName: row.name,
       userEmail: row.email,
       role: row.role,
@@ -90,7 +118,22 @@ router.get('/:contactId', authMiddleware, async (req: AuthRequest, res) => {
       username: row.username,
       contactDetails: row.contact_details,
       createdAt: row.created_at,
-      profile: profileResult.rows[0] || null
+      profile: profile ? {
+        country: profile.country || null,
+        city: profile.city || null,
+        address: profile.address || null,
+        location: location,
+        website: profile.website || null,
+        phone: profile.phone || null,
+        description: profile.description || null,
+        external_email: profile.external_email || null,
+        wechat: profile.wechat || null,
+        whatsapp: profile.whatsapp || null,
+        telegram: profile.telegram || null,
+        linkedin: profile.linkedin || null,
+        instagram: profile.instagram || null
+      } : null,
+      socialContacts
     };
 
     res.json({

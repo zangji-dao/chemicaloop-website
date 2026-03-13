@@ -57,6 +57,8 @@ import {
   Building,
   Briefcase,
   MapPin,
+  Globe,
+  Phone,
 } from 'lucide-react';
 import {
   formatMessageAddress,
@@ -2778,24 +2780,6 @@ export default function MessagesPage() {
                                   Personal Profile
                                 </h3>
                                 <div className="space-y-3">
-                                  {selectedContactProfile.profile.company && (
-                                    <div className="flex items-start gap-3">
-                                      <Building className="h-4 w-4 text-gray-400 mt-0.5" />
-                                      <div>
-                                        <p className="text-xs text-gray-500">Company</p>
-                                        <p className="text-sm text-gray-900">{selectedContactProfile.profile.company}</p>
-                                      </div>
-                                    </div>
-                                  )}
-                                  {selectedContactProfile.profile.position && (
-                                    <div className="flex items-start gap-3">
-                                      <Briefcase className="h-4 w-4 text-gray-400 mt-0.5" />
-                                      <div>
-                                        <p className="text-xs text-gray-500">Position</p>
-                                        <p className="text-sm text-gray-900">{selectedContactProfile.profile.position}</p>
-                                      </div>
-                                    </div>
-                                  )}
                                   {selectedContactProfile.profile.location && (
                                     <div className="flex items-start gap-3">
                                       <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
@@ -2805,12 +2789,39 @@ export default function MessagesPage() {
                                       </div>
                                     </div>
                                   )}
-                                  {selectedContactProfile.profile.bio && (
+                                  {selectedContactProfile.profile.description && (
                                     <div className="flex items-start gap-3">
                                       <FileText className="h-4 w-4 text-gray-400 mt-0.5" />
                                       <div>
-                                        <p className="text-xs text-gray-500">Bio</p>
-                                        <p className="text-sm text-gray-900">{selectedContactProfile.profile.bio}</p>
+                                        <p className="text-xs text-gray-500">Description</p>
+                                        <p className="text-sm text-gray-900">{selectedContactProfile.profile.description}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {selectedContactProfile.profile.website && (
+                                    <div className="flex items-start gap-3">
+                                      <Globe className="h-4 w-4 text-gray-400 mt-0.5" />
+                                      <div>
+                                        <p className="text-xs text-gray-500">Website</p>
+                                        <a href={selectedContactProfile.profile.website} target="_blank" rel="noopener noreferrer" className="text-sm text-purple-600 hover:underline">{selectedContactProfile.profile.website}</a>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {selectedContactProfile.profile.phone && (
+                                    <div className="flex items-start gap-3">
+                                      <Phone className="h-4 w-4 text-gray-400 mt-0.5" />
+                                      <div>
+                                        <p className="text-xs text-gray-500">Phone</p>
+                                        <p className="text-sm text-gray-900">{selectedContactProfile.profile.phone}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {selectedContactProfile.profile.external_email && (
+                                    <div className="flex items-start gap-3">
+                                      <Mail className="h-4 w-4 text-gray-400 mt-0.5" />
+                                      <div>
+                                        <p className="text-xs text-gray-500">External Email</p>
+                                        <p className="text-sm text-gray-900">{selectedContactProfile.profile.external_email}</p>
                                       </div>
                                     </div>
                                   )}
