@@ -255,8 +255,8 @@ ${languageList}`;
       sourceText: text,
     });
   } catch (parseError) {
-    // JSON 解析失败，回退到逐个翻译
-    console.error('Failed to parse batch translation, falling back to individual:', text.substring(0, 100));
+    // JSON 解析失败，回退到逐个翻译（静默处理，不输出翻译内容）
+    console.log('[Translate] Batch JSON parse failed, falling back to individual translation');
     
     const translations: Record<string, string> = {};
     
