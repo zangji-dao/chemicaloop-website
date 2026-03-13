@@ -4,7 +4,14 @@
  * 用法: npx tsx scripts/batch-translate-products.ts
  * 
  * 翻译产品的 name, description, applications 到目标语言
+ * 
+ * ⚠️ 安全警告：此脚本仅限开发环境使用
  */
+
+import { assertDevEnvironment } from '../lib/env-check';
+
+// 安全检查：禁止生产环境运行
+assertDevEnvironment();
 
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';

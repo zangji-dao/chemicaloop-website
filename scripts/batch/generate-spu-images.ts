@@ -1,3 +1,6 @@
+import { assertDevEnvironment } from '../lib/env-check';
+assertDevEnvironment();
+
 /**
  * 批量为缺少产品图的 SPU 生成图片
  * 运行方式: npx tsx scripts/generate-spu-images.ts

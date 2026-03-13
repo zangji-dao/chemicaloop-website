@@ -1,3 +1,6 @@
+import { assertDevEnvironment } from '../lib/env-check';
+assertDevEnvironment();
+
 /**
  * 批量翻译产品英文名称脚本
  * 

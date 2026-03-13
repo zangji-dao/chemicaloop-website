@@ -1,3 +1,6 @@
+import { assertDevEnvironment } from '../lib/env-check';
+assertDevEnvironment();
+
 /**
  * 中国海关数据导入脚本
  * 

@@ -1,3 +1,6 @@
+import { assertDevEnvironment } from '../lib/env-check';
+assertDevEnvironment();
+
 /**
  * 模拟即时通讯数据脚本
  * 创建收到申请、已发申请，以及相关的邮件往来

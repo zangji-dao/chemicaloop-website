@@ -1,3 +1,6 @@
+import { assertDevEnvironment } from '../lib/env-check';
+assertDevEnvironment();
+
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 

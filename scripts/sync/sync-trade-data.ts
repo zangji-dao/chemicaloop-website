@@ -5,7 +5,14 @@
  * 
  * 使用方式:
  * UN_COMTRADE_API_KEY=xxx npx tsx scripts/sync-trade-data.ts --cas 148-24-3 --years 2020-2025
+ * 
+ * ⚠️ 安全警告：此脚本仅限开发环境使用
  */
+
+import { assertDevEnvironment } from '../lib/env-check';
+
+// 安全检查：禁止生产环境运行
+assertDevEnvironment();
 
 import { getDb } from 'coze-coding-dev-sdk';
 import * as schema from '../../src/storage/database/shared/schema';

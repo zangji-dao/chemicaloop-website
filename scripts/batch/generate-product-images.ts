@@ -1,3 +1,6 @@
+import { assertDevEnvironment } from '../lib/env-check';
+assertDevEnvironment();
+
 /**
  * 批量生成产品图片脚本
  * 使用美化版 SVG 生成化学结构图

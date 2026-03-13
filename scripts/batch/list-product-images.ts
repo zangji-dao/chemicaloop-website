@@ -1,3 +1,6 @@
+import { assertDevEnvironment } from '../lib/env-check';
+assertDevEnvironment();
+
 import { S3Storage } from "coze-coding-dev-sdk";
 
 const storage = new S3Storage({

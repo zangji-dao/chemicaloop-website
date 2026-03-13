@@ -1,4 +1,9 @@
 import { getDb } from 'coze-coding-dev-sdk';
+import { assertDevEnvironment } from '../lib/env-check';
+
+// 安全检查：禁止生产环境运行
+assertDevEnvironment();
+
 import * as schema from '../../src/storage/database/shared/schema';
 import { messages, users } from '../../src/storage/database/shared/schema';
 import { sql } from 'drizzle-orm';

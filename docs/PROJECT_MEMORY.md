@@ -401,6 +401,25 @@ scripts/
 | 数据生成 | `generate-` | `generate-images.ts` |
 | 数据修复 | `fix-` | `fix-names.ts` |
 
+### 9.4 安全规范
+
+**生产环境禁止运行的脚本：**
+
+| 目录 | 原因 |
+|------|------|
+| `seed/` | 生成假数据，污染生产数据库 |
+| `batch/` | 绕过权限验证，直接操作数据库 |
+| `sync/` | 外部数据直接入库，无审计 |
+
+**强制要求：**
+
+所有 `seed/`、`batch/`、`sync/` 脚本必须添加环境检查：
+
+```typescript
+import { assertDevEnvironment } from '../lib/env-check';
+assertDevEnvironment();
+```
+
 ---
 
 > **更新记录**：每次对话结束前，根据新增的关键决策更新此文档。
