@@ -2211,8 +2211,8 @@ export default function AdminSPUPage() {
               )}
 
               {/* 基本信息 */}
-              <div className="mb-5">
-                <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-white mb-4">
                   {t('spu.basicInformation')}
                 </h3>
                 <div className="grid grid-cols-3 gap-4">
@@ -2227,7 +2227,7 @@ export default function AdminSPUPage() {
                       onChange={(e) => setFormData(prev => ({ ...prev, cas: e.target.value }))}
                       disabled={!!editingSpu}
                       placeholder="50-00-0"
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 disabled:opacity-50 transition-all"
                     />
                   </div>
                   {/* HS编码 */}
@@ -2243,7 +2243,7 @@ export default function AdminSPUPage() {
                         setFormData(prev => ({ ...prev, hsCode: value }));
                       }}
                       placeholder="290241"
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     />
                   </div>
                   {/* 状态 */}
@@ -2254,7 +2254,7 @@ export default function AdminSPUPage() {
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     >
                       <option value="ACTIVE">{t('spu.active')}</option>
                       <option value="INACTIVE">{t('spu.inactive')}</option>
@@ -2270,7 +2270,7 @@ export default function AdminSPUPage() {
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       placeholder={t('spu.placeholderChineseName')}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     />
                   </div>
                   {/* 英文名称 */}
@@ -2283,7 +2283,7 @@ export default function AdminSPUPage() {
                       value={formData.nameEn}
                       onChange={(e) => setFormData(prev => ({ ...prev, nameEn: e.target.value }))}
                       placeholder="English Name"
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     />
                   </div>
                 </div>
@@ -2314,7 +2314,7 @@ export default function AdminSPUPage() {
                               }));
                             }}
                             placeholder={locale === 'zh' ? `${country.digits}位编码` : `${country.digits}-digit`}
-                            className="flex-1 bg-slate-600 border border-slate-500 rounded px-2 py-1 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="flex-1 bg-slate-900/50 border border-slate-700/80 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                           />
                         </div>
                       ))}
@@ -2324,8 +2324,8 @@ export default function AdminSPUPage() {
               </div>
 
               {/* 化学信息 */}
-              <div className="mb-5">
-                <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-white mb-4">
                   {t('spu.chemicalInformation')}
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -2339,7 +2339,7 @@ export default function AdminSPUPage() {
                       value={formData.formula}
                       onChange={(e) => setFormData(prev => ({ ...prev, formula: e.target.value }))}
                       placeholder={t('spu.placeholderFormula')}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     />
                   </div>
                   {/* 分子量 */}
@@ -2352,7 +2352,7 @@ export default function AdminSPUPage() {
                       value={formData.molecularWeight}
                       onChange={(e) => setFormData(prev => ({ ...prev, molecularWeight: e.target.value }))}
                       placeholder={t('spu.placeholderMolecularWeight')}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     />
                   </div>
                   {/* SMILES */}
@@ -2365,7 +2365,7 @@ export default function AdminSPUPage() {
                       value={formData.smiles}
                       onChange={(e) => setFormData(prev => ({ ...prev, smiles: e.target.value }))}
                       placeholder={t('spu.placeholderMolecularStructure')}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     />
                   </div>
                   {/* InChI Key */}
@@ -2378,15 +2378,15 @@ export default function AdminSPUPage() {
                       value={formData.inchiKey}
                       onChange={(e) => setFormData(prev => ({ ...prev, inchiKey: e.target.value }))}
                       placeholder="InChIKey"
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     />
                   </div>
                 </div>
               </div>
 
               {/* 物理性质 */}
-              <div className="mb-5">
-                <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-white mb-4">
                   {t('spu.physicalProperties')}
                 </h3>
                 {/* 物理描述 - 横跨整行 */}
@@ -2401,7 +2401,7 @@ export default function AdminSPUPage() {
                       setFormData(prev => ({ ...prev, physicalDescription: e.target.value }));
                     }}
                     placeholder={t('spu.placeholderPhysicalDescription')}
-                    className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                    className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 overflow-hidden transition-all"
                     style={{ height: 'auto' }}
                   />
                 </div>
@@ -2416,7 +2416,7 @@ export default function AdminSPUPage() {
                       value={formData.colorForm}
                       onChange={(e) => setFormData(prev => ({ ...prev, colorForm: e.target.value }))}
                       placeholder={t('spu.placeholderColorForm')}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     />
                   </div>
                   {/* 气味 */}
@@ -2429,7 +2429,7 @@ export default function AdminSPUPage() {
                       value={formData.odor}
                       onChange={(e) => setFormData(prev => ({ ...prev, odor: e.target.value }))}
                       placeholder={t('spu.placeholderOdor')}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     />
                   </div>
                   {/* 密度 */}
@@ -2442,8 +2442,8 @@ export default function AdminSPUPage() {
                       value={formData.density === '-' ? t('spu.na') : formData.density || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, density: e.target.value }))}
                       placeholder={t('spu.placeholderDensity')}
-                      className={`w-full bg-slate-700 border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                        formData.density === '-' ? 'border-amber-500/50 text-slate-400 italic' : 'border-slate-600'
+                      className={`w-full bg-slate-900/50 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all ${
+                        formData.density === '-' ? 'border-amber-500/50 text-slate-400 italic' : 'border-slate-700/80'
                       }`}
                     />
                   </div>
@@ -2457,8 +2457,8 @@ export default function AdminSPUPage() {
                       value={formData.boilingPoint === '-' ? t('spu.na') : formData.boilingPoint || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, boilingPoint: e.target.value }))}
                       placeholder={t('spu.placeholderBoilingPoint')}
-                      className={`w-full bg-slate-700 border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                        formData.boilingPoint === '-' ? 'border-amber-500/50 text-slate-400 italic' : 'border-slate-600'
+                      className={`w-full bg-slate-900/50 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all ${
+                        formData.boilingPoint === '-' ? 'border-amber-500/50 text-slate-400 italic' : 'border-slate-700/80'
                       }`}
                     />
                   </div>
@@ -2541,8 +2541,8 @@ export default function AdminSPUPage() {
               </div>
 
               {/* 计算属性 */}
-              <div className="mb-5">
-                <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-white mb-4">
                   {t('spu.computedProperties')}
                 </h3>
                 <div className="grid grid-cols-4 gap-4">
@@ -2646,8 +2646,8 @@ export default function AdminSPUPage() {
               </div>
 
               {/* 安全与毒性信息 */}
-              <div className="mb-5">
-                <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-white mb-4">
                   {t('spu.safetyToxicity')}
                 </h3>
                 <div className="space-y-3">
@@ -2661,7 +2661,7 @@ export default function AdminSPUPage() {
                       value={formData.hazardClasses}
                       onChange={(e) => setFormData(prev => ({ ...prev, hazardClasses: e.target.value }))}
                       placeholder={t('spu.placeholderHazardClasses')}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                     />
                   </div>
                   {/* 健康危害 */}
@@ -2676,7 +2676,7 @@ export default function AdminSPUPage() {
                         setFormData(prev => ({ ...prev, healthHazards: e.target.value }));
                       }}
                       placeholder={t('spu.placeholderHealthHazards')}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 overflow-hidden transition-all"
                       style={{ height: 'auto' }}
                     />
                   </div>
@@ -2692,7 +2692,7 @@ export default function AdminSPUPage() {
                         setFormData(prev => ({ ...prev, ghsClassification: e.target.value }));
                       }}
                       placeholder={t('spu.placeholderGhsClassification')}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 overflow-hidden transition-all"
                       style={{ height: 'auto' }}
                     />
                   </div>
@@ -2708,7 +2708,7 @@ export default function AdminSPUPage() {
                         setFormData(prev => ({ ...prev, firstAid: e.target.value }));
                       }}
                       placeholder={t('spu.placeholderFirstAid')}
-                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                      className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 overflow-hidden transition-all"
                       style={{ height: 'auto' }}
                     />
                   </div>
@@ -2725,7 +2725,7 @@ export default function AdminSPUPage() {
                           setFormData(prev => ({ ...prev, storageConditions: e.target.value }));
                         }}
                         placeholder={t('spu.placeholderStorageConditions')}
-                        className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                        className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 overflow-hidden transition-all"
                         style={{ height: 'auto' }}
                       />
                     </div>
@@ -2740,7 +2740,7 @@ export default function AdminSPUPage() {
                           setFormData(prev => ({ ...prev, incompatibleMaterials: e.target.value }));
                         }}
                         placeholder={t('spu.placeholderIncompatibleMaterials')}
-                        className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                        className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 overflow-hidden transition-all"
                         style={{ height: 'auto' }}
                       />
                     </div>
@@ -2749,7 +2749,7 @@ export default function AdminSPUPage() {
               </div>
 
               {/* 同义词 */}
-              <div className="mb-5">
+              <div className="mb-8">
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   {t('spu.synonyms')}
                 </label>
@@ -2782,7 +2782,7 @@ export default function AdminSPUPage() {
                       }
                     }}
                     placeholder={t('spu.placeholderSynonyms')}
-                    className="flex-1 bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="flex-1 bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-all"
                   />
                   <button
                     type="button"
@@ -2811,7 +2811,7 @@ export default function AdminSPUPage() {
                     setFormData(prev => ({ ...prev, description: e.target.value }));
                   }}
                   placeholder={t('spu.placeholderDescription')}
-                  className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                  className="w-full bg-slate-900/50 border border-slate-700/80 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 overflow-hidden transition-all"
                   style={{ height: 'auto' }}
                 />
               </div>
