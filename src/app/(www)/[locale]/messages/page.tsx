@@ -252,10 +252,11 @@ export default function MessagesPage() {
         }
         if (membersRes.ok) {
           const data = await membersRes.json();
-          setContactMembers(data.members || []);
+          const members = data.data || data.members || [];
+          setContactMembers(members);
           // 更新即时通讯联系人ID集合
           const contactIds = new Set<string>(
-            (data.members || []).map((m: any) => m.contactUserId).filter(Boolean)
+            members.map((m: any) => m.contact_user_id || m.contactUserId).filter(Boolean)
           );
           setImContactIds(contactIds);
         }
@@ -437,7 +438,7 @@ export default function MessagesPage() {
         }
         if (membersRes.ok) {
           const membersData = await membersRes.json();
-          setContactMembers(membersData.members || []);
+          setContactMembers(membersData.data || membersData.members || []);
         }
         
         setRefreshProgress(100);
@@ -1140,7 +1141,7 @@ export default function MessagesPage() {
       const response = await authFetch('/api/www/contact-members');
       if (response.ok) {
         const data = await response.json();
-        setContactMembers(data.members || []);
+        setContactMembers(data.data || data.members || []);
       }
     } catch (error) {
       console.error('Failed to load contact members:', error);
@@ -2560,7 +2561,7 @@ export default function MessagesPage() {
                                     const membersRes = await authFetch(`/api/contact-members`);
                                     if (membersRes.ok) {
                                       const data = await membersRes.json();
-                                      setContactMembers(data.members || []);
+                                      setContactMembers(data.data || data.members || []);
                                     }
                                   } else {
                                     console.error('Accept failed:', result.error);
