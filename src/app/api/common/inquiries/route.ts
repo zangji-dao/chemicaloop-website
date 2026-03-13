@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { inquiryManager } from '@/storage/database/inquiryManager';
+import { inquiryManager } from '@/db/inquiryManager';
 
 // POST /api/inquiries - 创建询价
 export async function POST(request: NextRequest) {
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 
     // 如果 userId 是 'all'，获取所有询价（管理员用）
     if (userId === 'all') {
-      const { inquiryManager } = await import('@/storage/database/inquiryManager');
+      const { inquiryManager } = await import('@/db/inquiryManager');
       const allInquiries = await inquiryManager.getPendingInquiries();
       return NextResponse.json({
         success: true,

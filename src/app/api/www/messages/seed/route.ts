@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { seedMessages } from '@/storage/database/seedMessages';
+import { seedMessages } from '@/db/seedMessages';
 
 /**
  * POST /api/messages/seed

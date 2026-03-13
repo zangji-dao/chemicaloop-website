@@ -1,4 +1,4 @@
-import { messageManager } from '@/storage/database/messageManager';
+import { messageManager } from '@/db/messageManager';
 
 const CURRENT_USER_ID = 'c4ca4238-a0b9-2382-0dcc-509a6f75849b';
 

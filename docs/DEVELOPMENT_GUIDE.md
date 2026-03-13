@@ -598,7 +598,7 @@ export const users = pgTable('users', {
 
 // 查询示例
 import { db } from '@/lib/db';
-import { users } from '@/storage/database/shared/schema';
+import { users } from '@/db';
 import { eq } from 'drizzle-orm';
 
 // 查询单个用户

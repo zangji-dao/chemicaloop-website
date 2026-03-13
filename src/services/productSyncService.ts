@@ -6,7 +6,7 @@
 
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
-import * as schema from '@/storage/database/shared/schema';
+import * as schema from '@/db';
 import { API_CONFIG } from '@/lib/config';
 
 // 支持的语言列表

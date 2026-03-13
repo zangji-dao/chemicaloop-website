@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
-import { messages } from '@/storage/database/shared/schema';
+import { messages } from '@/db';
 import { sql } from 'drizzle-orm';
 import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
-import * as schema from '@/storage/database/shared/schema';
+import * as schema from '@/db';
 
 /**
  * 检测文本的主要语言

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { S3Storage } from 'coze-coding-dev-sdk';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
-import * as schema from '@/storage/database/shared/schema';
+import * as schema from '@/db';
 
 // 从数据库读取系统配置
 const getSystemConfig = async (key: string): Promise<any> => {

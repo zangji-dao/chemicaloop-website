@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { inquiryManager } from '@/storage/database/inquiryManager';
+import { inquiryManager } from '@/db/inquiryManager';
 
 // PATCH /api/inquiries/[id]/reply - 回复询价
 export async function PATCH(

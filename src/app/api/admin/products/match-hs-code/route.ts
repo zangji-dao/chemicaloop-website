@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
-import * as schema from '@/storage/database/shared/schema';
+import * as schema from '@/db';
 import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
 
 // 常见化学品 HS 编码参考表

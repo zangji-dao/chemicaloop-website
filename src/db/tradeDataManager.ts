@@ -6,8 +6,8 @@
 
 import { eq, and, desc, between, sql } from "drizzle-orm";
 import { getDb } from "coze-coding-dev-sdk";
-import { tradeData, tradeDataSyncTasks } from "./shared/schema";
-import * as schema from "./shared/schema";
+import { tradeData, tradeDataSyncTasks } from "./schema";
+import * as schema from "./schema";
 import { getCountryName } from "@/lib/country-codes";
 
 // 类型定义

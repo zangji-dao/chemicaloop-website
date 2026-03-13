@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
-import * as schema from '@/storage/database/shared/schema';
+import * as schema from '@/db';
 
 /**
  * POST /api/admin/products/listing

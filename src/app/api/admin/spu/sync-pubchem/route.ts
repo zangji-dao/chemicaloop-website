@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, S3Storage } from 'coze-coding-dev-sdk';
 import { sql, eq } from 'drizzle-orm';
-import * as schema from '@/storage/database/shared/schema';
+import * as schema from '@/db';
 import { API_CONFIG } from '@/lib/config';
 import { exec } from 'child_process';
 import { promisify } from 'util';

@@ -1,7 +1,7 @@
 import { eq, and, desc, SQL } from "drizzle-orm";
 import { getDb } from "coze-coding-dev-sdk";
-import { inquiries } from "./shared/schema";
-import * as schema from "./shared/schema";
+import { inquiries } from "./schema";
+import * as schema from "./schema";
 
 // 类型推断
 type Inquiry = typeof inquiries.$inferSelect;

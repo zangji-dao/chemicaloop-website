@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { messageManager } from '@/storage/database/messageManager';
+import { messageManager } from '@/db/messageManager';
 
 /**
  * POST /api/messages/draft - 保存或更新草稿

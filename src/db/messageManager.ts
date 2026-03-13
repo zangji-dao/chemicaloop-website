@@ -1,8 +1,8 @@
 import { eq, and, desc, or, SQL } from "drizzle-orm";
 import { getDb } from "coze-coding-dev-sdk";
-import { messages } from "./shared/schema";
-import type { messages as MessagesTable } from "./shared/schema";
-import * as schema from "./shared/schema";
+import { messages } from "./schema";
+import type { messages as MessagesTable } from "./schema";
+import * as schema from "./schema";
 import { sql } from "drizzle-orm";
 import { LLMClient, Config } from 'coze-coding-dev-sdk';
 
