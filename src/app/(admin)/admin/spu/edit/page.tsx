@@ -198,6 +198,7 @@ function SPUEditContent() {
   const [pubchemInfo, setPubchemInfo] = useState<{ cid?: number; syncedAt?: string }>({});
   const [structureImageUrl, setStructureImageUrl] = useState<string | null>(null);
   const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
+  const [generatingImage, setGeneratingImage] = useState(false);
   
   // 同步状态
   const [syncingPubChem, setSyncingPubChem] = useState(false);
@@ -596,6 +597,72 @@ function SPUEditContent() {
     return translations;
   };
 
+  // 生成产品图
+  const handleGenerateProductImage = async () => {
+    if (!spuId) {
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '无法生成' : 'Cannot Generate',
+        message: locale === 'zh' ? '请先保存产品后再生成产品图' : 'Please save the product first before generating image',
+      });
+      return;
+    }
+    
+    if (!pubchemInfo.cid) {
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '无法生成' : 'Cannot Generate',
+        message: locale === 'zh' ? '请先同步 PubChem 数据' : 'Please sync PubChem data first',
+      });
+      return;
+    }
+    
+    setGeneratingImage(true);
+    try {
+      const token = getAdminToken();
+      const response = await fetch('/api/admin/products/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ 
+          spuId: spuId,
+          cas: formData.cas,
+          name: formData.name || formData.nameEn,
+          force: false,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setProductImageUrl(data.imageUrl);
+        setDialogConfig({
+          type: 'success',
+          title: locale === 'zh' ? '生成成功' : 'Success',
+          message: data.isNew 
+            ? (locale === 'zh' ? '产品图已生成' : 'Product image generated')
+            : (locale === 'zh' ? '使用已有图片' : 'Using existing image'),
+        });
+      } else {
+        setDialogConfig({
+          type: 'error',
+          title: locale === 'zh' ? '生成失败' : 'Error',
+          message: data.error || 'Failed to generate image',
+        });
+      }
+    } catch (error) {
+      console.error('Generate product image error:', error);
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '生成失败' : 'Error',
+        message: locale === 'zh' ? '生成产品图失败' : 'Failed to generate image',
+      });
+    } finally {
+      setGeneratingImage(false);
+    }
+  };
+
   // 保存
   const handleSave = async () => {
     if (!formData.cas) {
@@ -908,14 +975,40 @@ function SPUEditContent() {
               </div>
               {/* 产品图 */}
               <div>
-                <div className="text-sm text-slate-400 mb-2">{t('spu.productImage')}</div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-slate-400">{t('spu.productImage')}</span>
+                  {isEditMode && pubchemInfo.cid && (
+                    <button
+                      type="button"
+                      onClick={handleGenerateProductImage}
+                      disabled={generatingImage}
+                      className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50"
+                    >
+                      {generatingImage ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span>{t('spu.generating')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-3 h-3" />
+                          <span>{productImageUrl ? t('spu.redraw') : t('spu.generate')}</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
                 <div className="aspect-square bg-gradient-to-br from-slate-700/50 to-slate-800/50 rounded-lg border border-slate-600/50 flex items-center justify-center overflow-hidden">
                   {productImageUrl ? (
                     <img src={productImageUrl} alt="Product" className="max-w-full max-h-full object-contain" />
                   ) : (
                     <div className="text-center text-slate-500">
                       <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-xs">{t('spu.noData')}</p>
+                      <p className="text-xs">
+                        {isEditMode && pubchemInfo.cid 
+                          ? t('spu.clickToGenerate') 
+                          : (isNewMode ? (locale === 'zh' ? '保存后可生成' : 'Save to generate') : t('spu.syncPubchemFirst'))}
+                      </p>
                     </div>
                   )}
                 </div>
