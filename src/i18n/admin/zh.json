@@ -181,6 +181,8 @@
     "nameZh": "中文名称",
     "nameEn": "英文名称",
     "nameRequired": "产品名称为必填项",
+    "structure": "结构图",
+    "mw": "分子量",
     "formula": "化学式",
     "hsCode": "HS 编码",
     "hsCodeHint": "HS 编码用于关联海关贸易数据",

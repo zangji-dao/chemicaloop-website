@@ -181,6 +181,8 @@
     "nameZh": "Chinese Name",
     "nameEn": "English Name",
     "nameRequired": "Product name is required",
+    "structure": "Structure",
+    "mw": "MW",
     "formula": "Formula",
     "hsCode": "HS Code",
     "hsCodeHint": "HS Code for customs data association",
