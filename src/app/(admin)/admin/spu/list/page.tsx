@@ -24,10 +24,9 @@ interface SPUItem {
   name: string;
   name_en?: string;
   formula?: string;
+  hs_code?: string;
   status: string;
   pubchem_cid?: number;
-  structure_image_key?: string;
-  product_image_key?: string;
   molecular_weight?: string;
   translations?: {
     name?: Record<string, string>;
@@ -87,9 +86,6 @@ export default function AdminSPUPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTrigger, setSearchTrigger] = useState(0);
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
-
-  // 获取图片URL
-  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
   // 获取SPU列表
   const fetchSPUList = async () => {
@@ -192,24 +188,6 @@ export default function AdminSPUPage() {
     }
   };
 
-  // 加载图片URL
-  const loadImageUrl = async (spu: SPUItem) => {
-    if (!spu.structure_image_key || imageUrls[spu.id]) return;
-    
-    try {
-      const token = getAdminToken();
-      const response = await fetch(`/api/admin/spu/image-url?key=${encodeURIComponent(spu.structure_image_key)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setImageUrls(prev => ({ ...prev, [spu.id]: data.url }));
-      }
-    } catch (error) {
-      console.error('Load image error:', error);
-    }
-  };
-
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full">
       <div className="max-w-7xl mx-auto p-6">
@@ -277,11 +255,11 @@ export default function AdminSPUPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-700">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.structure')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">CAS</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.nameZh')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.formula')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.mw')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.hsCode')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.status')}</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-slate-400">{t('common.actions')}</th>
                 </tr>
@@ -291,17 +269,7 @@ export default function AdminSPUPage() {
                   <tr 
                     key={spu.id} 
                     className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
-                    onMouseEnter={() => loadImageUrl(spu)}
                   >
-                    <td className="px-4 py-3">
-                      <div className="w-12 h-12 bg-slate-700 rounded-lg flex items-center justify-center overflow-hidden">
-                        {imageUrls[spu.id] ? (
-                          <img src={imageUrls[spu.id]} alt="Structure" className="w-full h-full object-contain" />
-                        ) : (
-                          <Database className="w-6 h-6 text-slate-500" />
-                        )}
-                      </div>
-                    </td>
                     <td className="px-4 py-3">
                       <span className="font-mono text-blue-400">{spu.cas}</span>
                       {spu.pubchem_cid && (
@@ -321,6 +289,7 @@ export default function AdminSPUPage() {
                     </td>
                     <td className="px-4 py-3 font-mono text-sm">{spu.formula || '-'}</td>
                     <td className="px-4 py-3 text-sm">{spu.molecular_weight || '-'}</td>
+                    <td className="px-4 py-3 font-mono text-sm text-slate-300">{spu.hs_code || '-'}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded text-xs ${statusConfig[spu.status]?.bgColor} ${statusConfig[spu.status]?.color}`}>
                         {statusConfig[spu.status]?.label || spu.status}
