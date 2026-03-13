@@ -7,6 +7,7 @@ import {
   Database,
   Loader2,
   AlertCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
 import { getAdminToken } from '@/services/adminAuthService';
@@ -36,6 +37,11 @@ function ProductCreateContent() {
   // ========== CAS 格式验证 ==========
   const validateCAS = (cas: string): boolean => {
     return CAS_REGEX.test(cas.trim());
+  };
+
+  // ========== 返回列表 ==========
+  const handleBack = () => {
+    router.push('/admin/spu');
   };
 
   // ========== 搜索功能 ==========
@@ -81,29 +87,39 @@ function ProductCreateContent() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white min-h-screen">
-      <div className="max-w-5xl mx-auto p-6">
-        {/* 页面标题 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            {t('spu.upload')}
-          </h1>
-          <p className="text-slate-400">
-            {t('spu.uploadSubtitle')}
-          </p>
+    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full">
+      {/* 顶部导航 */}
+      <div className="bg-slate-800/50 border-b border-slate-700/50 px-5 py-3 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {locale === 'zh' ? '返回列表' : 'Back to List'}
+            </button>
+            <h2 className="text-lg font-semibold text-white">
+              {t('spu.newSpu')}
+            </h2>
+            <div className="w-[100px]" /> {/* 占位，保持标题居中 */}
+          </div>
         </div>
+      </div>
 
-        {/* 搜索视图 */}
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-8">
+      {/* 内容区域 */}
+      <div className="max-w-4xl mx-auto p-5 pb-20">
+        {/* 搜索卡片 */}
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-6">
-            <Database className="h-6 w-6 text-blue-400" />
-            <h2 className="text-xl font-bold text-white">{t('spu.selectProduct')}</h2>
+            <Database className="h-5 w-5 text-blue-400" />
+            <h3 className="text-lg font-semibold text-white">{t('spu.selectProduct')}</h3>
           </div>
 
           {/* 搜索框 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-slate-300 mb-3">
-              {t('spu.searchProduct')}
+          <div className="mb-4">
+            <label className="block text-xs font-medium text-slate-300 mb-2">
+              {t('spu.casNumber')} <span className="text-red-400">*</span>
             </label>
             <div className="flex gap-3">
               <input
@@ -115,18 +131,18 @@ function ProductCreateContent() {
                 }}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder={t('spu.enterCas')}
-                className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-slate-400"
+                className="flex-1 form-input-dark"
               />
               <button
                 onClick={handleSearch}
                 disabled={searching}
-                className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 font-medium"
+                className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
               >
-                {searching ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
+                {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 {t('common.search')}
               </button>
             </div>
-            <p className="text-sm text-slate-500 mt-2">
+            <p className="text-xs text-slate-500 mt-2">
               {locale === 'zh' ? '请输入CAS号，格式如：64-17-5' : 'Enter CAS number, format: 64-17-5'}
             </p>
           </div>
@@ -141,7 +157,7 @@ function ProductCreateContent() {
 
           {/* 已存在提示 */}
           {existingSPU && (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-6">
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-4">
                 <AlertCircle className="h-5 w-5 text-amber-400" />
                 <span className="font-semibold text-amber-400">
@@ -149,28 +165,28 @@ function ProductCreateContent() {
                 </span>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4 mb-4">
-                <div className="bg-slate-700/50 rounded-lg p-4">
-                  <div className="text-sm text-slate-400 mb-1">{t('spu.nameZh')}</div>
-                  <div className="font-semibold text-white">{existingSPU.name}</div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-slate-700/50 rounded-lg p-3">
+                  <div className="text-xs text-slate-400 mb-1">{t('spu.nameZh')}</div>
+                  <div className="font-medium text-white">{existingSPU.name}</div>
                 </div>
-                <div className="bg-slate-700/50 rounded-lg p-4">
-                  <div className="text-sm text-slate-400 mb-1">{t('spu.nameEn')}</div>
-                  <div className="font-semibold text-white">{existingSPU.name_en || '-'}</div>
+                <div className="bg-slate-700/50 rounded-lg p-3">
+                  <div className="text-xs text-slate-400 mb-1">{t('spu.nameEn')}</div>
+                  <div className="font-medium text-white">{existingSPU.name_en || '-'}</div>
                 </div>
-                <div className="bg-slate-700/50 rounded-lg p-4">
-                  <div className="text-sm text-slate-400 mb-1">CAS Number</div>
-                  <div className="font-mono font-semibold text-blue-400">{existingSPU.cas}</div>
+                <div className="bg-slate-700/50 rounded-lg p-3">
+                  <div className="text-xs text-slate-400 mb-1">CAS Number</div>
+                  <div className="font-mono font-medium text-blue-400">{existingSPU.cas}</div>
                 </div>
                 {existingSPU.formula && (
-                  <div className="bg-slate-700/50 rounded-lg p-4">
-                    <div className="text-sm text-slate-400 mb-1">{t('spu.formula')}</div>
-                    <div className="font-mono font-semibold text-white">{existingSPU.formula}</div>
+                  <div className="bg-slate-700/50 rounded-lg p-3">
+                    <div className="text-xs text-slate-400 mb-1">{t('spu.formula')}</div>
+                    <div className="font-mono font-medium text-white">{existingSPU.formula}</div>
                   </div>
                 )}
               </div>
 
-              <p className="text-sm text-slate-400 mb-4">
+              <p className="text-xs text-slate-400 mb-4">
                 {locale === 'zh' 
                   ? '如需修改该产品信息，请前往产品列表进行编辑。' 
                   : 'To edit this product, please go to the product list.'}
@@ -178,7 +194,7 @@ function ProductCreateContent() {
 
               <button
                 onClick={() => router.push('/admin/spu')}
-                className="w-full py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors font-medium"
+                className="w-full py-2.5 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors font-medium text-sm"
               >
                 {locale === 'zh' ? '前往产品列表' : 'Go to Product List'}
               </button>
@@ -195,7 +211,7 @@ export default function CreateSPUPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-          <div className="text-white">Loading...</div>
+          <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
         </div>
       }
     >
