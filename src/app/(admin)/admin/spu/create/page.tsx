@@ -1738,8 +1738,8 @@ function ProductUploadContent() {
               {(pubchemData?.hazardClasses || selectedSPU?.hazardClasses) && (
                 <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-6">
                   <h3 className="text-sm font-semibold text-white mb-4">{t('spu.hazardClassification')}</h3>
-                  <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
-                    <p className="text-sm text-red-300">{formData.translations?.hazardClasses?.[locale] || pubchemData?.hazardClasses || selectedSPU?.hazardClasses}</p>
+                  <div className="bg-slate-800 border border-slate-600 rounded-lg p-3">
+                    <p className="text-sm text-slate-300">{formData.translations?.hazardClasses?.[locale] || pubchemData?.hazardClasses || selectedSPU?.hazardClasses}</p>
                   </div>
                 </div>
               )}
