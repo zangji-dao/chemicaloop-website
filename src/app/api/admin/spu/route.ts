@@ -74,11 +74,10 @@ export async function GET(request: NextRequest) {
     const whereClause = conditions.join(' AND ');
     const countWhereClause = countConditions.join(' AND ');
     
-    // 优化查询：使用子查询计算 SKU 数量，避免 GROUP BY 性能问题
+    // 简化查询：暂时不计算 SKU 数量，提升性能
     const queryText = `
       SELECT 
-        p.*,
-        (SELECT COUNT(*) FROM agent_products sku WHERE sku.spu_id = p.id) as sku_count
+        p.*
       FROM products p
       WHERE ${whereClause}
       ORDER BY p.created_at DESC 
