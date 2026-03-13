@@ -375,10 +375,18 @@ import { getAdminToken, getAdminUser } from '@/services/adminAuthService';
 
 ```
 scripts/
-├── dev/          # 项目生命周期脚本
-├── seed/         # 种子数据/测试数据
-├── batch/        # 批量处理脚本
-└── sync/         # 数据同步/导入
+├── README.md         # 使用说明
+├── SECURITY.md       # 安全规范文档
+├── lib/              # 共享库
+│   └── env-check.ts  # 环境安全检查
+├── dev/              # 项目生命周期脚本
+│   ├── prepare.sh    # 依赖安装
+│   ├── dev.sh        # 开发环境启动
+│   ├── build.sh      # 构建
+│   └── start.sh      # 生产启动
+├── seed/             # 种子数据/测试数据
+├── batch/            # 批量处理脚本
+└── sync/             # 数据同步/导入
 ```
 
 ### 9.2 新增脚本分类决策
@@ -420,6 +428,39 @@ import { assertDevEnvironment } from '../lib/env-check';
 assertDevEnvironment();
 ```
 
+### 9.5 环境安全检查机制
+
+`scripts/lib/env-check.ts` 实现原理：
+
+```typescript
+export function assertDevEnvironment() {
+  const env = process.env.NODE_ENV;
+  const isProduction = env === 'production';
+  
+  // 额外检查：是否有生产环境特征
+  const hasProdFeatures = 
+    process.env.DEPLOY_RUN_PORT || 
+    process.env.COZE_DEPLOY_MODE;
+  
+  if (isProduction || hasProdFeatures) {
+    console.error('❌ 安全拦截：此脚本禁止在生产环境运行');
+    process.exit(1);
+  }
+}
+```
+
+**检查内容：**
+- `NODE_ENV === 'production'`：标准生产环境检测
+- `DEPLOY_RUN_PORT` / `COZE_DEPLOY_MODE`：部署环境特征
+
+### 9.6 已移除的危险 API
+
+| 移除的 API | 原因 | 替代方案 |
+|------------|------|----------|
+| `/api/www/messages/seed` | 可被外部调用污染数据库 | 使用 `pnpm seed-messages` 本地运行 |
+
+**安全原则：** 种子数据脚本只能通过命令行本地运行，禁止暴露为 HTTP API。
+
 ---
 
 ## 10. Public 目录规范
@@ -455,6 +496,53 @@ public/
 | 放置调试工具 | 信息泄露 |
 
 **测试账号信息应放在内部文档，不要提交到代码库。**
+
+---
+
+## 11. 变更历史
+
+### 2026-03-13 项目目录重构
+
+#### 组件目录重构
+- 创建 9 个功能域目录：`layout/`, `common/`, `auth/`, `messaging/`, `trade/`, `user/`, `shared/`, `admin/`, `inquiries/`
+- 移动 21 个组件文件，更新 30+ 处导入路径
+
+#### 翻译文件整合
+- `src/messages/` → `src/i18n/www/`
+- `src/lib/admin-i18n/locales/` → `src/i18n/admin/`
+- 创建 `src/i18n/config.ts` 统一配置
+
+#### 数据库目录标准化
+- Schema 定义移至 `src/db/`
+- 数据访问层移至 `src/repositories/`
+
+#### Lib 目录整理
+- 创建 `src/data/` 存放静态数据
+- 创建 `src/services/` 存放业务服务
+
+#### 脚本安全处理
+- 恢复 `scripts/lib/env-check.ts` 环境安全检查
+- 恢复 `scripts/SECURITY.md` 安全规范文档
+- 删除 API 接口 `/api/www/messages/seed`（防止外部调用）
+- 种子脚本仅通过命令行本地运行
+
+#### 最终目录结构
+```
+src/
+├── components/    # 按功能域分类
+├── i18n/          # 国际化统一目录
+├── db/            # 数据库 Schema
+├── repositories/  # 数据访问层
+├── data/          # 静态数据
+├── services/      # 业务服务
+└── lib/           # 工具库
+scripts/
+├── lib/           # 环境安全检查
+├── dev/           # 项目生命周期
+├── seed/          # 种子数据
+├── batch/         # 批量处理
+└── sync/          # 数据同步
+```
 
 ---
 
