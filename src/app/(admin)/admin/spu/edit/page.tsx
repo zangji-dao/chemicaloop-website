@@ -198,7 +198,42 @@ function SPUEditContent() {
   const [pubchemInfo, setPubchemInfo] = useState<{ cid?: number; syncedAt?: string }>({});
   const [structureImageUrl, setStructureImageUrl] = useState<string | null>(null);
   const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
+  
+  // 同步状态
   const [syncingPubChem, setSyncingPubChem] = useState(false);
+  const [syncProgress, setSyncProgress] = useState<{
+    step: 'connecting' | 'fetching' | 'updating';
+    message: string;
+  }>({ step: 'connecting', message: '' });
+  
+  // 翻译状态
+  const [translating, setTranslating] = useState(false);
+  const [translatingFields, setTranslatingFields] = useState<Set<string>>(new Set());
+  const [translationProgress, setTranslationProgress] = useState<{
+    current: number;
+    total: number;
+    status: 'idle' | 'translating' | 'completed';
+  }>({ current: 0, total: 0, status: 'idle' });
+  
+  // 同步后状态
+  const [justSynced, setJustSynced] = useState(false);
+  const [syncedFields, setSyncedFields] = useState<Set<string>>(new Set());
+  const [pendingTranslations, setPendingTranslations] = useState<Record<string, any>>({});
+  
+  // 原始数据（用于检测修改）
+  const [originalFormData, setOriginalFormData] = useState<FormData | null>(null);
+  
+  // AbortController
+  const syncAbortControllerRef = useRef<AbortController | null>(null);
+  const translateAbortControllerRef = useRef<AbortController | null>(null);
+  
+  // Dialog 状态
+  const [dialogConfig, setDialogConfig] = useState<{
+    type: 'confirm' | 'success' | 'error';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+  } | null>(null);
 
   // 加载 SPU 数据
   useEffect(() => {
@@ -311,16 +346,43 @@ function SPUEditContent() {
     router.push('/admin/spu');
   };
 
-  // 同步 PubChem 数据（新建模式）
+  // 同步 PubChem 数据
   const handleSyncPubChem = async () => {
     if (!formData.cas) {
       alert(locale === 'zh' ? '请先输入CAS号' : 'Please enter CAS number first');
       return;
     }
 
+    // 创建 AbortController
+    const abortController = new AbortController();
+    syncAbortControllerRef.current = abortController;
+
     setSyncingPubChem(true);
+    setSyncProgress({ step: 'connecting', message: '' });
+
     try {
       const token = getAdminToken();
+      
+      // 步骤1：检测连接
+      setSyncProgress({ step: 'connecting', message: locale === 'zh' ? '正在连接 PubChem...' : 'Connecting to PubChem...' });
+      
+      const connectionResponse = await fetch('/api/admin/spu/check-pubchem-connection', {
+        signal: abortController.signal,
+      });
+      const connectionData = await connectionResponse.json();
+      
+      if (!connectionData.connected) {
+        setSyncingPubChem(false);
+        setSyncProgress({ step: 'connecting', message: '' });
+        alert(locale === 'zh' 
+          ? `PubChem 连接失败: ${connectionData.message}` 
+          : `PubChem connection failed: ${connectionData.message}`);
+        return;
+      }
+
+      // 步骤2：获取数据
+      setSyncProgress({ step: 'fetching', message: locale === 'zh' ? `正在获取 ${formData.cas} 数据...` : `Fetching data for ${formData.cas}...` });
+      
       const response = await fetch('/api/admin/spu/sync-pubchem', {
         method: 'POST',
         headers: {
@@ -331,12 +393,16 @@ function SPUEditContent() {
           preview: true,
           cas: formData.cas,
         }),
+        signal: abortController.signal,
       });
 
       const result = await response.json();
 
       if (result.success && result.data) {
         const data = result.data;
+        
+        // 步骤3：更新表单
+        setSyncProgress({ step: 'updating', message: locale === 'zh' ? '正在更新表单...' : 'Updating form...' });
         
         // 设置 PubChem 信息
         setPubchemInfo({
@@ -385,16 +451,141 @@ function SPUEditContent() {
           applications: prev.applications.length > 0 ? prev.applications : (data.applications || []),
         }));
 
-        alert(locale === 'zh' ? 'PubChem 数据同步成功！' : 'PubChem data synced successfully!');
+        // 检测需要翻译的字段
+        const translatableFields = [
+          { key: 'description', value: data.description },
+          { key: 'physicalDescription', value: data.physicalDescription },
+          { key: 'colorForm', value: data.colorForm },
+          { key: 'odor', value: data.odor },
+          { key: 'density', value: data.density },
+          { key: 'boilingPoint', value: data.boilingPoint },
+          { key: 'meltingPoint', value: data.meltingPoint },
+          { key: 'flashPoint', value: data.flashPoint },
+          { key: 'hazardClasses', value: data.hazardClasses },
+          { key: 'healthHazards', value: data.healthHazards },
+          { key: 'ghsClassification', value: data.ghsClassification },
+          { key: 'firstAid', value: data.firstAid },
+          { key: 'storageConditions', value: data.storageConditions },
+          { key: 'incompatibleMaterials', value: data.incompatibleMaterials },
+          { key: 'solubility', value: data.solubility },
+          { key: 'vaporPressure', value: data.vaporPressure },
+          { key: 'refractiveIndex', value: data.refractiveIndex },
+        ];
+        
+        const fieldsToTranslate = translatableFields
+          .filter(({ value }) => value)
+          .map(({ key }) => key);
+        
+        // 标记为刚同步完成
+        if (fieldsToTranslate.length > 0) {
+          setJustSynced(true);
+          setSyncedFields(new Set(fieldsToTranslate));
+          setPendingTranslations({});
+          setDialogConfig({
+            type: 'success',
+            title: t('spu.syncSuccess'),
+            message: locale === 'zh' 
+              ? `PubChem 数据已获取，${fieldsToTranslate.length} 个字段需要翻译。点击"翻译并保存"按钮开始翻译，或直接点击"保存"保存数据。` 
+              : `PubChem data fetched, ${fieldsToTranslate.length} fields need translation. Click "Translate & Save" or "Save" to save.`,
+          });
+        } else {
+          setJustSynced(true);
+          setDialogConfig({
+            type: 'success',
+            title: t('spu.syncSuccess'),
+            message: locale === 'zh' 
+              ? 'PubChem 数据已获取，点击"保存"保存数据。' 
+              : 'PubChem data fetched. Click "Save" to save.',
+          });
+        }
       } else {
-        alert(result.error || (locale === 'zh' ? '同步失败，未找到 PubChem 数据' : 'Sync failed, PubChem data not found'));
+        setDialogConfig({
+          type: 'error',
+          title: locale === 'zh' ? '同步失败' : 'Sync Error',
+          message: result.error || (locale === 'zh' ? '未找到 PubChem 数据' : 'PubChem data not found'),
+        });
       }
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Sync aborted by user');
+        return;
+      }
       console.error('Error syncing PubChem:', error);
-      alert(locale === 'zh' ? '同步失败' : 'Sync failed');
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '同步失败' : 'Sync Error',
+        message: locale === 'zh' ? '同步失败' : 'Sync failed',
+      });
     } finally {
       setSyncingPubChem(false);
+      setSyncProgress({ step: 'connecting', message: '' });
+      syncAbortControllerRef.current = null;
     }
+  };
+
+  // 翻译字段
+  const translateFields = async (fieldsToTranslate: string[], translations: Record<string, any>) => {
+    const allLanguages = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'ru', 'pt', 'ar'];
+    const currentLang = allLanguages.includes(locale) ? locale : 'en';
+    const token = getAdminToken();
+    
+    setTranslating(true);
+    setTranslationProgress({ current: 0, total: fieldsToTranslate.length, status: 'translating' });
+    
+    const abortController = new AbortController();
+    translateAbortControllerRef.current = abortController;
+    
+    for (let i = 0; i < fieldsToTranslate.length; i++) {
+      const fieldName = fieldsToTranslate[i];
+      const value = formData[fieldName as keyof typeof formData] as string;
+      
+      if (!value) continue;
+      
+      setTranslatingFields(new Set([fieldName]));
+      
+      try {
+        const res = await fetch('/api/common/ai/translate', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ 
+            text: value, 
+            targetLanguages: allLanguages 
+          }),
+          signal: abortController.signal,
+        });
+        const data = await res.json();
+        
+        if (data.translations) {
+          translations[fieldName] = data.translations;
+          
+          // 更新当前语言的值
+          const currentLangTranslation = data.translations[currentLang];
+          if (currentLangTranslation) {
+            setFormData(prev => ({ ...prev, [fieldName]: currentLangTranslation }));
+          }
+        }
+        
+        setTranslationProgress(prev => ({ ...prev, current: i + 1 }));
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          console.log('Translation aborted');
+          break;
+        }
+        console.error(`Error translating ${fieldName}:`, err);
+      }
+      
+      setTranslatingFields(new Set());
+    }
+    
+    translateAbortControllerRef.current = null;
+    setTranslating(false);
+    setTranslationProgress(prev => ({ ...prev, status: 'completed' }));
+    setPendingTranslations({ ...translations });
+    
+    return translations;
   };
 
   // 保存
@@ -408,9 +599,17 @@ function SPUEditContent() {
       return;
     }
 
+    const token = getAdminToken();
+    let translations: Record<string, any> = { ...pendingTranslations };
+
+    // 如果刚同步完成且有需要翻译的字段，先翻译
+    if (justSynced && syncedFields.size > 0) {
+      const fieldsToTranslate = Array.from(syncedFields);
+      translations = await translateFields(fieldsToTranslate, translations);
+    }
+
     setSaving(true);
     try {
-      const token = getAdminToken();
       const spuData = {
         id: spuId || undefined,
         cas: formData.cas,
@@ -445,6 +644,9 @@ function SPUEditContent() {
         hsCode: formData.hsCode || null,
         hsCodeExtensions: Object.keys(formData.hsCodeExtensions).length > 0 ? formData.hsCodeExtensions : null,
         status: formData.status,
+        translations: Object.keys(translations).length > 0 ? translations : null,
+        pubchemCid: pubchemInfo.cid || null,
+        structureUrl: structureImageUrl || null,
       };
 
       const response = await fetch('/api/admin/spu-manage/save', {
@@ -488,30 +690,168 @@ function SPUEditContent() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full">
+    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full relative">
+      {/* 同步中遮罩层 */}
+      {syncingPubChem && (
+        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-slate-800 rounded-xl p-6 shadow-xl border border-purple-500/30 flex flex-col items-center gap-4 max-w-sm mx-4">
+            <Loader2 className="w-10 h-10 animate-spin text-purple-400" />
+            <div className="text-center w-full">
+              <p className="text-lg font-medium text-white mb-3">
+                {t('spu.syncingPubchem')}
+              </p>
+              <div className="space-y-2 text-left">
+                <div className={`flex items-center gap-2 text-sm ${syncProgress.step === 'connecting' ? 'text-purple-400' : 'text-green-400'}`}>
+                  {syncProgress.step !== 'connecting' ? (
+                    <CheckCircle className="w-4 h-4" />
+                  ) : (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  )}
+                  <span>{t('spu.connectingApi')}</span>
+                </div>
+                <div className={`flex items-center gap-2 text-sm ${syncProgress.step === 'fetching' ? 'text-purple-400' : syncProgress.step === 'updating' ? 'text-green-400' : 'text-slate-500'}`}>
+                  {syncProgress.step === 'updating' ? (
+                    <CheckCircle className="w-4 h-4" />
+                  ) : syncProgress.step === 'fetching' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border border-slate-500" />
+                  )}
+                  <span>{t('spu.fetchingData')}</span>
+                </div>
+                <div className={`flex items-center gap-2 text-sm ${syncProgress.step === 'updating' ? 'text-purple-400' : 'text-slate-500'}`}>
+                  {syncProgress.step === 'updating' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border border-slate-500" />
+                  )}
+                  <span>{t('spu.updatingForm')}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* 翻译中遮罩层 */}
+      {translating && (
+        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-slate-800 rounded-xl p-6 shadow-xl border border-blue-500/30 flex flex-col items-center gap-4 max-w-sm mx-4 w-full">
+            <Loader2 className="w-10 h-10 animate-spin text-blue-400" />
+            <div className="text-center w-full">
+              <p className="text-lg font-medium text-white mb-3">
+                {t('spu.translating')}
+              </p>
+              {translationProgress.status === 'translating' && (
+                <>
+                  {translatingFields.size > 0 && (
+                    <div className="mb-3 p-2 bg-slate-700/50 rounded-lg">
+                      <p className="text-xs text-slate-400 mb-1">{t('spu.currentField')}</p>
+                      <p className="text-sm text-blue-400 font-medium">
+                        {Array.from(translatingFields).join(', ')}
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-sm text-slate-400 mb-2">
+                    {translationProgress.current} / {translationProgress.total} {t('spu.fields')}
+                  </p>
+                  <div className="w-full bg-slate-700 rounded-full h-2 mb-3">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(translationProgress.current / translationProgress.total) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500">{t('spu.translatingTo')}</p>
+                </>
+              )}
+              {translationProgress.status === 'completed' && (
+                <p className="text-sm text-green-400">{t('spu.translationCompleted')}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* 顶部导航 */}
       <div className="bg-slate-800/50 border-b border-slate-700/50 px-5 py-3 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {locale === 'zh' ? '返回列表' : 'Back to List'}
-            </button>
-            <h2 className="text-lg font-semibold text-white">
+            {/* 左侧：返回 + 同步按钮 */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="text-sm">{locale === 'zh' ? '返回' : 'Back'}</span>
+              </button>
+              
+              <div className="w-px h-5 bg-slate-600" />
+              
+              <button
+                type="button"
+                onClick={handleSyncPubChem}
+                disabled={syncingPubChem || saving || translating}
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-sm transition-colors disabled:opacity-50"
+              >
+                {syncingPubChem ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                ) : (
+                  <RefreshCw className="w-4 h-4 text-purple-400" />
+                )}
+                <span>{t('spu.syncPubchem')}</span>
+              </button>
+              
+              {pubchemInfo.syncedAt && (
+                <span className="text-xs text-slate-500">
+                  {t('spu.lastSync')}: {new Date(pubchemInfo.syncedAt).toLocaleString()}
+                </span>
+              )}
+            </div>
+            
+            {/* 中间：标题 */}
+            <h2 className="text-lg font-semibold text-white absolute left-1/2 -translate-x-1/2">
               {isNewMode ? t('spu.newSpu') : t('spu.editSpu')}
               {spu && <span className="ml-2 text-sm text-slate-500 font-mono">CAS: {spu.cas}</span>}
             </h2>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {t('spu.save')}
-            </button>
+            
+            {/* 右侧：翻译状态 + 保存按钮 */}
+            <div className="flex items-center gap-3">
+              {/* 翻译状态 */}
+              {translating && (
+                <span className="flex items-center gap-2 text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>{t('spu.translating')}</span>
+                  <span className="text-blue-300">{translationProgress.current}/{translationProgress.total}</span>
+                </span>
+              )}
+              {translationProgress.status === 'completed' && !saving && (
+                <span className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-full">
+                  <CheckCircle className="w-3 h-3" />
+                  <span>{t('spu.translationDoneClickSave')}</span>
+                </span>
+              )}
+              
+              {/* 保存按钮 */}
+              <button
+                onClick={handleSave}
+                disabled={saving || translating || syncingPubChem}
+                className={`flex items-center gap-2 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50 ${
+                  justSynced 
+                    ? 'bg-amber-600 hover:bg-amber-700' 
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {saving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : translating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 w-4" />
+                )}
+                <span>{justSynced ? t('spu.translateAndSave') : t('spu.save')}</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -522,25 +862,13 @@ function SPUEditContent() {
           <div className="mb-6 p-4 bg-slate-700/30 border border-slate-600 rounded-lg">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm text-slate-400">{t('spu.pubchemData')}</span>
-              {/* 新建模式或无数据时显示同步按钮 */}
-              {(isNewMode || !pubchemInfo.cid) && (
-                <button
-                  onClick={handleSyncPubChem}
-                  disabled={syncingPubChem || !formData.cas}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {syncingPubChem ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {locale === 'zh' ? '同步中...' : 'Syncing...'}
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="h-4 w-4" />
-                      {t('spu.syncPubchem')}
-                    </>
+              {pubchemInfo.cid && (
+                <span className="text-xs text-slate-500">
+                  CID: <span className="text-blue-400">{pubchemInfo.cid}</span>
+                  {pubchemInfo.syncedAt && (
+                    <span className="ml-2">| {t('spu.syncedOn')}: {new Date(pubchemInfo.syncedAt).toLocaleDateString()}</span>
                   )}
-                </button>
+                </span>
               )}
             </div>
             <div className="grid grid-cols-2 gap-6">
@@ -585,16 +913,6 @@ function SPUEditContent() {
                 </div>
               </div>
             </div>
-            {pubchemInfo.cid && (
-              <div className="mt-4 text-sm text-slate-400">
-                CID: <span className="text-blue-400">{pubchemInfo.cid}</span>
-                {pubchemInfo.syncedAt && (
-                  <span className="ml-3 text-slate-500">
-                    {t('spu.syncedOn')}: {new Date(pubchemInfo.syncedAt).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
-            )}
           </div>
 
           {/* 基本信息 */}
@@ -926,6 +1244,26 @@ function SPUEditContent() {
             />
           </div>
         </div>
+        
+        {/* Dialog 弹窗 */}
+        {dialogConfig && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+            <div className="bg-slate-800 rounded-xl p-6 shadow-xl max-w-md mx-4 border border-slate-700">
+              <div className="flex items-center gap-3 mb-4">
+                {dialogConfig.type === 'success' && <CheckCircle className="w-6 h-6 text-green-400" />}
+                {dialogConfig.type === 'error' && <X className="w-6 h-6 text-red-400" />}
+                <h3 className="text-lg font-semibold text-white">{dialogConfig.title}</h3>
+              </div>
+              <p className="text-sm text-slate-300 mb-6">{dialogConfig.message}</p>
+              <button
+                onClick={() => setDialogConfig(null)}
+                className="w-full py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                {locale === 'zh' ? '确定' : 'OK'}
+              </button>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
