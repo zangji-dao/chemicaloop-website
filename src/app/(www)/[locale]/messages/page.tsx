@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import Header from '@/components/Header';
-import AuthModal from '@/components/AuthModal';
-import ComposeMessage from '@/components/ComposeMessage';
-import IMContactButtons from '@/components/IMContactButtons';
+import Header from '@/components/layout/Header';
+import AuthModal from '@/components/auth/AuthModal';
+import ComposeMessage from '@/components/messaging/ComposeMessage';
+import IMContactButtons from '@/components/user/IMContactButtons';
 import { useAuth } from '@/hooks/useAuth';
 import { getToken } from '@/services/authService';
 import EmailSettingsContent from './email-settings-content';

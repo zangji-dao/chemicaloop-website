@@ -2,8 +2,8 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useState, useEffect, useCallback } from 'react';
-import Header from '@/components/Header';
-import PageBanner from '@/components/PageBanner';
+import Header from '@/components/layout/Header';
+import PageBanner from '@/components/layout/PageBanner';
 import { Search, Package, Loader2, AlertCircle, Users, Beaker, PlusCircle, X, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';

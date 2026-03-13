@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import Header from '@/components/Header';
-import AuthModal from '@/components/AuthModal';
-import ComposeMessage from '@/components/ComposeMessage';
+import Header from '@/components/layout/Header';
+import AuthModal from '@/components/auth/AuthModal';
+import ComposeMessage from '@/components/messaging/ComposeMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { getToken } from '@/services/authService';
 import {

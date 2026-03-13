@@ -7,13 +7,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { Mail, Lock, User, Phone, Globe, ArrowRight, CheckCircle2, ShieldCheck, Globe2, Sparkles, Building2, User as UserIcon, Eye, EyeOff, Check, X, Loader2, Plus, ChevronRight, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import Header from '@/components/Header';
+import Header from '@/components/layout/Header';
 import { sendVerificationCode, checkEmailAvailability } from '@/services/authService';
 import { SOCIAL_CONTACT_TYPES, validateSocialContact } from '@/services/socialContactService';
-import type { AddressData } from '@/components/AddressPicker';
+import type { AddressData } from '@/components/common/AddressPicker';
 
 // 动态导入 AddressPicker，禁用 SSR（因为 Leaflet 需要 window 对象）
-const AddressPicker = dynamic(() => import('@/components/AddressPicker'), {
+const AddressPicker = dynamic(() => import('@/components/common/AddressPicker'), {
   ssr: false,
   loading: () => (
     <div className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-400">

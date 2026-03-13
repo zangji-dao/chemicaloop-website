@@ -7,8 +7,8 @@ import {
   Ship, Globe, Package, Info, RefreshCw, Loader2, MapPin,
   Calendar, BarChart3, Minus, AlertCircle
 } from 'lucide-react';
-import { CountrySelector } from './country-selector';
-import { YearRangeSelector, QuickYearRangeButtons } from './year-selector';
+import { CountrySelector } from '@/components/common/country-selector';
+import { YearRangeSelector, QuickYearRangeButtons } from '@/components/common/year-selector';
 import { REPORTER_COUNTRIES } from '@/lib/country-codes';
 import { cn } from '@/lib/utils';
 

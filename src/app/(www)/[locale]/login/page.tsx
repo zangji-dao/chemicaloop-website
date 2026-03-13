@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useAuth } from '@/hooks/useAuth';
 import { Mail, Lock, ArrowRight, ShieldCheck, Globe2, Sparkles, Eye, EyeOff, User as UserIcon, Building2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import Header from '@/components/Header';
+import Header from '@/components/layout/Header';
 
 export default function LoginPage() {
   const t = useTranslations('auth');

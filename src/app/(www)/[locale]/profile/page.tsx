@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter, usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import Header from '@/components/Header';
-import AuthModal from '@/components/AuthModal';
+import Header from '@/components/layout/Header';
+import AuthModal from '@/components/auth/AuthModal';
 import { useToast } from '@/components/ui/Toast';
-import { ContactCard } from '@/components/ContactCard';
+import { ContactCard } from '@/components/user/ContactCard';
 import { getToken, getUser, saveUser } from '@/services/authService';
-import type { AddressData } from '@/components/AddressPicker';
+import type { AddressData } from '@/components/common/AddressPicker';
 import {
   Shield,
   MessageSquare,
@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 
 // 动态导入 AddressPicker，禁用 SSR（Leaflet 需要 window 对象）
-const AddressPicker = dynamic(() => import('@/components/AddressPicker'), {
+const AddressPicker = dynamic(() => import('@/components/common/AddressPicker'), {
   ssr: false,
   loading: () => (
     <div className="h-12 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">

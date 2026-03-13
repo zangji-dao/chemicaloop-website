@@ -21,7 +21,7 @@ import {
   ChevronLeftSquare,
   ChevronRightSquare,
 } from 'lucide-react';
-import FrontendSwitchButton from '@/components/FrontendSwitchButton';
+import FrontendSwitchButton from '@/components/shared/FrontendSwitchButton';
 import { AdminLocaleProvider, useAdminLocale } from '@/contexts/AdminLocaleContext';
 import AdminLanguageSwitcher from '@/components/admin/AdminLanguageSwitcher';
 import { ToastProvider } from '@/components/ui/Toast';

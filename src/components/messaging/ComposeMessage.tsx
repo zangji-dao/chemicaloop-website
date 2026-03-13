@@ -15,7 +15,7 @@ import {
   Languages,
   Mail,
 } from 'lucide-react';
-import IMContactButtons from '@/components/IMContactButtons';
+import IMContactButtons from '@/components/user/IMContactButtons';
 
 interface EmailAccount {
   id: string;

@@ -1,8 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import Header from '@/components/Header';
-import PageBanner from '@/components/PageBanner';
+import Header from '@/components/layout/Header';
+import PageBanner from '@/components/layout/PageBanner';
 
 export default function ContactPage() {
   const t = useTranslations('contact');

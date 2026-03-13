@@ -3,10 +3,10 @@
 import { useTranslations, useLocale } from 'next-intl';
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
-import Header from '@/components/Header';
-import PageBanner from '@/components/PageBanner';
-import TradeDataDisplay from '@/components/trade-data-display';
-import { TradeDataPanel } from '@/components/trade-data-panel';
+import Header from '@/components/layout/Header';
+import PageBanner from '@/components/layout/PageBanner';
+import TradeDataDisplay from '@/components/trade/trade-data-display';
+import { TradeDataPanel } from '@/components/trade/trade-data-panel';
 import { getToken } from '@/services/authService';
 import { 
   ArrowLeft, Tag, DollarSign, Globe, Package, Droplet, Check, ChevronRight, Filter, 

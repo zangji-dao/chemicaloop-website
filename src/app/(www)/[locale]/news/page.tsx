@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import Header from '@/components/Header';
-import PageBanner from '@/components/PageBanner';
+import Header from '@/components/layout/Header';
+import PageBanner from '@/components/layout/PageBanner';
 import { Newspaper, Filter, TrendingUp, ExternalLink, Calendar, RefreshCw } from 'lucide-react';
 
 interface NewsItem {
