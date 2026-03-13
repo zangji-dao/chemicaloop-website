@@ -15,10 +15,10 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    // 查找管理员用户
+    // 查找管理员用户（不区分大小写）
     const result = await pool.query(
-      'SELECT * FROM users WHERE email = $1 AND role = $2',
-      [email.toLowerCase(), 'admin']
+      'SELECT * FROM users WHERE email = $1 AND UPPER(role) = $2',
+      [email.toLowerCase(), 'ADMIN']
     );
 
     if (result.rows.length === 0) {
