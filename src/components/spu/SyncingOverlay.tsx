@@ -25,7 +25,7 @@ export function SyncingOverlay({ syncingPubChem, syncProgress, t }: SyncingOverl
   ];
 
   return (
-    <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
       <div className="bg-slate-800 rounded-xl p-6 shadow-xl border border-purple-500/30 flex flex-col items-center gap-4 max-w-sm mx-4 w-full">
         <Loader2 className="w-10 h-10 animate-spin text-purple-400" />
         <div className="text-center w-full">
