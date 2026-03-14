@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, Wifi, Database, FileText } from 'lucide-react';
+import { Loader2, Wifi, Database, FileText, Check } from 'lucide-react';
 import { SyncProgress } from '@/types/spu';
 
 interface SyncingOverlayProps {
@@ -9,8 +9,20 @@ interface SyncingOverlayProps {
   t: (key: string) => string;
 }
 
+// 步骤顺序
+const STEPS = ['connecting', 'fetching', 'updating'] as const;
+
 export function SyncingOverlay({ syncingPubChem, syncProgress, t }: SyncingOverlayProps) {
   if (!syncingPubChem) return null;
+
+  const currentStepIndex = STEPS.indexOf(syncProgress.step as typeof STEPS[number]);
+
+  // 步骤配置
+  const stepConfig = [
+    { key: 'connecting', icon: Wifi, label: t('spu.connecting') },
+    { key: 'fetching', icon: Database, label: t('spu.fetchingData') },
+    { key: 'updating', icon: FileText, label: t('spu.updatingForm') },
+  ];
 
   return (
     <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -20,40 +32,38 @@ export function SyncingOverlay({ syncingPubChem, syncProgress, t }: SyncingOverl
           <p className="text-lg font-medium text-white mb-4">
             {t('spu.syncingPubchem')}
           </p>
+          {syncProgress.message && (
+            <p className="text-sm text-purple-300 mb-3">{syncProgress.message}</p>
+          )}
           <div className="space-y-2">
-            <div className={`flex items-center gap-2 text-sm ${syncProgress.step === 'connecting' ? 'text-purple-400' : 'text-slate-500'}`}>
-              {syncProgress.step === 'connecting' ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <div className="w-4 h-4 rounded-full border border-slate-500" />
-              )}
-              <span className="flex items-center gap-1">
-                <Wifi className="w-3 h-3" />
-                {t('spu.connecting')}
-              </span>
-            </div>
-            <div className={`flex items-center gap-2 text-sm ${syncProgress.step === 'fetching' ? 'text-purple-400' : 'text-slate-500'}`}>
-              {syncProgress.step === 'fetching' ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <div className="w-4 h-4 rounded-full border border-slate-500" />
-              )}
-              <span className="flex items-center gap-1">
-                <Database className="w-3 h-3" />
-                {t('spu.fetchingData')}
-              </span>
-            </div>
-            <div className={`flex items-center gap-2 text-sm ${syncProgress.step === 'updating' ? 'text-purple-400' : 'text-slate-500'}`}>
-              {syncProgress.step === 'updating' ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <div className="w-4 h-4 rounded-full border border-slate-500" />
-              )}
-              <span className="flex items-center gap-1">
-                <FileText className="w-3 h-3" />
-                {t('spu.updatingForm')}
-              </span>
-            </div>
+            {stepConfig.map((step, index) => {
+              const isCompleted = index < currentStepIndex;
+              const isCurrent = index === currentStepIndex;
+              const Icon = step.icon;
+
+              return (
+                <div
+                  key={step.key}
+                  className={`flex items-center gap-2 text-sm ${
+                    isCurrent ? 'text-purple-400' : isCompleted ? 'text-green-400' : 'text-slate-500'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  ) : isCurrent ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border border-slate-500" />
+                  )}
+                  <span className="flex items-center gap-1">
+                    <Icon className="w-3 h-3" />
+                    {step.label}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
