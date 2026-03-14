@@ -126,7 +126,7 @@ function SPUEditContent() {
       />
 
       {/* 顶部导航 */}
-      <div className="bg-slate-800/50 border-b border-slate-700/50 px-5 py-3 sticky top-0 z-10">
+      <div className="bg-slate-900 border-b border-slate-700/50 px-5 py-3 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
             {/* 左侧：返回 + 同步按钮 */}
