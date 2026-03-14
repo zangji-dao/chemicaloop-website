@@ -46,6 +46,10 @@ function SPUEditContent() {
     productImageUrl,
     setProductImageUrl,
     generatingImage,
+    newProductImageUrl,
+    showImageCompareModal,
+    handleUseNewImage,
+    handleKeepOldImage,
     pubchemInfo,
     syncingPubChem,
     syncProgress,
@@ -66,7 +70,7 @@ function SPUEditContent() {
 
   // 禁止滚动 - 当遮罩层或弹窗显示时
   useEffect(() => {
-    const shouldLockScroll = syncingPubChem || translating || dialogConfig;
+    const shouldLockScroll = syncingPubChem || translating || dialogConfig || showImageCompareModal;
 
     if (shouldLockScroll) {
       // 记录当前滚动位置
@@ -93,7 +97,7 @@ function SPUEditContent() {
       document.body.style.width = '';
       document.body.style.overflow = '';
     };
-  }, [syncingPubChem, translating, dialogConfig]);
+  }, [syncingPubChem, translating, dialogConfig, showImageCompareModal]);
 
   // 加载中
   if (loading) {
@@ -214,6 +218,10 @@ function SPUEditContent() {
           onGenerateImage={handleGenerateProductImage}
           t={t}
           locale={locale}
+          newProductImageUrl={newProductImageUrl}
+          showImageCompareModal={showImageCompareModal}
+          onUseNewImage={handleUseNewImage}
+          onKeepOldImage={handleKeepOldImage}
         />
 
         {/* 基本信息 */}

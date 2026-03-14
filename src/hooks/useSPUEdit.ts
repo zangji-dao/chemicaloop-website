@@ -34,6 +34,12 @@ interface UseSPUEditReturn {
   setProductImageUrl: React.Dispatch<React.SetStateAction<string | null>>;
   generatingImage: boolean;
   
+  // 图片对比弹窗
+  newProductImageUrl: string | null;
+  showImageCompareModal: boolean;
+  handleUseNewImage: () => void;
+  handleKeepOldImage: () => void;
+  
   // PubChem
   pubchemInfo: PubChemInfo;
   
@@ -59,7 +65,7 @@ interface UseSPUEditReturn {
   handleSyncPubChem: () => Promise<void>;
   handleTranslate: () => Promise<void>;
   handleSave: () => Promise<void>;
-  handleGenerateProductImage: () => Promise<void>;
+  handleGenerateProductImage: (force?: boolean) => Promise<void>;
   handleBack: () => void;
   initFormDataFromSPU: (spu: SPUItem) => void;
 }
@@ -81,6 +87,10 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
   const [structureImageUrl, setStructureImageUrl] = useState<string | null>(null);
   const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
   const [generatingImage, setGeneratingImage] = useState(false);
+  
+  // 图片对比弹窗状态
+  const [newProductImageUrl, setNewProductImageUrl] = useState<string | null>(null);
+  const [showImageCompareModal, setShowImageCompareModal] = useState(false);
 
   // PubChem 信息
   const [pubchemInfo, setPubchemInfo] = useState<PubChemInfo>({});
@@ -508,7 +518,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
   };
 
   // 生成产品图
-  const handleGenerateProductImage = async () => {
+  const handleGenerateProductImage = async (force: boolean = false) => {
     if (!spuId) {
       setDialogConfig({
         type: 'error',
@@ -540,20 +550,27 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
           spuId: spuId,
           cas: formData.cas,
           name: formData.name || formData.nameEn,
-          force: false,
+          force,
         }),
       });
 
       const data = await response.json();
       if (data.success) {
-        setProductImageUrl(data.imageUrl);
-        setDialogConfig({
-          type: 'success',
-          title: locale === 'zh' ? '生成成功' : 'Success',
-          message: data.isNew
-            ? (locale === 'zh' ? '产品图已生成' : 'Product image generated')
-            : (locale === 'zh' ? '使用已有图片' : 'Using existing image'),
-        });
+        // 如果是重绘（force=true）且已有图片，显示对比弹窗
+        if (force && productImageUrl && data.imageUrl !== productImageUrl) {
+          setNewProductImageUrl(data.imageUrl);
+          setShowImageCompareModal(true);
+        } else {
+          // 否则直接更新图片
+          setProductImageUrl(data.imageUrl);
+          setDialogConfig({
+            type: 'success',
+            title: locale === 'zh' ? '生成成功' : 'Success',
+            message: data.isNew
+              ? (locale === 'zh' ? '产品图已生成' : 'Product image generated')
+              : (locale === 'zh' ? '使用已有图片' : 'Using existing image'),
+          });
+        }
       } else {
         setDialogConfig({
           type: 'error',
@@ -571,6 +588,26 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
     } finally {
       setGeneratingImage(false);
     }
+  };
+
+  // 选择使用新图片
+  const handleUseNewImage = () => {
+    if (newProductImageUrl) {
+      setProductImageUrl(newProductImageUrl);
+      setNewProductImageUrl(null);
+      setShowImageCompareModal(false);
+      setDialogConfig({
+        type: 'success',
+        title: locale === 'zh' ? '已更换' : 'Changed',
+        message: locale === 'zh' ? '已使用新图片' : 'New image applied',
+      });
+    }
+  };
+
+  // 保留原图
+  const handleKeepOldImage = () => {
+    setNewProductImageUrl(null);
+    setShowImageCompareModal(false);
   };
 
   // 保存
@@ -685,6 +722,10 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
     productImageUrl,
     setProductImageUrl,
     generatingImage,
+    newProductImageUrl,
+    showImageCompareModal,
+    handleUseNewImage,
+    handleKeepOldImage,
     pubchemInfo,
     syncingPubChem,
     syncProgress,
