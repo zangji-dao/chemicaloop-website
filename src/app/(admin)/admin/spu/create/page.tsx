@@ -66,7 +66,7 @@ function ProductCreateContent() {
     try {
       // Step 2: 搜索本地SPU库
       const token = getAdminToken();
-      const response = await fetch(`/api/admin/spu-manage/search?q=${encodeURIComponent(cas)}`, {
+      const response = await fetch(`/api/admin/spu/search?q=${encodeURIComponent(cas)}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       const data = await response.json();

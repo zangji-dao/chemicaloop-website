@@ -175,7 +175,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
     setLoading(true);
     try {
       const token = getAdminToken();
-      const response = await fetch(`/api/admin/spu-manage/${id}`, {
+      const response = await fetch(`/api/admin/spu/${id}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       const data = await response.json();
@@ -633,7 +633,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
         pubchemCid: pubchemInfo.cid,
       };
 
-      const response = await fetch('/api/admin/spu-manage/save', {
+      const response = await fetch('/api/admin/spu/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

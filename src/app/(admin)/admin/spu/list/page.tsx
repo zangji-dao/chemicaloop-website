@@ -149,13 +149,13 @@ export default function AdminSPUPage() {
     const newStatus = spu.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     try {
       const token = getAdminToken();
-      const response = await fetch('/api/admin/spu', {
+      const response = await fetch(`/api/admin/spu/${spu.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ id: spu.id, status: newStatus }),
+        body: JSON.stringify({ status: newStatus }),
       });
 
       const data = await response.json();
@@ -175,7 +175,7 @@ export default function AdminSPUPage() {
     
     try {
       const token = getAdminToken();
-      const response = await fetch(`/api/admin/spu?id=${spu.id}`, {
+      const response = await fetch(`/api/admin/spu/${spu.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

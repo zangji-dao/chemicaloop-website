@@ -5,6 +5,7 @@ import authRoutes from './routes/auth';
 import productRoutes from './routes/products';
 import inquiryRoutes from './routes/inquiries';
 import adminRoutes from './routes/admin';
+import spuRoutes from './routes/spu';
 import newsRoutes from './routes/news';
 import messageRoutes from './routes/messages';
 import contactRequestsRoutes from './routes/contactRequests';
@@ -28,6 +29,7 @@ app.use(express.json());
 
 // Routes - 按 admin/www/common 分类
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/spu', spuRoutes);
 app.use('/api/www/auth', authRoutes);
 app.use('/api/www/messages', messageRoutes);
 app.use('/api/www/contact-requests', contactRequestsRoutes);
