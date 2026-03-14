@@ -5,8 +5,8 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 const nextConfig: NextConfig = {
-  // 明确指定工作目录，避免检测到系统级 pnpm-lock.yaml 警告
-  // outputFileTracingRoot: path.resolve(__dirname),
+  // 明确指定工作目录，避免检测到多个 pnpm-lock.yaml 警告
+  outputFileTracingRoot: path.resolve(__dirname),
   allowedDevOrigins: ['*.dev.coze.site'],
   
   images: {
