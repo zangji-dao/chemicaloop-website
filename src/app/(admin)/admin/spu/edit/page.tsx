@@ -109,7 +109,7 @@ function SPUEditContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+    <div className="min-h-screen bg-slate-900 text-white">
       {/* 同步遮罩层 */}
       <SyncingOverlay
         syncingPubChem={syncingPubChem}
