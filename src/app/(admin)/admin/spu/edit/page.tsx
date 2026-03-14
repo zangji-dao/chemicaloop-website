@@ -126,18 +126,21 @@ function SPUEditContent() {
       />
 
       {/* 顶部导航 */}
-      <div className="bg-slate-900 border-b border-slate-700/50 px-5 py-3 sticky top-0 z-10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between">
-            {/* 左侧：返回 + 同步按钮 */}
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span className="text-sm">{locale === 'zh' ? '返回' : 'Back'}</span>
-              </button>
+      <div className="sticky top-0 z-10">
+        {/* 遮挡层 - 覆盖导航栏下方的间隙 */}
+        <div className="absolute inset-x-0 -bottom-8 h-8 bg-slate-900 pointer-events-none" />
+        <div className="relative bg-slate-900 border-b border-slate-700/50 px-5 py-3">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-between">
+              {/* 左侧：返回 + 同步按钮 */}
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handleBack}
+                  className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="text-sm">{locale === 'zh' ? '返回' : 'Back'}</span>
+                </button>
 
               <div className="w-px h-5 bg-slate-600" />
 
@@ -203,6 +206,7 @@ function SPUEditContent() {
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* 内容区域 */}
