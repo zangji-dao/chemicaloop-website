@@ -679,6 +679,35 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
         body: JSON.stringify(spuData),
       });
 
+      // 检查 HTTP 状态码
+      if (response.status === 401) {
+        setDialogConfig({
+          type: 'error',
+          title: locale === 'zh' ? '登录已过期' : 'Session Expired',
+          message: locale === 'zh' ? '登录已过期，请重新登录' : 'Your session has expired. Please log in again.',
+          onConfirm: () => router.push('/admin/login'),
+        });
+        return;
+      }
+
+      if (!response.ok) {
+        // 尝试解析错误信息
+        let errorMessage = `HTTP ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // 无法解析响应，使用状态文本
+          errorMessage = response.statusText || errorMessage;
+        }
+        setDialogConfig({
+          type: 'error',
+          title: locale === 'zh' ? '保存失败' : 'Save Failed',
+          message: `${locale === 'zh' ? '保存失败' : 'Save failed'}: ${errorMessage}`,
+        });
+        return;
+      }
+
       const result = await response.json();
 
       if (result.success) {
@@ -697,10 +726,14 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
       }
     } catch (error) {
       console.error('Error saving SPU:', error);
+      // 检测是否是网络错误或服务不可用
+      const isNetworkError = error instanceof TypeError && error.message === 'Failed to fetch';
       setDialogConfig({
         type: 'error',
         title: locale === 'zh' ? '保存失败' : 'Save Failed',
-        message: locale === 'zh' ? '保存失败' : 'Save failed',
+        message: isNetworkError
+          ? (locale === 'zh' ? '网络连接失败，请检查网络后重试' : 'Network error. Please check your connection and try again.')
+          : (locale === 'zh' ? '保存失败，请重试' : 'Save failed. Please try again.'),
       });
     } finally {
       setSaving(false);
