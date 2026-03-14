@@ -51,13 +51,13 @@ const nextConfig: NextConfig = {
       { source: '/api/admin/users', destination: 'http://localhost:3001/api/admin/users' },
       { source: '/api/admin/users/:path*', destination: 'http://localhost:3001/api/admin/users/:path*' },
       { source: '/api/admin/stats', destination: 'http://localhost:3001/api/admin/stats' },
-      // SPU 管理 API - 转发到后端（排除需要前端处理的接口）
-      // sync-pubchem 和 check-pubchem-connection 需要前端直接访问外部 API
+      // SPU 管理 API - 转发到后端
+      // 注意：sync-pubchem、check-pubchem-connection、cleanup、image-url 有前端 BFF 实现
+      // Next.js 会优先匹配文件系统路由，然后再应用 rewrites
       { source: '/api/admin/spu', destination: 'http://localhost:3001/api/admin/spu' },
       { source: '/api/admin/spu/search', destination: 'http://localhost:3001/api/admin/spu/search' },
       { source: '/api/admin/spu/save', destination: 'http://localhost:3001/api/admin/spu/save' },
       { source: '/api/admin/spu/:id', destination: 'http://localhost:3001/api/admin/spu/:id' },
-      // 注意：sync-pubchem 和 check-pubchem-connection 保留在前端 BFF 处理
       // 产品管理 API 全部由前端处理（不再转发到后端）
       // { source: '/api/admin/products', destination: 'http://localhost:3001/api/admin/products' },
       // { source: '/api/admin/products/stats', destination: 'http://localhost:3001/api/admin/products/stats' },

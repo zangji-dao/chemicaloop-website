@@ -264,7 +264,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ cas: formData.cas }),
+        body: JSON.stringify({ preview: true, cas: formData.cas }),
         signal: abortController.signal,
       });
 
