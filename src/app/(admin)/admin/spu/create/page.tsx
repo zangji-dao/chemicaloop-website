@@ -8,6 +8,9 @@ import {
   Loader2,
   AlertCircle,
   ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Plus,
 } from 'lucide-react';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
 import { getAdminToken } from '@/services/adminAuthService';
@@ -24,6 +27,9 @@ interface SPUItem {
   formula?: string;
 }
 
+// 搜索结果状态
+type SearchStatus = 'idle' | 'searching' | 'found' | 'not_found';
+
 function ProductCreateContent() {
   const router = useRouter();
   const { locale, t } = useAdminLocale();
@@ -31,7 +37,9 @@ function ProductCreateContent() {
   // ========== 搜索相关状态 ==========
   const [casInput, setCasInput] = useState('');
   const [searching, setSearching] = useState(false);
+  const [searchStatus, setSearchStatus] = useState<SearchStatus>('idle');
   const [existingSPU, setExistingSPU] = useState<SPUItem | null>(null);
+  const [searchedCas, setSearchedCas] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   // ========== CAS 格式验证 ==========
@@ -61,6 +69,8 @@ function ProductCreateContent() {
 
     setError(null);
     setExistingSPU(null);
+    setSearchStatus('searching');
+    setSearchedCas(cas);
     setSearching(true);
 
     try {
@@ -74,16 +84,31 @@ function ProductCreateContent() {
       if (data.success && data.data && data.data.length > 0) {
         // 本地已存在 → 提示用户
         setExistingSPU(data.data[0]);
+        setSearchStatus('found');
       } else {
-        // 本地不存在 → 跳转到生成产品图页面
-        router.push(`/admin/spu/create/image?cas=${encodeURIComponent(cas)}`);
+        // 本地不存在 → 提示可以新建
+        setSearchStatus('not_found');
       }
     } catch (err) {
       console.error('Search error:', err);
       setError(locale === 'zh' ? '搜索失败，请重试' : 'Search failed, please retry');
+      setSearchStatus('idle');
     } finally {
       setSearching(false);
     }
+  };
+
+  // ========== 下一步：跳转到生成产品图页面 ==========
+  const handleNext = () => {
+    router.push(`/admin/spu/create/image?cas=${encodeURIComponent(searchedCas)}`);
+  };
+
+  // ========== 重新搜索 ==========
+  const handleReset = () => {
+    setSearchStatus('idle');
+    setExistingSPU(null);
+    setSearchedCas('');
+    setCasInput('');
   };
 
   return (
@@ -132,6 +157,7 @@ function ProductCreateContent() {
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder={t('spu.enterCas')}
                 className="flex-1 form-input-dark"
+                disabled={searching}
               />
               <button
                 onClick={handleSearch}
@@ -155,9 +181,9 @@ function ProductCreateContent() {
             </div>
           )}
 
-          {/* 已存在提示 */}
-          {existingSPU && (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+          {/* 搜索结果：已存在 */}
+          {searchStatus === 'found' && existingSPU && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-4">
                 <AlertCircle className="h-5 w-5 text-amber-400" />
                 <span className="font-semibold text-amber-400">
@@ -192,12 +218,59 @@ function ProductCreateContent() {
                   : 'To edit this product, please go to the product list.'}
               </p>
 
-              <button
-                onClick={() => router.push('/admin/spu')}
-                className="w-full py-2.5 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors font-medium text-sm"
-              >
-                {locale === 'zh' ? '前往产品列表' : 'Go to Product List'}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleReset}
+                  className="flex-1 py-2.5 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors font-medium text-sm"
+                >
+                  {locale === 'zh' ? '重新搜索' : 'Search Again'}
+                </button>
+                <button
+                  onClick={() => router.push('/admin/spu')}
+                  className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors font-medium text-sm"
+                >
+                  {locale === 'zh' ? '前往产品列表' : 'Go to Product List'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 搜索结果：不存在，可以新建 */}
+          {searchStatus === 'not_found' && (
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle2 className="h-5 w-5 text-green-400" />
+                <span className="font-semibold text-green-400">
+                  {locale === 'zh' ? '该CAS号可新建产品' : 'This CAS number is available for new product'}
+                </span>
+              </div>
+
+              <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
+                <div className="text-xs text-slate-400 mb-1">CAS Number</div>
+                <div className="font-mono text-xl font-medium text-blue-400">{searchedCas}</div>
+                <p className="text-xs text-slate-400 mt-2">
+                  {locale === 'zh' 
+                    ? '数据库中未找到该CAS号，您可以新建该产品。' 
+                    : 'This CAS number was not found in database. You can create a new product.'}
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleReset}
+                  className="flex-1 py-2.5 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors font-medium text-sm"
+                >
+                  {locale === 'zh' ? '重新搜索' : 'Search Again'}
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="flex-1 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  {locale === 'zh' ? '新建产品' : 'Create Product'}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           )}
         </div>
