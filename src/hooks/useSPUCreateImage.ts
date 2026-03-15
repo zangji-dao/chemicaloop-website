@@ -2,9 +2,9 @@
  * 新建产品 - 生成产品图页面 Hook
  * 
  * 流程：
- * 1. 页面加载时自动调用同步API获取PubChem数据（结构图等）
- * 2. 获取成功 → 显示结构图，用户可点击生成产品图
- * 3. 获取失败 → 显示错误提示（PubChem中不存在）
+ * 1. 页面加载时从数据库读取预存储的数据（已由搜索页面同步）
+ * 2. 有数据 → 显示结构图，用户可点击生成产品图
+ * 3. 无数据 → 显示错误提示
  * 4. 生成产品图后点击"下一步" → 跳转到填写表单页面
  */
 
@@ -13,38 +13,41 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getAdminToken } from '@/services/adminAuthService';
 
 interface SyncProgress {
-  step: 'connecting' | 'fetching' | 'done' | 'error';
+  step: 'connecting' | 'loading' | 'done' | 'error';
   message: string;
 }
 
-interface PubChemData {
-  cid: number;
-  structureUrl?: string;
-  structureImageKey?: string;
-  structureSdf?: string;
-  nameEn?: string;
+interface ProductData {
+  id: string;
+  cas: string;
+  name: string;
+  name_en?: string;
   formula?: string;
-  molecularWeight?: string;
+  molecular_weight?: string;
+  pubchem_cid?: number;
+  structure_image_key?: string;
+  structure_url?: string;
+  structure_sdf?: string;
   [key: string]: any;
 }
 
 interface UseSPUCreateImageReturn {
   // 状态
-  syncingPubChem: boolean;
-  syncProgress: SyncProgress;
+  loadingData: boolean;
+  loadingProgress: SyncProgress;
   generatingImage: boolean;
   step: 'loading' | 'generate' | 'next' | 'error';
   
   // 数据
   cas: string;
-  pubchemData: PubChemData | null;
+  productData: ProductData | null;
   structureImageUrl: string | null;
   productImageUrl: string | null;
   productImageKey: string | null;
   errorMessage: string | null;
   
   // 方法
-  handleRetrySync: () => Promise<void>;
+  handleRetryLoad: () => Promise<void>;
   handleGenerateProductImage: () => Promise<void>;
   handleNext: () => void;
   handleBack: () => void;
@@ -60,12 +63,12 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
   const cas = searchParams.get('cas') || '';
 
   // 状态
-  const [syncingPubChem, setSyncingPubChem] = useState(false);
-  const [syncProgress, setSyncProgress] = useState<SyncProgress>({ step: 'connecting', message: '' });
+  const [loadingData, setLoadingData] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState<SyncProgress>({ step: 'connecting', message: '' });
   const [generatingImage, setGeneratingImage] = useState(false);
   
   // 数据
-  const [pubchemData, setPubchemData] = useState<PubChemData | null>(null);
+  const [productData, setProductData] = useState<ProductData | null>(null);
   const [structureImageUrl, setStructureImageUrl] = useState<string | null>(null);
   const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
   const [productImageKey, setProductImageKey] = useState<string | null>(null);
@@ -74,98 +77,95 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
   // 弹窗
   const [dialogConfig, setDialogConfig] = useState<any>(null);
 
-  // 同步 PubChem 数据
-  const syncPubChem = useCallback(async () => {
+  // 从数据库加载产品数据
+  const loadProductData = useCallback(async () => {
     if (!cas) return;
 
-    setSyncingPubChem(true);
+    setLoadingData(true);
     setErrorMessage(null);
-    setSyncProgress({ step: 'connecting', message: locale === 'zh' ? '正在连接 PubChem...' : 'Connecting to PubChem...' });
+    setLoadingProgress({ step: 'connecting', message: locale === 'zh' ? '正在加载产品数据...' : 'Loading product data...' });
 
     try {
       const token = getAdminToken();
 
-      // 获取数据
-      setSyncProgress({ step: 'fetching', message: locale === 'zh' ? `正在获取 ${cas} 数据...` : `Fetching data for ${cas}...` });
+      setLoadingProgress({ step: 'loading', message: locale === 'zh' ? `正在查询 ${cas}...` : `Querying ${cas}...` });
 
-      const response = await fetch('/api/admin/spu/sync-pubchem', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ preview: true, cas }),
+      const response = await fetch(`/api/admin/spu/search?q=${encodeURIComponent(cas)}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
 
       const result = await response.json();
 
-      if (result.success && result.data) {
-        const data = result.data;
+      if (result.success && result.data && result.data.length > 0) {
+        const data = result.data[0];
+        
+        // 检查是否有结构图
+        if (!data.structure_image_key && !data.structure_url) {
+          setErrorMessage(locale === 'zh'
+            ? '该产品尚未同步PubChem数据，请返回上一步重新同步。'
+            : 'Product has not been synced with PubChem. Please go back and sync again.');
+          setLoadingProgress({ step: 'error', message: 'No structure image' });
+          setLoadingData(false);
+          return;
+        }
         
         // 保存数据
-        setPubchemData(data);
+        setProductData(data);
         
         // 设置结构图 URL
-        if (data.structureImageKey) {
-          const imageUrlResponse = await fetch(`/api/admin/spu/image-url?key=${encodeURIComponent(data.structureImageKey)}`, {
+        if (data.structure_image_key) {
+          const imageUrlResponse = await fetch(`/api/admin/spu/image-url?key=${encodeURIComponent(data.structure_image_key)}`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {},
           });
           const imageUrlData = await imageUrlResponse.json();
           if (imageUrlData.success && imageUrlData.url) {
             setStructureImageUrl(imageUrlData.url);
           }
-        } else if (data.structureUrl) {
-          setStructureImageUrl(data.structureUrl);
+        } else if (data.structure_url) {
+          setStructureImageUrl(data.structure_url);
         }
         
-        setSyncProgress({ step: 'done', message: locale === 'zh' ? '同步完成' : 'Sync completed' });
+        setLoadingProgress({ step: 'done', message: locale === 'zh' ? '加载完成' : 'Data loaded' });
       } else {
-        // PubChem中不存在或获取失败
-        setSyncProgress({ step: 'error', message: result.error || 'Unknown error' });
-        
-        if (result.error === 'PUBCHEM_NOT_FOUND') {
-          setErrorMessage(locale === 'zh' 
-            ? '该CAS号在PubChem中不存在，无法获取结构图。请返回确认CAS号是否正确。'
-            : 'This CAS number does not exist in PubChem. Please go back and verify the CAS number.');
-        } else {
-          setErrorMessage(locale === 'zh'
-            ? `PubChem数据获取失败: ${result.message || result.error || '未知错误'}`
-            : `Failed to fetch PubChem data: ${result.message || result.error || 'Unknown error'}`);
-        }
+        // 产品不存在
+        setErrorMessage(locale === 'zh' 
+          ? '产品数据不存在，请返回上一步重新操作。'
+          : 'Product data not found. Please go back and try again.');
+        setLoadingProgress({ step: 'error', message: 'Product not found' });
       }
     } catch (error: any) {
-      console.error('Sync PubChem error:', error);
-      setSyncProgress({ step: 'error', message: error.message });
+      console.error('Load product data error:', error);
+      setLoadingProgress({ step: 'error', message: error.message });
       setErrorMessage(error.message);
     } finally {
-      setSyncingPubChem(false);
+      setLoadingData(false);
     }
   }, [cas, locale]);
 
-  // 页面加载时自动同步
+  // 页面加载时自动加载数据
   useEffect(() => {
-    if (cas && !syncingPubChem && !pubchemData && !errorMessage) {
-      syncPubChem();
+    if (cas && !loadingData && !productData && !errorMessage) {
+      loadProductData();
     }
   }, [cas]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 计算当前步骤
   const getStep = (): 'loading' | 'generate' | 'next' | 'error' => {
-    if (syncingPubChem) return 'loading';
+    if (loadingData) return 'loading';
     if (errorMessage) return 'error';
     if (productImageKey) return 'next';
     return 'generate';
   };
   const step = getStep();
 
-  // 重试同步
-  const handleRetrySync = useCallback(async () => {
-    await syncPubChem();
-  }, [syncPubChem]);
+  // 重试加载
+  const handleRetryLoad = useCallback(async () => {
+    await loadProductData();
+  }, [loadProductData]);
 
   // 生成产品图
   const handleGenerateProductImage = useCallback(async () => {
-    if (!cas || !pubchemData?.cid) {
+    if (!cas || !productData?.pubchem_cid) {
       setDialogConfig({
         type: 'error',
         title: locale === 'zh' ? '无法生成' : 'Cannot Generate',
@@ -185,8 +185,8 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
         },
         body: JSON.stringify({
           cas,
-          name: pubchemData.nameEn || cas,
-          sdf: pubchemData.structureSdf,
+          name: productData.name_en || productData.name || cas,
+          sdf: productData.structure_sdf,
         }),
       });
 
@@ -216,14 +216,14 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
     } finally {
       setGeneratingImage(false);
     }
-  }, [cas, pubchemData, locale]);
+  }, [cas, productData, locale]);
 
   // 下一步
   const handleNext = useCallback(() => {
     // 存储数据到 sessionStorage
     const transferData = {
       cas,
-      pubchemData,
+      productData,
       productImageKey,
       productImageUrl,
     };
@@ -231,7 +231,7 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
     
     // 跳转到填写表单页面
     router.push(`/admin/spu/create/info?cas=${encodeURIComponent(cas)}`);
-  }, [cas, pubchemData, productImageKey, productImageUrl, router]);
+  }, [cas, productData, productImageKey, productImageUrl, router]);
 
   // 返回上一步
   const handleBack = useCallback(() => {
@@ -240,21 +240,21 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
 
   return {
     // 状态
-    syncingPubChem,
-    syncProgress,
+    loadingData,
+    loadingProgress,
     generatingImage,
     step,
     
     // 数据
     cas,
-    pubchemData,
+    productData,
     structureImageUrl,
     productImageUrl,
     productImageKey,
     errorMessage,
     
     // 方法
-    handleRetrySync,
+    handleRetryLoad,
     handleGenerateProductImage,
     handleNext,
     handleBack,

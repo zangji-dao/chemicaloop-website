@@ -20,16 +20,16 @@ function SPUCreateImageContent() {
   const { locale, t } = useAdminLocale();
 
   const {
-    syncingPubChem,
-    syncProgress,
+    loadingData,
+    loadingProgress,
     generatingImage,
     step,
     cas,
-    pubchemData,
+    productData,
     structureImageUrl,
     productImageUrl,
     errorMessage,
-    handleRetrySync,
+    handleRetryLoad,
     handleGenerateProductImage,
     handleNext,
     handleBack,
@@ -98,7 +98,7 @@ function SPUCreateImageContent() {
       return (
         <div className="flex items-center gap-2 text-slate-400">
           <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm">{syncProgress.message}</span>
+          <span className="text-sm">{loadingProgress.message}</span>
         </div>
       );
     }
@@ -106,7 +106,7 @@ function SPUCreateImageContent() {
     if (step === 'error') {
       return (
         <button
-          onClick={handleRetrySync}
+          onClick={handleRetryLoad}
           className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors"
         >
           <RefreshCw className="h-4 w-4" />
@@ -165,7 +165,7 @@ function SPUCreateImageContent() {
         {step === 'loading' && (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-10 h-10 animate-spin text-blue-400" />
-            <p className="mt-4 text-slate-400">{syncProgress.message}</p>
+            <p className="mt-4 text-slate-400">{loadingProgress.message}</p>
           </div>
         )}
 
@@ -195,21 +195,21 @@ function SPUCreateImageContent() {
                     <div className="text-xs text-slate-400">{t('spu.casNumber')}</div>
                     <div className="text-lg font-medium">{cas}</div>
                   </div>
-                  {pubchemData?.cid && (
+                  {productData?.pubchem_cid && (
                     <div className="text-slate-600">|</div>
                   )}
-                  {pubchemData?.cid && (
+                  {productData?.pubchem_cid && (
                     <div>
                       <div className="text-xs text-slate-400">PubChem CID</div>
-                      <div className="text-blue-400">{pubchemData.cid}</div>
+                      <div className="text-blue-400">{productData.pubchem_cid}</div>
                     </div>
                   )}
-                  {pubchemData?.nameEn && (
+                  {productData?.name_en && (
                     <>
                       <div className="text-slate-600">|</div>
                       <div>
                         <div className="text-xs text-slate-400">{t('spu.englishName')}</div>
-                        <div className="text-sm">{pubchemData.nameEn}</div>
+                        <div className="text-sm">{productData.name_en}</div>
                       </div>
                     </>
                   )}

@@ -47,6 +47,8 @@ interface SPUItem {
   name: string;
   name_en?: string;
   formula?: string;
+  structure_image_key?: string | null;
+  pubchem_cid?: number | null;
 }
 
 // 搜索结果状态
@@ -63,6 +65,7 @@ function ProductCreateContent() {
   const [existingSPU, setExistingSPU] = useState<SPUItem | null>(null);
   const [searchedCas, setSearchedCas] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   // ========== CAS 格式验证 ==========
   const validateCAS = (cas: string): boolean => {
@@ -132,6 +135,38 @@ function ProductCreateContent() {
     router.push(`/admin/spu/create/image?cas=${encodeURIComponent(searchedCas)}`);
   };
 
+  // ========== 同步并下一步：调用同步API ==========
+  const handleSyncAndNext = async () => {
+    if (!existingSPU) return;
+    
+    setSyncing(true);
+    try {
+      const token = getAdminToken();
+      const response = await fetch('/api/admin/spu/sync-pubchem', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ cas: existingSPU.cas }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // 同步成功，跳转到图片页面
+        router.push(`/admin/spu/create/image?cas=${encodeURIComponent(existingSPU.cas)}`);
+      } else {
+        setError(data.error || t('spu.syncFailed'));
+      }
+    } catch (err) {
+      console.error('Sync error:', err);
+      setError(t('spu.syncFailed'));
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full">
       {/* 顶部导航 */}
@@ -143,7 +178,7 @@ function ProductCreateContent() {
               className="flex items-center gap-2 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors text-sm"
             >
               <ArrowLeft className="h-4 w-4" />
-              {t('common.backToList')}
+              {t('common.previous')}
             </button>
             <h2 className="text-lg font-medium text-white">
               {t('spu.newSpu')}
@@ -156,6 +191,25 @@ function ProductCreateContent() {
                 {t('spu.next')}
                 <ArrowRight className="h-4 w-4" />
               </button>
+            ) : searchStatus === 'found' && existingSPU ? (
+              existingSPU.structure_image_key ? (
+                <button
+                  onClick={() => router.push(`/admin/spu/create/image?cas=${encodeURIComponent(existingSPU.cas)}`)}
+                  className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm whitespace-nowrap"
+                >
+                  {t('spu.next')}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={handleSyncAndNext}
+                  disabled={syncing}
+                  className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 text-sm whitespace-nowrap"
+                >
+                  {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+                  {t('spu.syncAndNext')}
+                </button>
+              )
             ) : (
               <div className="w-[88px]" />
             )}

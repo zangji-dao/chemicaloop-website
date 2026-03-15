@@ -1098,6 +1098,102 @@ export async function POST(request: NextRequest) {
       });
     }
     
+    // ========== 单个CAS同步模式：更新现有产品 ==========
+    if (cas && !preview && !casList) {
+      const trimmedCas = cas.trim();
+      console.log(`[Sync-PubChem] Single CAS sync mode for: ${trimmedCas}`);
+      
+      const db = await getDb(schema);
+      
+      // 查询产品是否存在
+      const existingProduct = await db.execute(sql`
+        SELECT id, cas, name, status FROM products WHERE cas = ${trimmedCas}
+      `);
+      
+      if (existingProduct.rows.length === 0) {
+        return NextResponse.json({
+          success: false,
+          error: 'PRODUCT_NOT_FOUND',
+          message: 'Product not found in database',
+        });
+      }
+      
+      const product = existingProduct.rows[0] as any;
+      
+      // 从PubChem获取数据
+      const pubchemData = await fetchPubChemData(trimmedCas);
+      
+      if (!pubchemData) {
+        return NextResponse.json({
+          success: false,
+          error: 'PUBCHEM_NOT_FOUND',
+          message: 'This CAS number does not exist in PubChem',
+        });
+      }
+      
+      // 更新产品数据
+      await db.update(schema.products)
+        .set({
+          pubchemCid: pubchemData.cid || null,
+          pubchemDataSource: 'pubchem',
+          description: safeString(pubchemData.description),
+          formula: safeString(pubchemData.formula),
+          molecularWeight: safeString(pubchemData.molecularWeight),
+          exactMass: safeString(pubchemData.exactMass),
+          smiles: safeString(pubchemData.smiles),
+          smilesCanonical: safeString(pubchemData.smilesCanonical),
+          smilesIsomeric: safeString(pubchemData.smilesIsomeric),
+          inchi: safeString(pubchemData.inchi),
+          inchiKey: safeString(pubchemData.inchiKey),
+          xlogp: safeString(pubchemData.xlogp),
+          tpsa: safeString(pubchemData.tpsa),
+          complexity: safeNumber(pubchemData.complexity),
+          hBondDonorCount: safeNumber(pubchemData.hBondDonorCount),
+          hBondAcceptorCount: safeNumber(pubchemData.hBondAcceptorCount),
+          rotatableBondCount: safeNumber(pubchemData.rotatableBondCount),
+          heavyAtomCount: safeNumber(pubchemData.heavyAtomCount),
+          formalCharge: safeNumber(pubchemData.formalCharge),
+          physicalDescription: safeString(pubchemData.physicalDescription),
+          colorForm: safeString(pubchemData.colorForm),
+          odor: safeString(pubchemData.odor),
+          boilingPoint: safeString(pubchemData.boilingPoint),
+          meltingPoint: safeString(pubchemData.meltingPoint),
+          flashPoint: safeString(pubchemData.flashPoint),
+          density: safeString(pubchemData.density),
+          solubility: safeString(pubchemData.solubility),
+          vaporPressure: safeString(pubchemData.vaporPressure),
+          refractiveIndex: safeString(pubchemData.refractiveIndex),
+          hazardClasses: safeString(pubchemData.hazardClasses),
+          healthHazards: safeString(pubchemData.healthHazards),
+          ghsClassification: safeString(pubchemData.ghsClassification),
+          toxicitySummary: safeString(pubchemData.toxicitySummary),
+          carcinogenicity: safeString(pubchemData.carcinogenicity),
+          firstAid: safeString(pubchemData.firstAid),
+          storageConditions: safeString(pubchemData.storageConditions),
+          incompatibleMaterials: safeString(pubchemData.incompatibleMaterials),
+          structureUrl: safeString(pubchemData.structureUrl),
+          structureImageKey: safeString(pubchemData.structureImageKey),
+          structureSdf: safeString(pubchemData.structureSdf),
+          structure2dSvg: safeString(pubchemData.structure2dSvg),
+          synonyms: pubchemData.synonyms && pubchemData.synonyms.length > 0 ? pubchemData.synonyms : null,
+          applications: pubchemData.applications && pubchemData.applications.length > 0 ? pubchemData.applications : null,
+          pubchemSyncedAt: sql`NOW()`,
+          updatedAt: sql`NOW()`,
+        })
+        .where(eq(schema.products.id, product.id));
+      
+      // 返回更新后的产品信息
+      const updatedProduct = await db.execute(sql`
+        SELECT * FROM products WHERE id = ${product.id}
+      `);
+      
+      return NextResponse.json({
+        success: true,
+        message: 'Product synced successfully',
+        product: updatedProduct.rows[0],
+      });
+    }
+    
     // ========== 批量同步模式：写入数据库 ==========
     const db = await getDb(schema);
     
