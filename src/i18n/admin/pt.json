@@ -19,7 +19,8 @@
     "updatedAt": "Atualizado em",
     "all": "Todos",
     "yes": "Sim",
-    "no": "Não"
+    "no": "Não",
+    "backToList": "Voltar para a lista"
   },
   "nav": {
     "dashboard": "Painel",

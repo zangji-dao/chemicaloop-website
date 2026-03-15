@@ -19,7 +19,8 @@
     "updatedAt": "Mis à jour le",
     "all": "Tout",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "backToList": "Retour à la liste"
   },
   "nav": {
     "dashboard": "Tableau de bord",

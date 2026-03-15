@@ -19,7 +19,8 @@
     "updatedAt": "Aktualisiert am",
     "all": "Alle",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "backToList": "Zurück zur Liste"
   },
   "nav": {
     "dashboard": "Dashboard",

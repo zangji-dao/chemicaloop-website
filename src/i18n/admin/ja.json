@@ -19,7 +19,8 @@
     "updatedAt": "更新日時",
     "all": "すべて",
     "yes": "はい",
-    "no": "いいえ"
+    "no": "いいえ",
+    "backToList": "一覧に戻る"
   },
   "nav": {
     "dashboard": "ダッシュボード",
