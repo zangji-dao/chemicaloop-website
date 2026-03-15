@@ -438,7 +438,9 @@
     "generated": "Generated",
     "pubchemNotFound": "This CAS number does not exist in PubChem, cannot get structure",
     "pubchemConnectionFailed": "PubChem connection failed",
-    "pubchemFetchFailed": "Failed to fetch PubChem data"
+    "pubchemFetchFailed": "Failed to fetch PubChem data",
+    "dataReady": "Data Ready",
+    "dataReadyHint": "Product data fetched from PubChem. Click \"Next\" to continue creating the product."
   },
   "login": {
     "title": "Admin Login",

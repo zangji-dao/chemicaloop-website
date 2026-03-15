@@ -335,7 +335,9 @@
     "generated": "Generado",
     "pubchemNotFound": "Este número CAS no existe en PubChem, no se puede obtener la estructura",
     "pubchemConnectionFailed": "Error de conexión a PubChem",
-    "pubchemFetchFailed": "Error al obtener datos de PubChem"
+    "pubchemFetchFailed": "Error al obtener datos de PubChem",
+    "dataReady": "Datos listos",
+    "dataReadyHint": "Datos del producto obtenidos de PubChem. Haga clic en \"Siguiente\" para continuar creando el producto."
   },
   "upload": {
     "title": "Subir producto",

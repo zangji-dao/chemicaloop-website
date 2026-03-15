@@ -335,7 +335,9 @@
     "generated": "생성됨",
     "pubchemNotFound": "이 CAS 번호는 PubChem에 존재하지 않습니다. 구조도를 가져올 수 없습니다",
     "pubchemConnectionFailed": "PubChem 연결 실패",
-    "pubchemFetchFailed": "PubChem 데이터 가져오기 실패"
+    "pubchemFetchFailed": "PubChem 데이터 가져오기 실패",
+    "dataReady": "데이터 준비 완료",
+    "dataReadyHint": "PubChem에서 제품 데이터를 가져왔습니다. \"다음\"을 클릭하여 제품 생성을 계속하세요."
   },
   "upload": {
     "title": "제품 업로드",

@@ -335,7 +335,9 @@
     "generated": "Généré",
     "pubchemNotFound": "Ce numéro CAS n'existe pas dans PubChem, impossible d'obtenir la structure",
     "pubchemConnectionFailed": "Échec de la connexion à PubChem",
-    "pubchemFetchFailed": "Échec de la récupération des données PubChem"
+    "pubchemFetchFailed": "Échec de la récupération des données PubChem",
+    "dataReady": "Données prêtes",
+    "dataReadyHint": "Données produit récupérées de PubChem. Cliquez sur \"Suivant\" pour continuer la création du produit."
   },
   "upload": {
     "title": "Télécharger un produit",

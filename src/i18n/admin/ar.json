@@ -335,7 +335,9 @@
     "generated": "تم الإنشاء",
     "pubchemNotFound": "رقم CAS هذا غير موجود في PubChem، لا يمكن الحصول على الهيكل",
     "pubchemConnectionFailed": "فشل الاتصال بـ PubChem",
-    "pubchemFetchFailed": "فشل في الحصول على بيانات PubChem"
+    "pubchemFetchFailed": "فشل في الحصول على بيانات PubChem",
+    "dataReady": "البيانات جاهزة",
+    "dataReadyHint": "تم الحصول على بيانات المنتج من PubChem. انقر فوق \"التالي\" لمتابعة إنشاء المنتج."
   },
   "upload": {
     "title": "تحميل منتج",

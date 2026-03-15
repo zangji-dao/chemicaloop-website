@@ -334,7 +334,9 @@
     "generated": "生成済み",
     "pubchemNotFound": "このCAS番号はPubChemに存在しません。構造図を取得できません",
     "pubchemConnectionFailed": "PubChem接続に失敗しました",
-    "pubchemFetchFailed": "PubChemデータの取得に失敗しました"
+    "pubchemFetchFailed": "PubChemデータの取得に失敗しました",
+    "dataReady": "データ準備完了",
+    "dataReadyHint": "PubChemから製品データを取得しました。「次へ」をクリックして製品作成を続行してください。"
   },
   "origins": {
     "china": "中国",
