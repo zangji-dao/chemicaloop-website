@@ -329,7 +329,10 @@
     "save": "保存",
     "translate": "翻訳",
     "productInfo": "製品情報",
-    "generated": "生成済み"
+    "generated": "生成済み",
+    "pubchemNotFound": "このCAS番号はPubChemに存在しません。構造図を取得できません",
+    "pubchemConnectionFailed": "PubChem接続に失敗しました",
+    "pubchemFetchFailed": "PubChemデータの取得に失敗しました"
   },
   "origins": {
     "china": "中国",

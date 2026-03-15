@@ -149,12 +149,23 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
         });
       } else {
         setSyncProgress({ step: 'error', message: result.error || 'Unknown error' });
+        
+        // 根据错误类型显示不同的提示
+        let errorMessage = '';
+        if (result.error === 'PUBCHEM_NOT_FOUND') {
+          errorMessage = locale === 'zh' 
+            ? '该CAS号在PubChem中不存在，无法获取结构图。请确认CAS号是否正确，或手动输入产品信息。'
+            : 'This CAS number does not exist in PubChem. Please verify the CAS number or enter product information manually.';
+        } else {
+          errorMessage = locale === 'zh'
+            ? `PubChem数据获取失败: ${result.message || result.error || '未知错误'}`
+            : `Failed to fetch PubChem data: ${result.message || result.error || 'Unknown error'}`;
+        }
+        
         setDialogConfig({
           type: 'error',
           title: locale === 'zh' ? '同步失败' : 'Sync Failed',
-          message: locale === 'zh' 
-            ? `PubChem 数据获取失败: ${result.error || '未知错误'}`
-            : `Failed to fetch PubChem data: ${result.error || 'Unknown error'}`,
+          message: errorMessage,
         });
       }
     } catch (error: any) {

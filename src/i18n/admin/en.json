@@ -433,7 +433,10 @@
     "save": "Save",
     "translate": "Translate",
     "productInfo": "Product Information",
-    "generated": "Generated"
+    "generated": "Generated",
+    "pubchemNotFound": "This CAS number does not exist in PubChem, cannot get structure",
+    "pubchemConnectionFailed": "PubChem connection failed",
+    "pubchemFetchFailed": "Failed to fetch PubChem data"
   },
   "login": {
     "title": "Admin Login",

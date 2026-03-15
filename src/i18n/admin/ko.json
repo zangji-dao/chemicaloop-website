@@ -330,7 +330,10 @@
     "save": "저장",
     "translate": "번역",
     "productInfo": "제품 정보",
-    "generated": "생성됨"
+    "generated": "생성됨",
+    "pubchemNotFound": "이 CAS 번호는 PubChem에 존재하지 않습니다. 구조도를 가져올 수 없습니다",
+    "pubchemConnectionFailed": "PubChem 연결 실패",
+    "pubchemFetchFailed": "PubChem 데이터 가져오기 실패"
   },
   "upload": {
     "title": "제품 업로드",

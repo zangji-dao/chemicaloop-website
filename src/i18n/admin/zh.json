@@ -433,7 +433,10 @@
     "save": "保存",
     "translate": "翻译",
     "productInfo": "产品信息",
-    "generated": "已生成"
+    "generated": "已生成",
+    "pubchemNotFound": "该CAS号在PubChem中不存在，无法获取结构图",
+    "pubchemConnectionFailed": "PubChem连接失败",
+    "pubchemFetchFailed": "PubChem数据获取失败"
   },
   "login": {
     "title": "管理员登录",

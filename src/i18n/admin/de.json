@@ -330,7 +330,10 @@
     "save": "Speichern",
     "translate": "Übersetzen",
     "productInfo": "Produktinformationen",
-    "generated": "Generiert"
+    "generated": "Generiert",
+    "pubchemNotFound": "Diese CAS-Nummer existiert nicht in PubChem, Struktur kann nicht abgerufen werden",
+    "pubchemConnectionFailed": "PubChem-Verbindung fehlgeschlagen",
+    "pubchemFetchFailed": "Fehler beim Abrufen der PubChem-Daten"
   },
   "upload": {
     "title": "Produkt hochladen",

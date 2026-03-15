@@ -1025,7 +1025,8 @@ export async function POST(request: NextRequest) {
       if (!pubchemData) {
         return NextResponse.json({
           success: false,
-          error: 'PubChem data not found for this CAS number',
+          error: 'PUBCHEM_NOT_FOUND',
+          message: 'This CAS number does not exist in PubChem',
         });
       }
       

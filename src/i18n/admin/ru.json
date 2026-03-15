@@ -330,7 +330,10 @@
     "save": "Сохранить",
     "translate": "Перевести",
     "productInfo": "Информация о продукте",
-    "generated": "Сгенерировано"
+    "generated": "Сгенерировано",
+    "pubchemNotFound": "Этот номер CAS не существует в PubChem, невозможно получить структуру",
+    "pubchemConnectionFailed": "Ошибка подключения к PubChem",
+    "pubchemFetchFailed": "Ошибка получения данных PubChem"
   },
   "upload": {
     "title": "Загрузить продукт",
