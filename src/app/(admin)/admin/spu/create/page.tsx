@@ -17,6 +17,29 @@ import { getAdminToken } from '@/services/adminAuthService';
 // CAS号格式验证正则：XXXXXXXX-XX-X
 const CAS_REGEX = /^\d{2,7}-\d{2}-\d$/;
 
+/**
+ * 验证 CAS 号校验位
+ * CAS 号最后一位是校验码，需要验证
+ * 算法：从右到左，第二位乘以1，第三位乘以2...所有乘积之和除以10，余数等于校验位
+ */
+function validateCASCheckDigit(cas: string): boolean {
+  // 去掉连字符
+  const digits = cas.replace(/-/g, '');
+  if (digits.length < 5) return false;
+
+  // 最后一位是校验位
+  const checkDigit = parseInt(digits[digits.length - 1], 10);
+  
+  // 从右到左计算（不包括校验位）
+  let sum = 0;
+  for (let i = digits.length - 2, multiplier = 1; i >= 0; i--, multiplier++) {
+    sum += parseInt(digits[i], 10) * multiplier;
+  }
+  
+  // 校验位应该等于 sum % 10
+  return sum % 10 === checkDigit;
+}
+
 // SPU 数据接口
 interface SPUItem {
   id: string;
@@ -66,6 +89,12 @@ function ProductCreateContent() {
       return;
     }
 
+    // Step 2: 验证CAS校验位
+    if (!validateCASCheckDigit(cas)) {
+      setError(locale === 'zh' ? 'CAS号校验位错误，请检查是否输入正确' : 'Invalid CAS check digit, please verify the number');
+      return;
+    }
+
     // 批量更新状态，减少重渲染
     setError(null);
     setExistingSPU(null);
@@ -74,7 +103,7 @@ function ProductCreateContent() {
     setSearchStatus('searching');
 
     try {
-      // Step 2: 搜索本地SPU库
+      // Step 3: 搜索本地SPU库
       const token = getAdminToken();
       const response = await fetch(`/api/admin/spu/search?q=${encodeURIComponent(cas)}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
