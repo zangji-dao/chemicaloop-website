@@ -262,8 +262,10 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
         // 更新表单数据
         setFormData(prev => ({
           ...prev,
+          name: data.nameZh || prev.name,
           nameEn: data.nameEn || prev.nameEn,
           formula: data.formula || prev.formula,
+          description: data.description || prev.description,
           molecularWeight: data.molecularWeight || prev.molecularWeight,
           exactMass: data.exactMass || prev.exactMass,
           smiles: data.smiles || prev.smiles,
@@ -298,6 +300,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
           storageConditions: data.storageConditions || prev.storageConditions,
           incompatibleMaterials: data.incompatibleMaterials || prev.incompatibleMaterials,
           synonyms: data.synonyms || prev.synonyms,
+          applications: data.applications || prev.applications,
         }));
 
         // 更新 PubChem 信息
