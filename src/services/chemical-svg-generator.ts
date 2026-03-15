@@ -70,24 +70,93 @@ interface SDFStructure {
   }>;
 }
 
+const FETCH_TIMEOUT = 30000; // 30秒超时
+const MAX_RETRIES = 2;
+
 /**
- * 从 PubChem 获取 2D SDF 结构数据
+ * 使用 curl 作为备选的 fetch 方法（解决 Node.js 网络限制）
  */
-async function getSDFStructure(identifier: string): Promise<SDFStructure | null> {
+async function fetchWithCurl(url: string, timeoutMs: number = 30000): Promise<string | null> {
   try {
-    const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(identifier)}/SDF?record_type=2d`;
-    const response = await fetch(url, {
-      headers: { 'Accept': 'chemical/x-mdl-sdfile' },
-    });
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+    const fs = await import('fs');
     
-    if (!response.ok) return null;
+    const timeoutSeconds = Math.floor(timeoutMs / 1000);
+    const tempFile = `/tmp/sdf_${Date.now()}.txt`;
     
-    const sdfText = await response.text();
-    return parseSDF(sdfText);
+    const command = `curl -s --connect-timeout 10 --max-time ${timeoutSeconds} '${url}' -o ${tempFile}`;
+    await execAsync(command, { timeout: timeoutMs + 5000 });
+    
+    if (fs.existsSync(tempFile)) {
+      const content = fs.readFileSync(tempFile, 'utf-8');
+      fs.unlinkSync(tempFile);
+      return content || null;
+    }
+    return null;
   } catch (error) {
-    console.error('Error fetching SDF:', error);
+    console.error('Curl fetch error:', error);
     return null;
   }
+}
+
+/**
+ * 从 PubChem 获取 2D SDF 结构数据（带超时和重试）
+ */
+async function getSDFStructure(identifier: string): Promise<SDFStructure | null> {
+  const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(identifier)}/SDF?record_type=2d`;
+  
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`[SDF] Attempt ${attempt}/${MAX_RETRIES} for: ${identifier}`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+      
+      const response = await fetch(url, {
+        headers: { 'Accept': 'chemical/x-mdl-sdfile' },
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.log(`[SDF] HTTP ${response.status}, retrying...`);
+        await new Promise(r => setTimeout(r, 1000));
+        continue;
+      }
+      
+      const sdfText = await response.text();
+      const result = parseSDF(sdfText);
+      if (result) {
+        console.log(`[SDF] Successfully fetched SDF for: ${identifier}`);
+        return result;
+      }
+    } catch (error: any) {
+      console.error(`[SDF] Fetch error (attempt ${attempt}):`, error?.message || error);
+      
+      // 如果是超时错误，尝试使用 curl
+      if (error?.name === 'AbortError' || error?.code === 'ETIMEDOUT') {
+        console.log(`[SDF] Trying curl fallback...`);
+        const sdfText = await fetchWithCurl(url, FETCH_TIMEOUT);
+        if (sdfText) {
+          const result = parseSDF(sdfText);
+          if (result) {
+            console.log(`[SDF] Curl fallback succeeded for: ${identifier}`);
+            return result;
+          }
+        }
+      }
+      
+      if (attempt < MAX_RETRIES) {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+  }
+  
+  console.error(`[SDF] All attempts failed for: ${identifier}`);
+  return null;
 }
 
 /**
