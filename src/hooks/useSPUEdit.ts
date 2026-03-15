@@ -301,7 +301,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
         }));
 
         // 更新 PubChem 信息
-        setPubchemInfo({ cid: data.cid, syncedAt: new Date().toISOString() });
+        setPubchemInfo({ cid: data.pubchemCid, syncedAt: new Date().toISOString() });
         
         // 保存结构数据（用于保存时写入数据库）
         setStructureData({
