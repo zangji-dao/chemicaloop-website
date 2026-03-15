@@ -80,12 +80,12 @@ function ProductCreateContent() {
     
     // Step 1: 验证CAS格式
     if (!cas) {
-      setError(locale === 'zh' ? '请输入CAS号' : 'Please enter CAS number');
+      setError(t('spu.casEmptyError'));
       return;
     }
 
     if (!validateCAS(cas)) {
-      setError(locale === 'zh' ? 'CAS号格式不正确，正确格式如：64-17-5' : 'Invalid CAS format. Example: 64-17-5');
+      setError(t('spu.casFormatError'));
       return;
     }
 

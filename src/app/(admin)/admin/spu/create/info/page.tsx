@@ -22,7 +22,7 @@ import { TranslatingOverlay } from '@/components/spu/TranslatingOverlay';
 import { StatusDialog } from '@/components/spu/StatusDialog';
 
 function SPUCreateInfoContent() {
-  const { locale } = useAdminLocale();
+  const { locale, t } = useAdminLocale();
   const router = useRouter();
 
   const {
@@ -94,11 +94,11 @@ function SPUCreateInfoContent() {
               className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">{locale === 'zh' ? '返回' : 'Back'}</span>
+              <span className="text-sm">{t('spu.back')}</span>
             </button>
 
             <h1 className="text-lg font-medium">
-              {locale === 'zh' ? '产品信息' : 'Product Information'}
+              {t('spu.productInfo')}
             </h1>
 
             {/* 右侧：翻译 + 保存按钮 */}
@@ -110,7 +110,7 @@ function SPUCreateInfoContent() {
                   className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm transition-colors"
                 >
                   <Languages className="h-4 w-4" />
-                  <span>{locale === 'zh' ? '翻译' : 'Translate'}</span>
+                  <span>{t('spu.translate')}</span>
                 </button>
               )}
 
@@ -122,12 +122,12 @@ function SPUCreateInfoContent() {
                 {saving ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>{locale === 'zh' ? '保存中...' : 'Saving...'}</span>
+                    <span>{t('spu.saving')}</span>
                   </>
                 ) : (
                   <>
                     <Save className="h-4 w-4" />
-                    <span>{locale === 'zh' ? '保存' : 'Save'}</span>
+                    <span>{t('spu.save')}</span>
                   </>
                 )}
               </button>
@@ -150,8 +150,8 @@ function SPUCreateInfoContent() {
                 />
               </div>
               <div className="flex-1">
-                <div className="text-sm text-slate-400">{locale === 'zh' ? '产品图' : 'Product Image'}</div>
-                <div className="text-green-400 text-sm mt-1">✓ {locale === 'zh' ? '已生成' : 'Generated'}</div>
+                <div className="text-sm text-slate-400">{t('spu.productImage')}</div>
+                <div className="text-green-400 text-sm mt-1">✓ {t('spu.generated')}</div>
               </div>
             </div>
           </div>

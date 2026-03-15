@@ -17,7 +17,7 @@ import { useSPUCreateImage } from '@/hooks/useSPUCreateImage';
 import { StatusDialog } from '@/components/spu/StatusDialog';
 
 function SPUCreateImageContent() {
-  const { locale } = useAdminLocale();
+  const { locale, t } = useAdminLocale();
   const router = useRouter();
 
   const {
@@ -106,9 +106,9 @@ function SPUCreateImageContent() {
   // 步骤指示器
   const StepIndicator = () => {
     const steps = [
-      { key: 'sync', label: locale === 'zh' ? '获取结构图' : 'Get Structure' },
-      { key: 'generate', label: locale === 'zh' ? '生成产品图' : 'Generate Image' },
-      { key: 'next', label: locale === 'zh' ? '填写信息' : 'Fill Info' },
+      { key: 'sync', label: t('spu.getStructure') },
+      { key: 'generate', label: t('spu.generateImage') },
+      { key: 'next', label: t('spu.fillInfo') },
     ];
 
     const getStepStatus = (stepKey: string) => {
@@ -166,12 +166,12 @@ function SPUCreateImageContent() {
           {syncingPubChem ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>{locale === 'zh' ? '获取中...' : 'Fetching...'}</span>
+              <span>{t('spu.fetching')}</span>
             </>
           ) : (
             <>
               <RefreshCw className="h-4 w-4" />
-              <span>{locale === 'zh' ? '获取结构图' : 'Get Structure'}</span>
+              <span>{t('spu.getStructure')}</span>
             </>
           )}
         </button>
@@ -187,7 +187,7 @@ function SPUCreateImageContent() {
             className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg text-sm transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${syncingPubChem ? 'animate-spin' : ''}`} />
-            <span>{locale === 'zh' ? '重新获取' : 'Re-get'}</span>
+            <span>{t('spu.reGet')}</span>
           </button>
           <button
             onClick={handleGenerateProductImage}
@@ -197,12 +197,12 @@ function SPUCreateImageContent() {
             {generatingImage ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{locale === 'zh' ? '生成中...' : 'Generating...'}</span>
+                <span>{t('spu.generating')}</span>
               </>
             ) : (
               <>
                 <ImageIcon className="h-4 w-4" />
-                <span>{locale === 'zh' ? '生成产品图' : 'Generate Image'}</span>
+                <span>{t('spu.generateImage')}</span>
               </>
             )}
           </button>
@@ -219,13 +219,13 @@ function SPUCreateImageContent() {
           className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg text-sm transition-colors"
         >
           <ImageIcon className="h-3.5 w-3.5" />
-          <span>{locale === 'zh' ? '重新生成' : 'Regenerate'}</span>
+          <span>{t('spu.regenerate')}</span>
         </button>
         <button
           onClick={handleNext}
           className="flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-medium transition-colors"
         >
-          <span>{locale === 'zh' ? '下一步' : 'Next'}</span>
+          <span>{t('spu.next')}</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>
@@ -247,11 +247,11 @@ function SPUCreateImageContent() {
               className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">{locale === 'zh' ? '返回' : 'Back'}</span>
+              <span className="text-sm">{t('spu.back')}</span>
             </button>
 
             <h1 className="text-lg font-medium">
-              {locale === 'zh' ? '新建产品' : 'Create Product'}
+              {t('spu.createProduct')}
             </h1>
 
             {renderActionButtons()}
@@ -270,7 +270,7 @@ function SPUCreateImageContent() {
         <div className="mb-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-slate-400">{locale === 'zh' ? 'CAS 号' : 'CAS Number'}</div>
+              <div className="text-sm text-slate-400">{t('spu.casNumber')}</div>
               <div className="text-xl font-medium mt-1">{cas}</div>
             </div>
             {pubchemData?.cid && (
@@ -282,7 +282,7 @@ function SPUCreateImageContent() {
           </div>
           {pubchemData?.nameEn && (
             <div className="mt-3 pt-3 border-t border-slate-700/50">
-              <div className="text-sm text-slate-400">{locale === 'zh' ? '英文名称' : 'English Name'}</div>
+              <div className="text-sm text-slate-400">{t('spu.englishName')}</div>
               <div className="mt-1">{pubchemData.nameEn}</div>
             </div>
           )}
@@ -294,7 +294,7 @@ function SPUCreateImageContent() {
           <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm text-slate-400">
-                {locale === 'zh' ? '2D 结构图' : '2D Structure'}
+                {t('spu.structure2D')}
               </div>
               {structureImageUrl && (
                 <CheckCircle2 className="w-4 h-4 text-green-400" />
@@ -310,8 +310,8 @@ function SPUCreateImageContent() {
               ) : (
                 <div className="text-slate-500 text-sm text-center px-4">
                   {syncingPubChem 
-                    ? (locale === 'zh' ? '加载中...' : 'Loading...') 
-                    : (locale === 'zh' ? '点击上方按钮获取' : 'Click button above')}
+                    ? t('spu.loading') 
+                    : t('spu.clickButtonAbove')}
                 </div>
               )}
             </div>
@@ -321,7 +321,7 @@ function SPUCreateImageContent() {
           <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm text-slate-400">
-                {locale === 'zh' ? '产品图' : 'Product Image'}
+                {t('spu.productImage')}
               </div>
               {productImageUrl && (
                 <CheckCircle2 className="w-4 h-4 text-green-400" />
@@ -338,8 +338,8 @@ function SPUCreateImageContent() {
                 <div className="text-slate-500 text-sm flex flex-col items-center gap-2 text-center px-4">
                   <ImageIcon className="w-8 h-8 opacity-50" />
                   {step === 'sync' 
-                    ? (locale === 'zh' ? '请先获取结构图' : 'Get structure first')
-                    : (locale === 'zh' ? '点击上方按钮生成' : 'Click button above')}
+                    ? t('spu.getStructureFirst')
+                    : t('spu.clickButtonGenerate')}
                 </div>
               )}
             </div>
