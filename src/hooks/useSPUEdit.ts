@@ -39,6 +39,7 @@ interface UseSPUEditReturn {
   structureImageUrl: string | null;
   productImageUrl: string | null;
   setProductImageUrl: React.Dispatch<React.SetStateAction<string | null>>;
+  productImageKey: string | null;
   generatingImage: boolean;
   
   // 图片对比弹窗
@@ -93,10 +94,12 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
   // 图片状态
   const [structureImageUrl, setStructureImageUrl] = useState<string | null>(null);
   const [productImageUrl, setProductImageUrl] = useState<string | null>(null);
+  const [productImageKey, setProductImageKey] = useState<string | null>(null);
   const [generatingImage, setGeneratingImage] = useState(false);
   
   // 图片对比弹窗状态
   const [newProductImageUrl, setNewProductImageUrl] = useState<string | null>(null);
+  const [newProductImageKey, setNewProductImageKey] = useState<string | null>(null);
   const [showImageCompareModal, setShowImageCompareModal] = useState(false);
 
   // PubChem 信息
@@ -162,14 +165,17 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
         setSpu(spuData);
         initFormDataFromSPU(spuData);
         setPubchemInfo({
-          cid: spuData.pubchem_cid,
-          syncedAt: spuData.pubchem_synced_at,
+          cid: spuData.pubchemCid,
+          syncedAt: spuData.pubchemSyncedAt,
         });
-        if (spuData.structure_url) {
-          setStructureImageUrl(spuData.structure_url);
+        if (spuData.structureImageUrl) {
+          setStructureImageUrl(spuData.structureImageUrl);
         }
-        if (spuData.image_url) {
-          setProductImageUrl(spuData.image_url);
+        if (spuData.productImageUrl) {
+          setProductImageUrl(spuData.productImageUrl);
+        }
+        if (spuData.productImageKey) {
+          setProductImageKey(spuData.productImageKey);
         }
       } else {
         setDialogConfig({
@@ -504,10 +510,12 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
         // 如果是重绘（force=true）且已有图片，显示对比弹窗
         if (force && productImageUrl && data.imageUrl !== productImageUrl) {
           setNewProductImageUrl(data.imageUrl);
+          setNewProductImageKey(data.imageKey);
           setShowImageCompareModal(true);
         } else {
           // 否则直接更新图片
           setProductImageUrl(data.imageUrl);
+          setProductImageKey(data.imageKey);
           setDialogConfig({
             type: 'success',
             title: locale === 'zh' ? '生成成功' : 'Success',
@@ -537,9 +545,11 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
 
   // 选择使用新图片
   const handleUseNewImage = () => {
-    if (newProductImageUrl) {
+    if (newProductImageUrl && newProductImageKey) {
       setProductImageUrl(newProductImageUrl);
+      setProductImageKey(newProductImageKey);
       setNewProductImageUrl(null);
+      setNewProductImageKey(null);
       setShowImageCompareModal(false);
       setDialogConfig({
         type: 'success',
@@ -552,6 +562,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
   // 保留原图
   const handleKeepOldImage = () => {
     setNewProductImageUrl(null);
+    setNewProductImageKey(null);
     setShowImageCompareModal(false);
   };
 
@@ -579,6 +590,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
         structureSdf: structureData.sdf || null,
         structureImageKey: structureData.imageKey || null,
         structure2dSvg: structureData.svg || null,
+        productImageKey: productImageKey,
         pendingTranslations,
       });
 
@@ -666,6 +678,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
     structureImageUrl,
     productImageUrl,
     setProductImageUrl,
+    productImageKey,
     generatingImage,
     newProductImageUrl,
     showImageCompareModal,

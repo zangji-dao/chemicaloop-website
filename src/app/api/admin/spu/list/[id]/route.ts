@@ -68,10 +68,10 @@ export async function GET(
       // 转换数据格式以匹配前端期望
       const productData = {
         ...product,
-        // 结构图 URL
-        structureUrl: product.structureKey ? `/api/storage/file?key=${product.structureKey}` : null,
-        // 产品图 URL
-        imageUrl: product.imageKey ? `/api/storage/file?key=${product.imageKey}` : null,
+        // 结构图 URL（需要签名 URL，前端通过 imageKey 自己获取）
+        structureImageUrl: product.structureImageKey ? `/api/storage/file?key=${product.structureImageKey}` : null,
+        // 产品图 URL（需要签名 URL，前端通过 productImageKey 自己获取）
+        productImageUrl: product.productImageKey ? `/api/storage/file?key=${product.productImageKey}` : null,
       };
 
       return NextResponse.json({
@@ -130,9 +130,9 @@ export async function GET(
       const productData = {
         ...product,
         // 结构图 URL
-        structureUrl: product.structureKey ? `/api/storage/file?key=${product.structureKey}` : null,
+        structureImageUrl: product.structureImageKey ? `/api/storage/file?key=${product.structureImageKey}` : null,
         // 产品图 URL
-        imageUrl: product.imageKey ? `/api/storage/file?key=${product.imageKey}` : null,
+        productImageUrl: product.productImageKey ? `/api/storage/file?key=${product.productImageKey}` : null,
         nameEn: product.name,
         nameZh: product.translations?.name?.zh || product.name,
         referencePrice: suppliers.length > 0 ? suppliers[0].price : null,
