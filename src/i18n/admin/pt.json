@@ -21,7 +21,9 @@
     "yes": "Sim",
     "no": "Não",
     "notice": "Aviso",
-    "backToList": "Voltar para a lista"
+    "backToList": "Voltar para a lista",
+    "previous": "Anterior",
+    "next": "Próximo"
   },
   "nav": {
     "dashboard": "Painel",

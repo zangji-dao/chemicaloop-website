@@ -21,7 +21,9 @@
     "yes": "Oui",
     "no": "Non",
     "notice": "Avis",
-    "backToList": "Retour à la liste"
+    "backToList": "Retour à la liste",
+    "previous": "Précédent",
+    "next": "Suivant"
   },
   "nav": {
     "dashboard": "Tableau de bord",

@@ -21,7 +21,9 @@
     "yes": "是",
     "no": "否",
     "notice": "提示",
-    "backToList": "返回列表"
+    "backToList": "返回列表",
+    "previous": "上一步",
+    "next": "下一步"
   },
   "nav": {
     "dashboard": "仪表盘",
@@ -361,6 +363,9 @@
     "systemSearchHint": "系统会先搜索SPU库，如无结果则自动从 PubChem 获取",
     "searchingLibrary": "正在搜索SPU库...",
     "fetchingFromPubchem": "正在从 PubChem 获取数据...",
+    "searchingHint": "正在搜索本地数据库...",
+    "syncingHint": "正在从 PubChem 获取化学品数据...",
+    "hsCodeMatched": "HS 编码已匹配",
     "foundProducts": "找到 {count} 个SPU",
     "spuAlreadyExists": "该SPU已存在于系统中，可直接选择使用，无需额外创建",
     "noDataFound": "未找到该 CAS 号对应的产品信息",

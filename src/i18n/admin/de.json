@@ -21,7 +21,9 @@
     "yes": "Ja",
     "no": "Nein",
     "notice": "Hinweis",
-    "backToList": "Zurück zur Liste"
+    "backToList": "Zurück zur Liste",
+    "previous": "Zurück",
+    "next": "Weiter"
   },
   "nav": {
     "dashboard": "Dashboard",

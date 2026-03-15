@@ -310,17 +310,39 @@ function ProductCreateContent() {
 
           {/* 搜索中 */}
           {searchStatus === 'searching' && (
-            <div className="flex items-center justify-center py-10">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
-              <span className="ml-3 text-slate-400">{t('spu.searchingLibrary')}</span>
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="relative mb-4">
+                <div className="w-16 h-16 rounded-full border-4 border-slate-700 border-t-blue-500 animate-spin" />
+                <Database className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 text-blue-400" />
+              </div>
+              <div className="text-center">
+                <p className="text-white font-medium mb-1">{t('spu.searchingLibrary')}</p>
+                <p className="text-sm text-slate-400">{t('spu.searchingHint') || 'Searching local database...'}</p>
+              </div>
             </div>
           )}
 
           {/* 同步中 */}
           {searchStatus === 'syncing' && (
-            <div className="flex items-center justify-center py-10">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
-              <span className="ml-3 text-slate-400">{t('spu.fetchingFromPubchem')}</span>
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="relative mb-4">
+                <div className="w-16 h-16 rounded-full border-4 border-slate-700 border-t-purple-500 animate-spin" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse delay-75" />
+                  <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse delay-150" />
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="text-white font-medium mb-1">{t('spu.fetchingFromPubchem')}</p>
+                <p className="text-sm text-slate-400">{t('spu.syncingHint') || 'Fetching chemical data from PubChem...'}</p>
+              </div>
+              <div className="mt-4 flex items-center gap-2">
+                <div className="flex items-center gap-1 px-3 py-1.5 bg-slate-700/50 rounded-full">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />
+                  <span className="text-xs text-slate-300">{t('spu.hsCodeMatched') || 'HS Code matched'}</span>
+                </div>
+              </div>
             </div>
           )}
 

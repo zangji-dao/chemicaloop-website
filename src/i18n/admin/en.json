@@ -21,7 +21,9 @@
     "yes": "Yes",
     "no": "No",
     "notice": "Notice",
-    "backToList": "Back to List"
+    "backToList": "Back to List",
+    "previous": "Previous",
+    "next": "Next"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -361,6 +363,9 @@
     "systemSearchHint": "System searches SPU library first, then PubChem if not found",
     "searchingLibrary": "Searching SPU library...",
     "fetchingFromPubchem": "Fetching from PubChem...",
+    "searchingHint": "Searching local database...",
+    "syncingHint": "Fetching chemical data from PubChem...",
+    "hsCodeMatched": "HS Code matched",
     "foundProducts": "Found {count} SPUs",
     "spuAlreadyExists": "SPU already exists in system, select to use directly without creating new one",
     "noDataFound": "No data found for this CAS number",

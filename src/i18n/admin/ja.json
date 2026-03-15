@@ -21,7 +21,9 @@
     "yes": "はい",
     "no": "いいえ",
     "notice": "通知",
-    "backToList": "一覧に戻る"
+    "backToList": "一覧に戻る",
+    "previous": "前へ",
+    "next": "次へ"
   },
   "nav": {
     "dashboard": "ダッシュボード",
