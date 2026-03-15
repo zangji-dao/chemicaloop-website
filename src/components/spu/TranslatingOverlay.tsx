@@ -14,6 +14,18 @@ const FIELD_LABELS: Record<string, string> = {
   name: '名称',
   description: '描述',
   physicalDescription: '物理描述',
+  boilingPoint: '沸点',
+  meltingPoint: '熔点',
+  flashPoint: '闪点',
+  hazardClasses: '危险类别',
+  healthHazards: '健康危害',
+  ghsClassification: 'GHS 分类',
+  firstAid: '急救措施',
+  storageConditions: '储存条件',
+  incompatibleMaterials: '不相容物质',
+  solubility: '溶解度',
+  vaporPressure: '蒸气压',
+  refractiveIndex: '折射率',
 };
 
 export function TranslatingOverlay({

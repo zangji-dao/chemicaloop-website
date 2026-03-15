@@ -237,16 +237,28 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
     loadPreviewData();
   }, [cas]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 翻译（并行执行多字段翻译）
+  // 翻译（并行执行多字段翻译，翻译到10种语言）
   const handleTranslate = useCallback(async () => {
-    // 定义需要翻译的字段列表
-    const fieldsToTranslate: Array<{ key: string; value: string | undefined }> = [
+    // 定义需要翻译的字段列表（参考 useSPUEdit.ts）
+    const translatableFields: Array<{ key: string; value: string | undefined }> = [
       { key: 'name', value: formData.nameEn },
       { key: 'description', value: formData.description },
       { key: 'physicalDescription', value: formData.physicalDescription },
+      { key: 'boilingPoint', value: formData.boilingPoint },
+      { key: 'meltingPoint', value: formData.meltingPoint },
+      { key: 'flashPoint', value: formData.flashPoint },
+      { key: 'hazardClasses', value: formData.hazardClasses },
+      { key: 'healthHazards', value: formData.healthHazards },
+      { key: 'ghsClassification', value: formData.ghsClassification },
+      { key: 'firstAid', value: formData.firstAid },
+      { key: 'storageConditions', value: formData.storageConditions },
+      { key: 'incompatibleMaterials', value: formData.incompatibleMaterials },
+      { key: 'solubility', value: formData.solubility },
+      { key: 'vaporPressure', value: formData.vaporPressure },
+      { key: 'refractiveIndex', value: formData.refractiveIndex },
     ].filter(f => f.value);
 
-    if (fieldsToTranslate.length === 0) {
+    if (translatableFields.length === 0) {
       setDialogConfig({
         type: 'error',
         title: t('common.error'),
@@ -255,24 +267,33 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
       return;
     }
 
+    // 所有支持的语言
+    const allLanguages = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'ru', 'pt', 'ar'];
+    const currentLang = allLanguages.includes(locale) ? locale : 'en';
+
     setTranslating(true);
-    setTranslationProgress({ status: 'translating', current: 0, total: fieldsToTranslate.length });
-    setTranslatingFields(new Set(fieldsToTranslate.map(f => f.key)));
+    setTranslationProgress({ status: 'translating', current: 0, total: translatableFields.length });
+    setTranslatingFields(new Set(translatableFields.map(f => f.key)));
     setPendingTranslations({});
+
+    const translations: Record<string, Record<string, string>> = {};
 
     try {
       // 并行翻译所有字段
-      const translationPromises = fieldsToTranslate.map(async (field, index) => {
+      const translationPromises = translatableFields.map(async (field) => {
         try {
-          const response = await fetch('/api/ai/translate', {
+          const response = await fetch('/api/common/ai/translate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: field.value, targetLanguage: locale === 'en' ? 'zh' : locale }),
+            body: JSON.stringify({ 
+              text: field.value, 
+              targetLanguages: allLanguages 
+            }),
           });
           
           if (!response.ok) {
             console.error(`Failed to translate ${field.key}: HTTP ${response.status}`);
-            return { key: field.key, translatedText: '' };
+            return { key: field.key, translations: null };
           }
           
           const data = await response.json();
@@ -280,10 +301,10 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
           // 更新进度
           setTranslationProgress(prev => ({ ...prev, current: prev.current + 1 }));
           
-          return { key: field.key, translatedText: data.translatedText || '' };
+          return { key: field.key, translations: data.translations || null };
         } catch (error) {
           console.error(`Failed to translate ${field.key}:`, error);
-          return { key: field.key, translatedText: '' };
+          return { key: field.key, translations: null };
         }
       });
 
@@ -291,24 +312,29 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
       const results = await Promise.all(translationPromises);
       
       // 合并翻译结果
-      const translations: Record<string, string> = {};
-      results.forEach(({ key, translatedText }) => {
-        if (translatedText) {
-          translations[key] = translatedText;
+      results.forEach(({ key, translations: fieldTranslations }) => {
+        if (fieldTranslations) {
+          translations[key] = fieldTranslations;
         }
       });
 
-      // 应用翻译结果到表单
+      // 应用翻译结果到表单（使用当前语言）
       setPendingTranslations(translations);
-      setFormData(prev => ({
-        ...prev,
-        name: translations.name || prev.name,
-        description: translations.description || prev.description,
-        physicalDescription: translations.physicalDescription || prev.physicalDescription,
-      }));
+      setFormData(prev => {
+        const updated = { ...prev };
+        
+        // 用当前语言的翻译更新表单字段
+        translatableFields.forEach(({ key }) => {
+          if (translations[key]?.[currentLang]) {
+            (updated as any)[key] = translations[key][currentLang];
+          }
+        });
+        
+        return updated;
+      });
 
       setNeedTranslate(false);
-      setTranslationProgress({ status: 'completed', current: fieldsToTranslate.length, total: fieldsToTranslate.length });
+      setTranslationProgress({ status: 'completed', current: translatableFields.length, total: translatableFields.length });
 
     } catch (error: any) {
       console.error('Translation error:', error);
