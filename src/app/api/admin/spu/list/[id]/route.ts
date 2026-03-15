@@ -34,8 +34,8 @@ function toCamelCase(obj: Record<string, any>): Record<string, any> {
 
 /**
  * GET /api/admin/spu/list/[id]
- * 获取产品详情
- * 支持通过 UUID 或 CAS 号查询
+ * 获取 SPU 产品详情
+ * 支持通过 UUID 或 CAS 号查询 products 表
  */
 export async function GET(
   request: NextRequest,
@@ -48,15 +48,12 @@ export async function GET(
     let productResult;
 
     if (isValidUUID(id)) {
-      // 通过 UUID 查询单个产品
+      // 通过 UUID 查询 products 表（SPU 编辑页面）
       productResult = await db.execute(sql`
         SELECT 
-          ap.*,
-          u.name as agent_name,
-          u.email as agent_email
-        FROM agent_products ap
-        LEFT JOIN users u ON ap.agent_id = u.id
-        WHERE ap.id = ${id}
+          p.*
+        FROM products p
+        WHERE p.id = ${id}
       `);
       
       if (productResult.rows.length === 0) {
@@ -67,13 +64,41 @@ export async function GET(
       }
 
       const product = toCamelCase(productResult.rows[0] as Record<string, any>);
+      
+      // 转换数据格式以匹配前端期望
+      const productData = {
+        ...product,
+        // 结构图 URL
+        structureUrl: product.structureKey ? `/api/storage/file?key=${product.structureKey}` : null,
+        // 产品图 URL
+        imageUrl: product.imageKey ? `/api/storage/file?key=${product.imageKey}` : null,
+      };
+
       return NextResponse.json({
         success: true,
-        data: product,
+        data: productData,
       });
     } else if (isValidCAS(id)) {
-      // 通过 CAS 号查询 - 返回 SPU 信息和所有供应商报价
+      // 通过 CAS 号查询 products 表
       productResult = await db.execute(sql`
+        SELECT 
+          p.*
+        FROM products p
+        WHERE p.cas = ${id}
+        LIMIT 1
+      `);
+      
+      if (productResult.rows.length === 0) {
+        return NextResponse.json(
+          { success: false, error: 'Product not found' },
+          { status: 404 }
+        );
+      }
+
+      const product = toCamelCase(productResult.rows[0] as Record<string, any>);
+      
+      // 查询关联的供应商报价
+      const suppliersResult = await db.execute(sql`
         SELECT 
           ap.*,
           u.name as agent_name,
@@ -84,15 +109,8 @@ export async function GET(
         ORDER BY ap.price ASC
       `);
       
-      if (productResult.rows.length === 0) {
-        return NextResponse.json(
-          { success: false, error: 'Product not found' },
-          { status: 404 }
-        );
-      }
-
       // 构建供应商列表
-      const suppliers = productResult.rows.map((row: any) => ({
+      const suppliers = suppliersResult.rows.map((row: any) => ({
         id: row.id,
         productId: row.id,
         name: row.agent_name || 'Unknown',
@@ -108,17 +126,15 @@ export async function GET(
         stock: row.stock,
       }));
 
-      // 使用第一个产品作为基础数据
-      const firstProduct = toCamelCase(productResult.rows[0] as Record<string, any>);
-      
       // 构建完整的返回数据
       const productData = {
-        ...firstProduct,
-        nameEn: firstProduct.name,
-        nameZh: firstProduct.translations?.name?.zh || firstProduct.name,
-        formula: null, // TODO: 从 SPU 表获取
-        description: null,
-        imageUrl: firstProduct.imageKey ? `/api/storage/file?key=${firstProduct.imageKey}` : null,
+        ...product,
+        // 结构图 URL
+        structureUrl: product.structureKey ? `/api/storage/file?key=${product.structureKey}` : null,
+        // 产品图 URL
+        imageUrl: product.imageKey ? `/api/storage/file?key=${product.imageKey}` : null,
+        nameEn: product.name,
+        nameZh: product.translations?.name?.zh || product.name,
         referencePrice: suppliers.length > 0 ? suppliers[0].price : null,
         suppliers,
       };
@@ -144,7 +160,7 @@ export async function GET(
 
 /**
  * DELETE /api/admin/spu/list/[id]
- * 删除产品
+ * 删除 SPU 产品
  */
 export async function DELETE(
   request: NextRequest,
@@ -164,7 +180,7 @@ export async function DELETE(
 
     // 检查产品是否存在
     const productResult = await db.execute(sql`
-      SELECT id FROM agent_products WHERE id = ${id}
+      SELECT id FROM products WHERE id = ${id}
     `);
 
     if (productResult.rows.length === 0) {
@@ -176,7 +192,7 @@ export async function DELETE(
 
     // 删除产品
     await db.execute(sql`
-      DELETE FROM agent_products WHERE id = ${id}
+      DELETE FROM products WHERE id = ${id}
     `);
 
     return NextResponse.json({
