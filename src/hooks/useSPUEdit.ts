@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import {
   SPUItem,
   FormData,
-  emptyFormData,
   PubChemInfo,
   SyncProgress,
   TranslationProgress,
@@ -13,6 +12,13 @@ import {
 } from '@/types/spu';
 import { getAdminToken } from '@/services/adminAuthService';
 import { translateFields as translateFieldsUtil, SUPPORTED_LANGUAGES } from '@/lib/translate-utils';
+import {
+  emptyFormData,
+  getTranslatableFields,
+  buildSpuSavePayload,
+  validateFormData,
+  initFormDataFromSPUData,
+} from '@/lib/spu-form-utils';
 
 interface UseSPUEditOptions {
   spuId: string | null;
@@ -125,56 +131,9 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
   const syncAbortControllerRef = useRef<AbortController | null>(null);
   const translateAbortControllerRef = useRef<AbortController | null>(null);
 
-  // 初始化表单数据
+  // 初始化表单数据（使用公共函数）
   const initFormDataFromSPU = useCallback((spu: SPUItem) => {
-    const allLanguages = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'ru', 'pt', 'ar'];
-    const currentLang = allLanguages.includes(locale) ? locale : 'en';
-
-    setFormData({
-      cas: spu.cas,
-      name: spu.translations?.name?.[currentLang] || spu.name || '',
-      nameEn: spu.name_en || '',
-      formula: spu.formula || '',
-      molecularWeight: spu.molecular_weight || '',
-      exactMass: spu.exact_mass || '',
-      description: spu.translations?.description?.[currentLang] || spu.description || '',
-      synonyms: spu.synonyms || [],
-      applications: spu.translations?.applications?.[currentLang] || spu.applications || [],
-      hsCode: spu.hs_code || '',
-      hsCodeExtensions: spu.hs_code_extensions || {},
-      status: spu.status || 'ACTIVE',
-      smiles: spu.smiles || '',
-      smilesCanonical: spu.smiles_canonical || '',
-      smilesIsomeric: spu.smiles_isomeric || '',
-      inchi: spu.inchi || '',
-      inchiKey: spu.inchi_key || '',
-      xlogp: spu.xlogp || '',
-      tpsa: spu.tpsa || '',
-      complexity: spu.complexity?.toString() || '',
-      hBondDonorCount: spu.h_bond_donor_count?.toString() || '',
-      hBondAcceptorCount: spu.h_bond_acceptor_count?.toString() || '',
-      rotatableBondCount: spu.rotatable_bond_count?.toString() || '',
-      heavyAtomCount: spu.heavy_atom_count?.toString() || '',
-      formalCharge: spu.formal_charge?.toString() || '',
-      physicalDescription: spu.translations?.physicalDescription?.[currentLang] || spu.physical_description || '',
-      colorForm: spu.color_form || '',
-      odor: spu.odor || '',
-      boilingPoint: spu.translations?.boilingPoint?.[currentLang] || spu.boiling_point || '',
-      meltingPoint: spu.translations?.meltingPoint?.[currentLang] || spu.melting_point || '',
-      flashPoint: spu.translations?.flashPoint?.[currentLang] || spu.flash_point || '',
-      density: spu.density || '',
-      solubility: spu.translations?.solubility?.[currentLang] || spu.solubility || '',
-      vaporPressure: spu.translations?.vaporPressure?.[currentLang] || spu.vapor_pressure || '',
-      refractiveIndex: spu.translations?.refractiveIndex?.[currentLang] || spu.refractive_index || '',
-      hazardClasses: spu.translations?.hazardClasses?.[currentLang] || spu.hazard_classes || '',
-      healthHazards: spu.translations?.healthHazards?.[currentLang] || spu.health_hazards || '',
-      ghsClassification: spu.translations?.ghsClassification?.[currentLang] || spu.ghs_classification || '',
-      toxicitySummary: spu.toxicity_summary || '',
-      carcinogenicity: spu.carcinogenicity || '',
-      firstAid: spu.translations?.firstAid?.[currentLang] || spu.first_aid || '',
-      storageConditions: spu.translations?.storageConditions?.[currentLang] || spu.storage_conditions || '',
-      incompatibleMaterials: spu.translations?.incompatibleMaterials?.[currentLang] || spu.incompatible_materials || '',
-    });
+    setFormData(initFormDataFromSPUData(spu, locale));
   }, [locale]);
 
   // 加载 SPU 数据
@@ -419,25 +378,9 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
     }
   };
 
-  // 处理翻译
+  // 处理翻译（使用公共函数）
   const handleTranslate = async () => {
-    const translatableFields: Array<{ key: string; value: string }> = [
-      { key: 'name', value: formData.nameEn },
-      { key: 'description', value: formData.description },
-      { key: 'physicalDescription', value: formData.physicalDescription },
-      { key: 'boilingPoint', value: formData.boilingPoint },
-      { key: 'meltingPoint', value: formData.meltingPoint },
-      { key: 'flashPoint', value: formData.flashPoint },
-      { key: 'hazardClasses', value: formData.hazardClasses },
-      { key: 'healthHazards', value: formData.healthHazards },
-      { key: 'ghsClassification', value: formData.ghsClassification },
-      { key: 'firstAid', value: formData.firstAid },
-      { key: 'storageConditions', value: formData.storageConditions },
-      { key: 'incompatibleMaterials', value: formData.incompatibleMaterials },
-      { key: 'solubility', value: formData.solubility },
-      { key: 'vaporPressure', value: formData.vaporPressure },
-      { key: 'refractiveIndex', value: formData.refractiveIndex },
-    ].filter((f): f is { key: string; value: string } => !!f.value);
+    const translatableFields = getTranslatableFields(formData);
 
     if (translatableFields.length === 0) {
       setDialogConfig({
@@ -614,67 +557,30 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
 
   // 保存
   const handleSave = async () => {
-    if (!formData.cas) {
+    // 使用公共验证函数
+    const validation = validateFormData(formData);
+    if (!validation.valid) {
       setDialogConfig({
         type: 'error',
         title: locale === 'zh' ? '提示' : 'Notice',
-        message: locale === 'zh' ? 'CAS号不能为空' : 'CAS number is required',
-      });
-      return;
-    }
-    if (!formData.name && !formData.nameEn) {
-      setDialogConfig({
-        type: 'error',
-        title: locale === 'zh' ? '提示' : 'Notice',
-        message: locale === 'zh' ? '产品名称不能为空' : 'Product name is required',
+        message: validation.error || 'Validation failed',
       });
       return;
     }
 
     const token = getAdminToken();
-    const translations: Record<string, any> = { ...pendingTranslations };
 
     setSaving(true);
     try {
-      const spuData = {
-        id: spuId || undefined,
-        cas: formData.cas,
-        name: formData.name || formData.nameEn,
-        nameEn: formData.nameEn || null,
-        formula: formData.formula || null,
-        description: formData.description || null,
-        molecularWeight: formData.molecularWeight || null,
-        smiles: formData.smiles || null,
-        inchi: formData.inchi || null,
-        inchiKey: formData.inchiKey || null,
-        xlogp: formData.xlogp || null,
-        tpsa: formData.tpsa || null,
-        boilingPoint: formData.boilingPoint || null,
-        meltingPoint: formData.meltingPoint || null,
-        flashPoint: formData.flashPoint || null,
-        density: formData.density || null,
-        solubility: formData.solubility || null,
-        vaporPressure: formData.vaporPressure || null,
-        refractiveIndex: formData.refractiveIndex || null,
-        hazardClasses: formData.hazardClasses || null,
-        healthHazards: formData.healthHazards || null,
-        ghsClassification: formData.ghsClassification || null,
-        toxicitySummary: formData.toxicitySummary || null,
-        carcinogenicity: formData.carcinogenicity || null,
-        firstAid: formData.firstAid || null,
-        storageConditions: formData.storageConditions || null,
-        incompatibleMaterials: formData.incompatibleMaterials || null,
-        hsCode: formData.hsCode || null,
-        hsCodeExtensions: formData.hsCodeExtensions || null,
-        status: formData.status,
-        synonyms: formData.synonyms || [],
-        translations: Object.keys(translations).length > 0 ? translations : undefined,
+      // 使用公共构建函数
+      const spuData = buildSpuSavePayload(formData, {
+        spuId,
         pubchemCid: pubchemInfo.cid,
-        // 结构数据（用于重绘产品图）
         structureSdf: structureData.sdf || null,
         structureImageKey: structureData.imageKey || null,
         structure2dSvg: structureData.svg || null,
-      };
+        pendingTranslations,
+      });
 
       const response = await fetch('/api/admin/spu/create/save', {
         method: 'POST',
