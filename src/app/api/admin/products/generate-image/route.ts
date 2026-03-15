@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     if (spuId) {
       isSpu = true;
       const spuResult = await db.execute(sql`
-        SELECT cas, name, pubchem_cid, product_image_key, structure_image_key
+        SELECT cas, name, pubchem_cid, product_image_key, structure_image_key, structure_2d_svg
         FROM products
         WHERE id = ${spuId}
       `);
@@ -94,7 +94,47 @@ export async function POST(request: NextRequest) {
         });
       }
       
-      // 如果没有产品图但有 PubChem 结构图，直接使用它
+      // 如果没有产品图但有本地存储的 SVG 数据，上传并返回
+      if (spu.structure_2d_svg && !force) {
+        const storage = new S3Storage({
+          endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
+          accessKey: '',
+          secretKey: '',
+          bucketName: process.env.COZE_BUCKET_NAME,
+          region: 'cn-beijing',
+        });
+
+        // 将 SVG 上传到对象存储
+        const fileName = `chemical-svg/${cas.replace(/-/g, '_')}_pubchem_${Date.now()}.svg`;
+        const imageKey = await storage.uploadFile({
+          fileContent: Buffer.from(spu.structure_2d_svg, 'utf-8'),
+          fileName,
+          contentType: 'image/svg+xml',
+        });
+
+        const imageUrl = await storage.generatePresignedUrl({
+          key: imageKey,
+          expireTime: 86400,
+        });
+
+        // 更新 product_image_key
+        await db.execute(sql`
+          UPDATE products 
+          SET product_image_key = ${imageKey}, 
+              product_image_generated_at = NOW(),
+              updated_at = NOW()
+          WHERE id = ${spuId}
+        `);
+
+        return NextResponse.json({
+          success: true,
+          imageKey,
+          imageUrl,
+          message: '使用本地存储的结构图',
+        });
+      }
+      
+      // 如果有 PubChem PNG 结构图，直接使用它
       if (spu.structure_image_key && !force) {
         const storage = new S3Storage({
           endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
