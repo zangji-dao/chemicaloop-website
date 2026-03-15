@@ -102,21 +102,13 @@ function ProductCreateContent() {
     router.push(`/admin/spu/create/image?cas=${encodeURIComponent(searchedCas)}`);
   };
 
-  // ========== 重新搜索 ==========
-  const handleReset = () => {
-    setSearchStatus('idle');
-    setExistingSPU(null);
-    setSearchedCas('');
-    setCasInput('');
-  };
-
   // ========== 渲染右侧按钮 ==========
   const renderRightButton = () => {
     if (searchStatus === 'not_found') {
       return (
         <button
           onClick={handleNext}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm"
         >
           {locale === 'zh' ? '下一步' : 'Next'}
           <ArrowRight className="h-4 w-4" />
@@ -127,13 +119,13 @@ function ProductCreateContent() {
       return (
         <button
           onClick={() => router.push('/admin/spu')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm"
         >
           {locale === 'zh' ? '前往列表' : 'Go to List'}
         </button>
       );
     }
-    return <div className="w-[100px]" />;
+    return <div className="w-[88px]" />;
   };
 
   return (
@@ -144,12 +136,12 @@ function ProductCreateContent() {
           <div className="flex items-center justify-between">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors text-sm"
             >
               <ArrowLeft className="h-4 w-4" />
-              {locale === 'zh' ? '返回列表' : 'Back to List'}
+              {locale === 'zh' ? '返回列表' : 'Back'}
             </button>
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-medium text-white">
               {t('spu.newSpu')}
             </h2>
             {renderRightButton()}
@@ -187,7 +179,7 @@ function ProductCreateContent() {
               <button
                 onClick={handleSearch}
                 disabled={searching}
-                className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+                className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 text-sm"
               >
                 {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 {t('common.search')}
@@ -247,21 +239,21 @@ function ProductCreateContent() {
 
           {/* 搜索结果：不存在，可以新建 */}
           {searchStatus === 'not_found' && (
-            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-5">
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-4">
-                <CheckCircle2 className="h-5 w-5 text-green-400" />
-                <span className="font-semibold text-green-400">
+                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                <span className="font-semibold text-emerald-400">
                   {locale === 'zh' ? '该CAS号可新建产品' : 'This CAS number is available for new product'}
                 </span>
               </div>
 
-              <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
+              <div className="bg-slate-700/50 rounded-lg p-4">
                 <div className="text-xs text-slate-400 mb-1">CAS Number</div>
                 <div className="font-mono text-xl font-medium text-blue-400">{searchedCas}</div>
                 <p className="text-xs text-slate-400 mt-2">
                   {locale === 'zh' 
-                    ? '数据库中未找到该CAS号，您可以新建该产品。点击右上角「下一步」继续。' 
-                    : 'This CAS number was not found in database. Click "Next" button on the top right to continue.'}
+                    ? '数据库中未找到该CAS号，点击右上角「下一步」继续新建流程。' 
+                    : 'Not found in database. Click "Next" button on the top right to continue.'}
                 </p>
               </div>
             </div>
