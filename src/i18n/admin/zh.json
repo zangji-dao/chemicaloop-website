@@ -290,6 +290,8 @@
     "currentField": "当前字段",
     "fields": "字段",
     "translatingTo": "翻译到: 中文、日语、韩语、西班牙语等 10 种语言",
+    "translatingField": "正在翻译中...",
+    "progress": "进度",
     "translationCompleted": "翻译完成",
     "translationDoneClickSave": "多语言翻译完成，请点击保存",
     "translationCompleteSave": "翻译完成，请确认后保存",

@@ -216,9 +216,10 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
         // 填充表单数据
         setFormData(previewToFormData(data, cas));
 
-        // 检查是否需要翻译（中文名称或描述为空）
-        const hasChineseContent = data.nameZh || data.description;
-        setNeedTranslate(!hasChineseContent);
+        // 检查是否需要翻译：如果有英文名称但没有中文名称，或者有英文描述但没有中文描述
+        const hasEnglishContent = data.nameEn || data.description;
+        const hasChineseContent = data.nameZh;
+        setNeedTranslate(!!hasEnglishContent && !hasChineseContent);
 
       } catch (error: any) {
         console.error('Load preview data error:', error);
@@ -236,9 +237,16 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
     loadPreviewData();
   }, [cas]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 翻译
+  // 翻译（并行执行多字段翻译）
   const handleTranslate = useCallback(async () => {
-    if (!formData.nameEn && !formData.description && !formData.physicalDescription) {
+    // 定义需要翻译的字段列表
+    const fieldsToTranslate: Array<{ key: string; value: string | undefined }> = [
+      { key: 'name', value: formData.nameEn },
+      { key: 'description', value: formData.description },
+      { key: 'physicalDescription', value: formData.physicalDescription },
+    ].filter(f => f.value);
+
+    if (fieldsToTranslate.length === 0) {
       setDialogConfig({
         type: 'error',
         title: t('common.error'),
@@ -248,58 +256,43 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
     }
 
     setTranslating(true);
-    setTranslationProgress({ status: 'translating', current: 0, total: 3 });
-    setTranslatingFields(new Set(['name', 'description', 'physicalDescription']));
+    setTranslationProgress({ status: 'translating', current: 0, total: fieldsToTranslate.length });
+    setTranslatingFields(new Set(fieldsToTranslate.map(f => f.key)));
     setPendingTranslations({});
 
     try {
-      const translations: Record<string, any> = {};
-
-      // 翻译名称
-      if (formData.nameEn) {
-        setTranslationProgress(prev => ({ ...prev, current: 1 }));
-        const response = await fetch('/api/ai/translate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: formData.nameEn, targetLanguage: 'zh' }),
-        });
-        const data = await response.json();
-        if (data.translatedText) {
-          translations.name = data.translatedText;
+      // 并行翻译所有字段
+      const translationPromises = fieldsToTranslate.map(async (field, index) => {
+        try {
+          const response = await fetch('/api/ai/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: field.value, targetLanguage: locale === 'en' ? 'zh' : locale }),
+          });
+          const data = await response.json();
+          
+          // 更新进度
+          setTranslationProgress(prev => ({ ...prev, current: prev.current + 1 }));
+          
+          return { key: field.key, translatedText: data.translatedText || '' };
+        } catch (error) {
+          console.error(`Failed to translate ${field.key}:`, error);
+          return { key: field.key, translatedText: '' };
         }
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
+      });
 
-      // 翻译描述
-      if (formData.description) {
-        setTranslationProgress(prev => ({ ...prev, current: 2 }));
-        const response = await fetch('/api/ai/translate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: formData.description, targetLanguage: 'zh' }),
-        });
-        const data = await response.json();
-        if (data.translatedText) {
-          translations.description = data.translatedText;
+      // 等待所有翻译完成
+      const results = await Promise.all(translationPromises);
+      
+      // 合并翻译结果
+      const translations: Record<string, string> = {};
+      results.forEach(({ key, translatedText }) => {
+        if (translatedText) {
+          translations[key] = translatedText;
         }
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
+      });
 
-      // 翻译物理描述
-      if (formData.physicalDescription) {
-        setTranslationProgress(prev => ({ ...prev, current: 3 }));
-        const response = await fetch('/api/ai/translate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: formData.physicalDescription, targetLanguage: 'zh' }),
-        });
-        const data = await response.json();
-        if (data.translatedText) {
-          translations.physicalDescription = data.translatedText;
-        }
-      }
-
-      // 应用翻译结果
+      // 应用翻译结果到表单
       setPendingTranslations(translations);
       setFormData(prev => ({
         ...prev,
@@ -309,7 +302,7 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
       }));
 
       setNeedTranslate(false);
-      setTranslationProgress({ status: 'completed', current: 3, total: 3 });
+      setTranslationProgress({ status: 'completed', current: fieldsToTranslate.length, total: fieldsToTranslate.length });
 
     } catch (error: any) {
       console.error('Translation error:', error);
@@ -322,7 +315,7 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
       setTranslating(false);
       setTranslatingFields(new Set());
     }
-  }, [formData, t]);
+  }, [formData, locale, t]);
 
   // 保存
   const handleSave = useCallback(async () => {

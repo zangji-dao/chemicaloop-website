@@ -290,6 +290,8 @@
     "currentField": "Current field",
     "fields": "fields",
     "translatingTo": "Translating to: Chinese, Japanese, Korean, Spanish, etc. (10 languages)",
+    "translatingField": "Translating...",
+    "progress": "Progress",
     "translationCompleted": "Translation completed",
     "translationDoneClickSave": "Translation done, click save",
     "translationCompleteSave": "Translation completed, please save",
