@@ -77,7 +77,7 @@ export function AdminLocaleProvider({ children }: { children: React.ReactNode })
   const translateProduct = useCallback(async (productId: string, fields?: ('name' | 'remark' | 'origin')[]) => {
     try {
       const token = getAdminToken();
-      const response = await fetch('/api/admin/products/translate', {
+      const response = await fetch('/api/admin/spu/request/translate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

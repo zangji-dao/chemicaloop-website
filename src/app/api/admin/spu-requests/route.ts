@@ -362,7 +362,7 @@ export async function PUT(request: NextRequest) {
                 
                 // 同步 PubChem 结构图
                 await fetch(
-                  `${API_CONFIG.backendURL}/api/admin/spu/sync-pubchem`,
+                  `${API_CONFIG.backendURL}/api/admin/spu/create/sync-pubchem`,
                   {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

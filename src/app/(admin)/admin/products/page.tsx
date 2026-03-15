@@ -189,7 +189,7 @@ export default function AdminProductsPage() {
       // Fetch stats
       try {
         const token = getAdminToken();
-        const response = await fetch('/api/admin/products/stats', {
+        const response = await fetch('/api/admin/spu/list/stats', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -239,7 +239,7 @@ export default function AdminProductsPage() {
       
       for (const product of toTranslate) {
         try {
-          await fetch('/api/admin/products/translate', {
+          await fetch('/api/admin/spu/request/translate', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -299,7 +299,7 @@ export default function AdminProductsPage() {
 
     // Fetch stats
     try {
-      const response = await fetch('/api/admin/products/stats', {
+      const response = await fetch('/api/admin/spu/list/stats', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -321,7 +321,7 @@ export default function AdminProductsPage() {
       const token = getAdminToken();
       
       // 快速获取产品信息
-      const response = await fetch(`/api/admin/products/${productId}/review`, {
+      const response = await fetch(`/api/admin/spu/request/${productId}/review`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -338,7 +338,7 @@ export default function AdminProductsPage() {
           } : prev);
           
           // 异步生成图片
-          fetch(`/api/admin/products/generate-image`, {
+          fetch(`/api/admin/spu/create/generate-image`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -406,7 +406,7 @@ export default function AdminProductsPage() {
     setUpdating(true);
     try {
       const token = getAdminToken();
-      const response = await fetch(`/api/admin/products/${reviewDetail.product.id}/review`, {
+      const response = await fetch(`/api/admin/spu/request/${reviewDetail.product.id}/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -448,7 +448,7 @@ export default function AdminProductsPage() {
 
     try {
       const token = getAdminToken();
-      const response = await fetch(`/api/admin/products/generate-image`, {
+      const response = await fetch(`/api/admin/spu/create/generate-image`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -499,7 +499,7 @@ export default function AdminProductsPage() {
     setUpdating(true);
     try {
       const token = getAdminToken();
-      const response = await fetch(`/api/admin/products/${id}/status`, {
+      const response = await fetch(`/api/admin/spu/request/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -533,7 +533,7 @@ export default function AdminProductsPage() {
     setUpdating(true);
     try {
       const token = getAdminToken();
-      const response = await fetch('/api/admin/products/batch-status', {
+      const response = await fetch('/api/admin/spu/request/batch-status', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

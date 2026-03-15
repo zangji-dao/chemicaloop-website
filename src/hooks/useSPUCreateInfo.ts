@@ -412,7 +412,7 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
         status: 'ACTIVE',
       };
 
-      const response = await fetch('/api/admin/spu/save', {
+      const response = await fetch('/api/admin/spu/create/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -192,7 +192,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
     setLoading(true);
     try {
       const token = getAdminToken();
-      const response = await fetch(`/api/admin/spu/${id}`, {
+      const response = await fetch(`/api/admin/spu/list/${id}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       const data = await response.json();
@@ -255,7 +255,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
       // 步骤1：检测连接
       setSyncProgress({ step: 'connecting', message: locale === 'zh' ? '正在连接 PubChem...' : 'Connecting to PubChem...' });
 
-      const connectionResponse = await fetch('/api/admin/spu/check-pubchem-connection', {
+      const connectionResponse = await fetch('/api/admin/spu/create/check-pubchem-connection', {
         signal: abortController.signal,
       });
       const connectionData = await connectionResponse.json();
@@ -275,7 +275,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
       // 步骤2：获取数据
       setSyncProgress({ step: 'fetching', message: locale === 'zh' ? `正在获取 ${formData.cas} 数据...` : `Fetching data for ${formData.cas}...` });
 
-      const response = await fetch('/api/admin/spu/sync-pubchem', {
+      const response = await fetch('/api/admin/spu/create/sync-pubchem', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -554,7 +554,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
     setGeneratingImage(true);
     try {
       const token = getAdminToken();
-      const response = await fetch('/api/admin/products/generate-image', {
+      const response = await fetch('/api/admin/spu/create/generate-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -688,7 +688,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
         structure2dSvg: structureData.svg || null,
       };
 
-      const response = await fetch('/api/admin/spu/save', {
+      const response = await fetch('/api/admin/spu/create/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

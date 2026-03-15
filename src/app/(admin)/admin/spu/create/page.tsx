@@ -127,7 +127,7 @@ function ProductCreateContent() {
       const token = getAdminToken();
       
       // Step 1: 搜索本地SPU库
-      const response = await fetch(`/api/admin/spu/search?q=${encodeURIComponent(cas)}`, {
+      const response = await fetch(`/api/admin/spu/list/search?q=${encodeURIComponent(cas)}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       const data = await response.json();
@@ -143,7 +143,7 @@ function ProductCreateContent() {
         // Step 2: 获取 HS 编码
         let hsCode: string | null = null;
         try {
-          const hsResponse = await fetch('/api/admin/products/match-hs-code', {
+          const hsResponse = await fetch('/api/admin/spu/create/match-hs-code', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -160,7 +160,7 @@ function ProductCreateContent() {
         }
         
         // Step 3: 使用 preview 模式同步PubChem（不写入数据库）
-        const syncResponse = await fetch('/api/admin/spu/sync-pubchem', {
+        const syncResponse = await fetch('/api/admin/spu/create/sync-pubchem', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
