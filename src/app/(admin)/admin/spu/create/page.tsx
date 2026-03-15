@@ -130,9 +130,39 @@ function ProductCreateContent() {
     }
   };
 
-  // ========== 下一步：跳转到图片页面 ==========
-  const handleNext = () => {
-    router.push(`/admin/spu/create/image?cas=${encodeURIComponent(searchedCas)}`);
+  // ========== 下一步：同步PubChem并跳转到图片页面 ==========
+  const handleNext = async () => {
+    // 如果本地库不存在，先同步PubChem
+    if (searchStatus === 'not_found') {
+      setSyncing(true);
+      try {
+        const token = getAdminToken();
+        const response = await fetch('/api/admin/spu/sync-pubchem', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ cas: searchedCas, createIfNotExist: true }),
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // 同步成功，跳转到图片页面
+          router.push(`/admin/spu/create/image?cas=${encodeURIComponent(searchedCas)}`);
+        } else {
+          setError(data.error || t('spu.syncFailed'));
+        }
+      } catch (err) {
+        console.error('Sync error:', err);
+        setError(t('spu.syncFailed'));
+      } finally {
+        setSyncing(false);
+      }
+    } else {
+      router.push(`/admin/spu/create/image?cas=${encodeURIComponent(searchedCas)}`);
+    }
   };
 
   // ========== 同步并下一步：调用同步API ==========
@@ -186,10 +216,21 @@ function ProductCreateContent() {
             {searchStatus === 'not_found' ? (
               <button
                 onClick={handleNext}
-                className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm whitespace-nowrap"
+                disabled={syncing}
+                className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 text-sm whitespace-nowrap"
               >
-                {t('spu.next')}
-                <ArrowRight className="h-4 w-4" />
+                {syncing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t('spu.syncing')}
+                  </>
+                ) : (
+                  <>
+                    <Database className="h-4 w-4" />
+                    {t('spu.syncAndNext')}
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </button>
             ) : searchStatus === 'found' && existingSPU ? (
               existingSPU.structure_image_key ? (
