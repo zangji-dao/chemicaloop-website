@@ -2,12 +2,12 @@
  * 新建产品 - 生成产品图页面 Hook
  * 
  * 流程：
- * 1. 同步 PubChem 获取 2D 结构图
- * 2. 用户点击生成产品图
- * 3. 生成完成后跳转到填写表单页面
+ * 1. 用户点击「获取2D结构图」→ 同步 PubChem → 显示 2D 结构图
+ * 2. 用户点击「生成产品图」→ 调用 API 生成产品图
+ * 3. 生成完成后点击「下一步」→ 跳转到填写表单页面
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAdminToken } from '@/services/adminAuthService';
 
@@ -24,16 +24,15 @@ interface PubChemData {
   nameEn?: string;
   formula?: string;
   molecularWeight?: string;
-  // 其他数据暂存，传给下一个页面
   [key: string]: any;
 }
 
 interface UseSPUCreateImageReturn {
   // 状态
-  loading: boolean;
   syncingPubChem: boolean;
   syncProgress: SyncProgress;
   generatingImage: boolean;
+  step: 'sync' | 'generate' | 'next';
   
   // 数据
   cas: string;
@@ -59,7 +58,6 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
   const cas = searchParams.get('cas') || '';
 
   // 状态
-  const [loading, setLoading] = useState(false);
   const [syncingPubChem, setSyncingPubChem] = useState(false);
   const [syncProgress, setSyncProgress] = useState<SyncProgress>({ step: 'connecting', message: '' });
   const [generatingImage, setGeneratingImage] = useState(false);
@@ -73,14 +71,15 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
   // 弹窗
   const [dialogConfig, setDialogConfig] = useState<any>(null);
 
-  // 自动同步 PubChem
-  useEffect(() => {
-    if (cas) {
-      handleSyncPubChem();
-    }
-  }, [cas]);
+  // 计算当前步骤
+  const getStep = (): 'sync' | 'generate' | 'next' => {
+    if (productImageKey) return 'next';
+    if (pubchemData?.cid && structureImageUrl) return 'generate';
+    return 'sync';
+  };
+  const step = getStep();
 
-  // 同步 PubChem
+  // 同步 PubChem - 获取2D结构图
   const handleSyncPubChem = useCallback(async () => {
     if (!cas) return;
 
@@ -142,6 +141,12 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
         }
         
         setSyncProgress({ step: 'done', message: locale === 'zh' ? '同步完成' : 'Sync completed' });
+        
+        setDialogConfig({
+          type: 'success',
+          title: locale === 'zh' ? '获取成功' : 'Success',
+          message: locale === 'zh' ? '2D结构图已获取，点击"生成产品图"继续' : '2D structure obtained. Click "Generate Product Image" to continue.',
+        });
       } else {
         setSyncProgress({ step: 'error', message: result.error || 'Unknown error' });
         setDialogConfig({
@@ -171,7 +176,7 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
       setDialogConfig({
         type: 'error',
         title: locale === 'zh' ? '无法生成' : 'Cannot Generate',
-        message: locale === 'zh' ? '请先同步 PubChem 数据' : 'Please sync PubChem data first',
+        message: locale === 'zh' ? '请先获取2D结构图' : 'Please get 2D structure first',
       });
       return;
     }
@@ -188,7 +193,6 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
         body: JSON.stringify({
           cas,
           name: pubchemData.nameEn || cas,
-          // 传入本地 SDF 数据
           sdf: pubchemData.structureSdf,
         }),
       });
@@ -242,10 +246,10 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
   }, [router]);
 
   return {
-    loading,
     syncingPubChem,
     syncProgress,
     generatingImage,
+    step,
     cas,
     pubchemData,
     structureImageUrl,
