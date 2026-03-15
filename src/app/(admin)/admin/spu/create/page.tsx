@@ -8,6 +8,7 @@ import {
   Loader2,
   AlertCircle,
   ArrowLeft,
+  ArrowRight,
   CheckCircle2,
 } from 'lucide-react';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
@@ -114,42 +115,8 @@ function ProductCreateContent() {
         setExistingSPU(data.data[0]);
         setSearchStatus('found');
       } else {
-        // 本地不存在 → 自动调用同步API获取PubChem数据
-        setSearchStatus('searching');
-        try {
-          const syncResponse = await fetch('/api/admin/spu/sync-pubchem', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({ preview: true, cas }),
-          });
-          
-          const syncData = await syncResponse.json();
-          
-          if (syncData.success && syncData.data) {
-            // 存储PubChem数据到sessionStorage，供下一个页面使用
-            sessionStorage.setItem('spu_create_data', JSON.stringify({
-              cas,
-              pubchemData: syncData.data,
-            }));
-            // 直接跳转到图片页面
-            router.push(`/admin/spu/create/image?cas=${encodeURIComponent(cas)}`);
-          } else {
-            // PubChem中不存在或获取失败
-            if (syncData.error === 'PUBCHEM_NOT_FOUND') {
-              setError(t('spu.pubchemNotFound'));
-            } else {
-              setError(t('spu.pubchemFetchFailed'));
-            }
-            setSearchStatus('not_found');
-          }
-        } catch (syncError) {
-          console.error('Sync PubChem error:', syncError);
-          setError(t('spu.pubchemFetchFailed'));
-          setSearchStatus('not_found');
-        }
+        // 本地不存在 → 提示可以新建
+        setSearchStatus('not_found');
       }
     } catch (err) {
       console.error('Search error:', err);
@@ -158,6 +125,11 @@ function ProductCreateContent() {
     } finally {
       setSearching(false);
     }
+  };
+
+  // ========== 下一步：跳转到图片页面 ==========
+  const handleNext = () => {
+    router.push(`/admin/spu/create/image?cas=${encodeURIComponent(searchedCas)}`);
   };
 
   return (
@@ -176,7 +148,17 @@ function ProductCreateContent() {
             <h2 className="text-lg font-medium text-white">
               {t('spu.newSpu')}
             </h2>
-            <div className="w-[88px]" />
+            {searchStatus === 'not_found' ? (
+              <button
+                onClick={handleNext}
+                className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm whitespace-nowrap"
+              >
+                {t('spu.next')}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            ) : (
+              <div className="w-[88px]" />
+            )}
           </div>
         </div>
       </div>
@@ -267,23 +249,21 @@ function ProductCreateContent() {
             </div>
           )}
 
-          {/* 搜索结果：PubChem中不存在 */}
+          {/* 搜索结果：不存在，可以新建 */}
           {searchStatus === 'not_found' && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-5">
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-4">
-                <AlertCircle className="h-5 w-5 text-red-400" />
-                <span className="font-semibold text-red-400">
-                  {t('spu.pubchemNotFound')}
+                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                <span className="font-semibold text-emerald-400">
+                  {t('spu.casAvailable')}
                 </span>
               </div>
 
               <div className="bg-slate-700/50 rounded-lg p-4">
                 <div className="text-xs text-slate-400 mb-1">CAS Number</div>
                 <div className="font-mono text-xl font-medium text-blue-400">{searchedCas}</div>
-                <p className="text-xs text-slate-500 mt-2">
-                  {locale === 'zh' 
-                    ? '请确认CAS号是否正确，或尝试输入其他CAS号' 
-                    : 'Please verify the CAS number or try another one'}
+                <p className="text-xs text-slate-400 mt-2">
+                  {t('spu.notFoundHint')}
                 </p>
               </div>
             </div>

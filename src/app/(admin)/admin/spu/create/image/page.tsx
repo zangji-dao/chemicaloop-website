@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   Circle,
   Sparkles,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
 import { useSPUCreateImage } from '@/hooks/useSPUCreateImage';
@@ -18,13 +20,16 @@ function SPUCreateImageContent() {
   const { locale, t } = useAdminLocale();
 
   const {
-    loading,
+    syncingPubChem,
+    syncProgress,
     generatingImage,
     step,
     cas,
     pubchemData,
     structureImageUrl,
     productImageUrl,
+    errorMessage,
+    handleRetrySync,
     handleGenerateProductImage,
     handleNext,
     handleBack,
@@ -32,18 +37,20 @@ function SPUCreateImageContent() {
     setDialogConfig,
   } = useSPUCreateImage(locale);
 
-  // 步骤指示器（简化版：只显示生成产品图和填写信息两步）
+  // 步骤指示器
   const StepIndicator = () => {
     const steps = [
+      { key: 'sync', label: t('spu.getStructure') },
       { key: 'generate', label: t('spu.generateImage') },
       { key: 'next', label: t('spu.fillInfo') },
     ];
 
     const getStepStatus = (stepKey: string) => {
-      const stepOrder = ['loading', 'generate', 'next'];
+      const stepOrder = ['loading', 'generate', 'next', 'error'];
       const currentOrder = stepOrder.indexOf(step);
-      const thisOrder = stepOrder.indexOf(stepKey);
+      const thisOrder = stepOrder.indexOf(stepKey === 'sync' ? 'loading' : stepKey);
       
+      if (step === 'error' && stepKey === 'sync') return 'error';
       if (thisOrder < currentOrder) return 'completed';
       if (thisOrder === currentOrder) return 'current';
       return 'pending';
@@ -60,12 +67,15 @@ function SPUCreateImageContent() {
                   <CheckCircle2 className="w-4 h-4 text-green-400" />
                 ) : status === 'current' ? (
                   <Circle className="w-4 h-4 text-blue-400 fill-blue-400" />
+                ) : status === 'error' ? (
+                  <AlertCircle className="w-4 h-4 text-red-400" />
                 ) : (
                   <Circle className="w-4 h-4 text-slate-600" />
                 )}
                 <span className={`text-xs font-medium ${
                   status === 'completed' ? 'text-green-400' :
-                  status === 'current' ? 'text-white' : 'text-slate-500'
+                  status === 'current' ? 'text-white' : 
+                  status === 'error' ? 'text-red-400' : 'text-slate-500'
                 }`}>
                   {s.label}
                 </span>
@@ -84,12 +94,24 @@ function SPUCreateImageContent() {
 
   // 渲染顶部操作按钮
   const renderActionButtons = () => {
-    if (loading) {
+    if (step === 'loading') {
       return (
         <div className="flex items-center gap-2 text-slate-400">
           <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm">{t('spu.loading')}</span>
+          <span className="text-sm">{syncProgress.message}</span>
         </div>
+      );
+    }
+
+    if (step === 'error') {
+      return (
+        <button
+          onClick={handleRetrySync}
+          className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors"
+        >
+          <RefreshCw className="h-4 w-4" />
+          <span>{t('spu.reGet')}</span>
+        </button>
       );
     }
 
@@ -140,14 +162,32 @@ function SPUCreateImageContent() {
       {/* 内容区域 */}
       <div className="max-w-2xl mx-auto px-5 py-4">
         {/* 加载状态 */}
-        {loading ? (
+        {step === 'loading' && (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-10 h-10 animate-spin text-blue-400" />
-            <p className="mt-4 text-slate-400">{t('spu.loading')}</p>
+            <p className="mt-4 text-slate-400">{syncProgress.message}</p>
           </div>
-        ) : (
+        )}
+
+        {/* 错误状态 */}
+        {step === 'error' && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <AlertCircle className="w-12 h-12 text-red-400" />
+            <p className="mt-4 text-red-400 text-center max-w-md">{errorMessage}</p>
+            <button
+              onClick={handleBack}
+              className="mt-6 flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t('spu.previous')}
+            </button>
+          </div>
+        )}
+
+        {/* 正常状态：显示图片 */}
+        {(step === 'generate' || step === 'next') && (
           <>
-            {/* CAS 信息卡片 - 紧凑版 */}
+            {/* CAS 信息卡片 */}
             <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
