@@ -20,6 +20,7 @@
     "all": "全部",
     "yes": "是",
     "no": "否",
+    "notice": "提示",
     "backToList": "返回列表"
   },
   "nav": {
@@ -218,6 +219,14 @@
     "deleteSuccess": "SPU 删除成功",
     "createSuccess": "SPU 创建成功",
     "updateSuccess": "SPU 更新成功",
+    "loadFailed": "加载失败",
+    "productDataNotFound": "未找到产品数据，请返回重新搜索",
+    "loadDataError": "加载产品数据失败，请重试",
+    "translationFieldsComplete": "已翻译 {count} 个字段。点击「保存」按钮保存。",
+    "unknownError": "未知错误",
+    "back": "返回",
+    "saving": "保存中...",
+    "generated": "已生成",
     "activate": "上架",
     "deactivate": "下架",
     "page": "第 {current} / {total} 页",

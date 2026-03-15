@@ -59,6 +59,11 @@ const emptyFormData: FormData = {
   status: 'ACTIVE',
 };
 
+interface UseSPUCreateInfoOptions {
+  locale: string;
+  t: (key: string, params?: Record<string, string | number>) => string;
+}
+
 interface UseSPUCreateInfoReturn {
   // 状态
   loading: boolean;
@@ -97,7 +102,7 @@ function toCamelCase(obj: Record<string, any>): Record<string, any> {
   return result;
 }
 
-export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
+export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPUCreateInfoReturn {
   const router = useRouter();
   const searchParams = useSearchParams();
   const cas = searchParams.get('cas') || '';
@@ -152,10 +157,8 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
         if (!result.success || !result.data) {
           setDialogConfig({
             type: 'error',
-            title: locale === 'zh' ? '加载失败' : 'Load Failed',
-            message: locale === 'zh' 
-              ? '未找到产品数据，请返回重新搜索' 
-              : 'Product data not found, please go back and search again',
+            title: t('spu.loadFailed'),
+            message: t('spu.productDataNotFound'),
             onConfirm: () => router.push('/admin/spu/create'),
           });
           setLoading(false);
@@ -258,10 +261,8 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
         console.error('Failed to load product data:', error);
         setDialogConfig({
           type: 'error',
-          title: locale === 'zh' ? '加载失败' : 'Load Failed',
-          message: locale === 'zh' 
-            ? '加载产品数据失败，请重试' 
-            : 'Failed to load product data, please try again',
+          title: t('spu.loadFailed'),
+          message: t('spu.loadDataError'),
         });
       }
       
@@ -269,7 +270,7 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
     };
 
     loadData();
-  }, [cas, locale, router]);
+  }, [cas, t, router]);
 
   // 翻译
   const handleTranslate = useCallback(async () => {
@@ -330,20 +331,18 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
     setNeedTranslate(false);
     setDialogConfig({
       type: 'success',
-      title: locale === 'zh' ? '翻译完成' : 'Translation Completed',
-      message: locale === 'zh'
-        ? `已翻译 ${fieldsToTranslate.length} 个字段。点击"保存"按钮保存数据。`
-        : `Translated ${fieldsToTranslate.length} fields. Click "Save" button to save.`,
+      title: t('spu.translationCompleted'),
+      message: t('spu.translationFieldsComplete', { count: fieldsToTranslate.length }),
     });
-  }, [formData, pendingTranslations, locale]);
+  }, [formData, pendingTranslations, t]);
 
   // 保存
   const handleSave = useCallback(async () => {
     if (!formData.cas) {
       setDialogConfig({
         type: 'error',
-        title: locale === 'zh' ? '提示' : 'Notice',
-        message: locale === 'zh' ? 'CAS 号不能为空' : 'CAS number is required',
+        title: t('common.notice'),
+        message: t('spu.casRequired'),
       });
       return;
     }
@@ -351,8 +350,8 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
     if (!formData.name && !formData.nameEn) {
       setDialogConfig({
         type: 'error',
-        title: locale === 'zh' ? '提示' : 'Notice',
-        message: locale === 'zh' ? '产品名称不能为空' : 'Product name is required',
+        title: t('common.notice'),
+        message: t('spu.nameRequired'),
       });
       return;
     }
@@ -419,28 +418,28 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
       if (result.success) {
         setDialogConfig({
           type: 'success',
-          title: locale === 'zh' ? '保存成功' : 'Success',
-          message: locale === 'zh' ? '产品已创建成功！' : 'Product created successfully!',
+          title: t('spu.success'),
+          message: t('spu.createSuccess'),
           onConfirm: () => router.push('/admin/spu'),
         });
       } else {
         setDialogConfig({
           type: 'error',
-          title: locale === 'zh' ? '保存失败' : 'Save Failed',
-          message: result.error || (locale === 'zh' ? '未知错误' : 'Unknown error'),
+          title: t('spu.saveFailed'),
+          message: result.error || t('spu.unknownError'),
         });
       }
     } catch (error: any) {
       console.error('Save error:', error);
       setDialogConfig({
         type: 'error',
-        title: locale === 'zh' ? '保存失败' : 'Save Failed',
-        message: error.message,
+        title: t('spu.saveFailed'),
+        message: error.message || t('spu.unknownError'),
       });
     } finally {
       setSaving(false);
     }
-  }, [formData, structureData, productImageKey, pendingTranslations, productId, locale, router]);
+  }, [formData, structureData, productImageKey, pendingTranslations, productId, t, router]);
 
   // 返回
   const handleBack = useCallback(() => {

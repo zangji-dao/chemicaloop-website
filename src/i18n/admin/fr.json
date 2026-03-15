@@ -20,6 +20,7 @@
     "all": "Tout",
     "yes": "Oui",
     "no": "Non",
+    "notice": "Avis",
     "backToList": "Retour à la liste"
   },
   "nav": {
@@ -143,6 +144,14 @@
     "deleteSuccess": "SPU supprimée avec succès",
     "createSuccess": "SPU créée avec succès",
     "updateSuccess": "SPU mise à jour avec succès",
+    "loadFailed": "Échec du chargement",
+    "productDataNotFound": "Données produit non trouvées, veuillez revenir et rechercher à nouveau",
+    "loadDataError": "Échec du chargement des données produit, veuillez réessayer",
+    "translationFieldsComplete": "{count} champs traduits. Cliquez sur \"Enregistrer\".",
+    "unknownError": "Erreur inconnue",
+    "back": "Retour",
+    "saving": "Enregistrement...",
+    "generated": "Généré",
     "activate": "Activer",
     "deactivate": "Désactiver",
     "page": "Page {current} / {total}",

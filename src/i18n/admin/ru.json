@@ -20,6 +20,7 @@
     "all": "Все",
     "yes": "Да",
     "no": "Нет",
+    "notice": "Уведомление",
     "backToList": "Вернуться к списку"
   },
   "nav": {
@@ -143,6 +144,14 @@
     "deleteSuccess": "SPU успешно удалена",
     "createSuccess": "SPU успешно создана",
     "updateSuccess": "SPU успешно обновлена",
+    "loadFailed": "Ошибка загрузки",
+    "productDataNotFound": "Данные продукта не найдены, вернитесь и выполните поиск снова",
+    "loadDataError": "Не удалось загрузить данные продукта, попробуйте снова",
+    "translationFieldsComplete": "Переведено {count} полей. Нажмите \"Сохранить\".",
+    "unknownError": "Неизвестная ошибка",
+    "back": "Назад",
+    "saving": "Сохранение...",
+    "generated": "Сгенерировано",
     "activate": "Активировать",
     "deactivate": "Деактивировать",
     "page": "Страница {current} / {total}",

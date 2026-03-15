@@ -40,7 +40,7 @@ function SPUCreateInfoContent() {
     handleBack,
     dialogConfig,
     setDialogConfig,
-  } = useSPUCreateInfo(locale);
+  } = useSPUCreateInfo({ locale, t });
 
   // 禁止滚动 - 当遮罩层显示时
   useEffect(() => {

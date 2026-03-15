@@ -20,6 +20,7 @@
     "all": "すべて",
     "yes": "はい",
     "no": "いいえ",
+    "notice": "通知",
     "backToList": "一覧に戻る"
   },
   "nav": {
@@ -142,6 +143,14 @@
     "deleteSuccess": "SPUを削除しました",
     "createSuccess": "SPUを作成しました",
     "updateSuccess": "SPUを更新しました",
+    "loadFailed": "読み込み失敗",
+    "productDataNotFound": "製品データが見つかりません。戻って再検索してください",
+    "loadDataError": "製品データの読み込みに失敗しました。再試行してください",
+    "translationFieldsComplete": "{count}件のフィールドを翻訳しました。「保存」ボタンをクリックしてください。",
+    "unknownError": "不明なエラー",
+    "back": "戻る",
+    "saving": "保存中...",
+    "generated": "生成済み",
     "activate": "公開",
     "deactivate": "非公開",
     "page": "{current} / {total} ページ",

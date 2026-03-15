@@ -20,6 +20,7 @@
     "all": "All",
     "yes": "Yes",
     "no": "No",
+    "notice": "Notice",
     "backToList": "Back to List"
   },
   "nav": {
@@ -218,6 +219,14 @@
     "deleteSuccess": "SPU deleted successfully",
     "createSuccess": "SPU created successfully",
     "updateSuccess": "SPU updated successfully",
+    "loadFailed": "Load Failed",
+    "productDataNotFound": "Product data not found, please go back and search again",
+    "loadDataError": "Failed to load product data, please try again",
+    "translationFieldsComplete": "Translated {count} fields. Click \"Save\" button to save.",
+    "unknownError": "Unknown error",
+    "back": "Back",
+    "saving": "Saving...",
+    "generated": "Generated",
     "activate": "Activate",
     "deactivate": "Deactivate",
     "page": "Page",

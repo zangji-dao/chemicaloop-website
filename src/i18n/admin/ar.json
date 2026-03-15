@@ -20,6 +20,7 @@
     "all": "الكل",
     "yes": "نعم",
     "no": "لا",
+    "notice": "إشعار",
     "backToList": "العودة إلى القائمة"
   },
   "nav": {
@@ -143,6 +144,14 @@
     "deleteSuccess": "تم حذف SPU بنجاح",
     "createSuccess": "تم إنشاء SPU بنجاح",
     "updateSuccess": "تم تحديث SPU بنجاح",
+    "loadFailed": "فشل التحميل",
+    "productDataNotFound": "لم يتم العثور على بيانات المنتج، يرجى العودة والبحث مرة أخرى",
+    "loadDataError": "فشل تحميل بيانات المنتج، يرجى المحاولة مرة أخرى",
+    "translationFieldsComplete": "تمت ترجمة {count} حقول. انقر على \"حفظ\".",
+    "unknownError": "خطأ غير معروف",
+    "back": "رجوع",
+    "saving": "جاري الحفظ...",
+    "generated": "تم الإنشاء",
     "activate": "تفعيل",
     "deactivate": "إلغاء التفعيل",
     "page": "صفحة {current} / {total}",
