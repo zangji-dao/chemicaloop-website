@@ -2,16 +2,19 @@
  * 新建产品 - 填写表单页面 Hook
  * 
  * 流程：
- * 1. 从数据库获取预存储的DRAFT产品数据（通过CAS号查询）
+ * 1. 从 sessionStorage 读取预览数据（由搜索页面同步并缓存）
  * 2. 显示表单信息
  * 3. 用户点击翻译
- * 4. 用户点击保存（更新产品状态为ACTIVE）
+ * 4. 用户点击保存 → 写入数据库，产品状态为 ACTIVE
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAdminToken } from '@/services/adminAuthService';
 import { FormData, TranslationProgress } from '@/types/spu';
+
+// sessionStorage key for preview data
+const PREVIEW_DATA_KEY = 'spu_create_preview_data';
 
 const emptyFormData: FormData = {
   cas: '',
@@ -78,7 +81,6 @@ interface UseSPUCreateInfoReturn {
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   productImageUrl: string;
   pendingTranslations: Record<string, any>;
-  productId: string | null;
   
   // 方法
   handleTranslate: () => Promise<void>;
@@ -91,15 +93,54 @@ interface UseSPUCreateInfoReturn {
 }
 
 /**
- * 将数据库字段转换为驼峰命名
+ * 将预览数据转换为表单数据
  */
-function toCamelCase(obj: Record<string, any>): Record<string, any> {
-  const result: Record<string, any> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-    result[camelKey] = value;
-  }
-  return result;
+function previewToFormData(previewData: Record<string, any>, cas: string): FormData {
+  return {
+    cas: cas,
+    name: previewData.nameZh || '',
+    nameEn: previewData.nameEn || '',
+    formula: previewData.formula || '',
+    molecularWeight: previewData.molecularWeight || '',
+    exactMass: previewData.exactMass || '',
+    smiles: previewData.smiles || '',
+    smilesCanonical: previewData.smilesCanonical || '',
+    smilesIsomeric: previewData.smilesIsomeric || '',
+    inchi: previewData.inchi || '',
+    inchiKey: previewData.inchiKey || '',
+    xlogp: previewData.xlogp || '',
+    tpsa: previewData.tpsa || '',
+    complexity: previewData.complexity?.toString() || '',
+    hBondDonorCount: previewData.hBondDonorCount?.toString() || '',
+    hBondAcceptorCount: previewData.hBondAcceptorCount?.toString() || '',
+    rotatableBondCount: previewData.rotatableBondCount?.toString() || '',
+    heavyAtomCount: previewData.heavyAtomCount?.toString() || '',
+    formalCharge: previewData.formalCharge?.toString() || '',
+    physicalDescription: previewData.physicalDescription || '',
+    colorForm: previewData.colorForm || '',
+    odor: previewData.odor || '',
+    boilingPoint: previewData.boilingPoint || '',
+    meltingPoint: previewData.meltingPoint || '',
+    flashPoint: previewData.flashPoint || '',
+    density: previewData.density || '',
+    solubility: previewData.solubility || '',
+    vaporPressure: previewData.vaporPressure || '',
+    refractiveIndex: previewData.refractiveIndex || '',
+    hazardClasses: previewData.hazardClasses || '',
+    healthHazards: previewData.healthHazards || '',
+    ghsClassification: previewData.ghsClassification || '',
+    toxicitySummary: previewData.toxicitySummary || '',
+    carcinogenicity: previewData.carcinogenicity || '',
+    firstAid: previewData.firstAid || '',
+    storageConditions: previewData.storageConditions || '',
+    incompatibleMaterials: previewData.incompatibleMaterials || '',
+    description: previewData.description || '',
+    synonyms: previewData.synonyms || [],
+    applications: previewData.applications || [],
+    hsCode: '',
+    hsCodeExtensions: {},
+    status: 'ACTIVE',
+  };
 }
 
 export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPUCreateInfoReturn {
@@ -124,37 +165,24 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
   const [productImageKey, setProductImageKey] = useState<string>('');
   const [productImageUrl, setProductImageUrl] = useState<string>('');
   const [pendingTranslations, setPendingTranslations] = useState<Record<string, any>>({});
-  const [structureData, setStructureData] = useState<{
-    sdf?: string;
-    imageKey?: string;
-    svg?: string;
-  }>({});
-  const [productId, setProductId] = useState<string | null>(null);
+  const [previewData, setPreviewData] = useState<Record<string, any>>({});
   
   // 弹窗
   const [dialogConfig, setDialogConfig] = useState<any>(null);
 
-  // 从数据库加载数据
+  // 从 sessionStorage 加载预览数据
   useEffect(() => {
-    const loadData = async () => {
+    const loadPreviewData = async () => {
       if (!cas) {
         setLoading(false);
         return;
       }
 
-      const token = getAdminToken();
-      
       try {
-        // 从数据库查询产品数据
-        const response = await fetch(`/api/admin/spu/search?cas=${encodeURIComponent(cas)}`, {
-          headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
-        });
-
-        const result = await response.json();
-
-        if (!result.success || !result.data) {
+        // 从 sessionStorage 读取预览数据
+        const cachedData = sessionStorage.getItem(PREVIEW_DATA_KEY);
+        
+        if (!cachedData) {
           setDialogConfig({
             type: 'error',
             title: t('spu.loadFailed'),
@@ -165,243 +193,213 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
           return;
         }
 
-        const product = toCamelCase(result.data);
-        setProductId(product.id);
+        const data = JSON.parse(cachedData);
+        
+        // 验证 CAS 号匹配
+        if (data.cas !== cas) {
+          setDialogConfig({
+            type: 'error',
+            title: t('spu.loadFailed'),
+            message: t('spu.productDataNotFound'),
+            onConfirm: () => router.push('/admin/spu/create'),
+          });
+          setLoading(false);
+          return;
+        }
+
+        // 保存预览数据
+        setPreviewData(data);
 
         // 设置产品图片URL
-        if (product.productImageKey) {
-          setProductImageKey(product.productImageKey);
-          setProductImageUrl(`/api/storage/file?key=${product.productImageKey}`);
-        } else if (product.structureImageKey) {
+        if (data.productImageKey) {
+          setProductImageKey(data.productImageKey);
+          setProductImageUrl(`/api/storage/file?key=${data.productImageKey}`);
+        } else if (data.structureImageKey) {
           // 如果没有产品图，使用结构图
-          setProductImageUrl(`/api/storage/file?key=${product.structureImageKey}`);
+          setProductImageUrl(`/api/storage/file?key=${data.structureImageKey}`);
+        } else if (data.structureUrl) {
+          // 直接使用 PubChem URL
+          setProductImageUrl(data.structureUrl);
         }
 
         // 填充表单数据
-        setFormData({
-          cas: product.cas || cas,
-          name: product.name || '',
-          nameEn: product.nameEn || '',
-          formula: product.formula || '',
-          molecularWeight: product.molecularWeight || '',
-          exactMass: product.exactMass || '',
-          smiles: product.smiles || '',
-          smilesCanonical: product.smilesCanonical || '',
-          smilesIsomeric: product.smilesIsomeric || '',
-          inchi: product.inchi || '',
-          inchiKey: product.inchiKey || '',
-          xlogp: product.xlogp || '',
-          tpsa: product.tpsa || '',
-          complexity: product.complexity?.toString() || '',
-          hBondDonorCount: product.hBondDonorCount?.toString() || '',
-          hBondAcceptorCount: product.hBondAcceptorCount?.toString() || '',
-          rotatableBondCount: product.rotatableBondCount?.toString() || '',
-          heavyAtomCount: product.heavyAtomCount?.toString() || '',
-          formalCharge: product.formalCharge?.toString() || '',
-          physicalDescription: product.physicalDescription || '',
-          colorForm: product.colorForm || '',
-          odor: product.odor || '',
-          boilingPoint: product.boilingPoint || '',
-          meltingPoint: product.meltingPoint || '',
-          flashPoint: product.flashPoint || '',
-          density: product.density || '',
-          solubility: product.solubility || '',
-          vaporPressure: product.vaporPressure || '',
-          refractiveIndex: product.refractiveIndex || '',
-          hazardClasses: product.hazardClasses || '',
-          healthHazards: product.healthHazards || '',
-          ghsClassification: product.ghsClassification || '',
-          toxicitySummary: product.toxicitySummary || '',
-          carcinogenicity: product.carcinogenicity || '',
-          firstAid: product.firstAid || '',
-          storageConditions: product.storageConditions || '',
-          incompatibleMaterials: product.incompatibleMaterials || '',
-          description: product.description || '',
-          synonyms: product.synonyms || [],
-          applications: product.applications || [],
-          hsCode: product.hsCode || '',
-          hsCodeExtensions: product.hsCodeExtensions || {},
-          status: 'ACTIVE',
-        });
+        setFormData(previewToFormData(data, cas));
 
-        // 保存结构数据
-        setStructureData({
-          sdf: product.structureSdf,
-          imageKey: product.structureImageKey,
-          svg: product.structure2dSvg,
-        });
+        // 检查是否需要翻译（中文名称或描述为空）
+        const hasChineseContent = data.nameZh || data.description;
+        setNeedTranslate(!hasChineseContent);
 
-        // 检查需要翻译的字段
-        const translatableFields = [
-          { key: 'name', value: product.nameEn },
-          { key: 'description', value: product.description },
-          { key: 'physicalDescription', value: product.physicalDescription },
-          { key: 'boilingPoint', value: product.boilingPoint },
-          { key: 'meltingPoint', value: product.meltingPoint },
-          { key: 'flashPoint', value: product.flashPoint },
-          { key: 'hazardClasses', value: product.hazardClasses },
-          { key: 'healthHazards', value: product.healthHazards },
-          { key: 'ghsClassification', value: product.ghsClassification },
-          { key: 'firstAid', value: product.firstAid },
-          { key: 'storageConditions', value: product.storageConditions },
-          { key: 'incompatibleMaterials', value: product.incompatibleMaterials },
-          { key: 'solubility', value: product.solubility },
-          { key: 'vaporPressure', value: product.vaporPressure },
-          { key: 'refractiveIndex', value: product.refractiveIndex },
-        ];
-
-        const fieldsToTranslate = translatableFields
-          .filter(({ value }) => value && value !== '-')
-          .map(({ key }) => key);
-
-        if (fieldsToTranslate.length > 0) {
-          setNeedTranslate(true);
-        }
-      } catch (error) {
-        console.error('Failed to load product data:', error);
+      } catch (error: any) {
+        console.error('Load preview data error:', error);
         setDialogConfig({
           type: 'error',
           title: t('spu.loadFailed'),
-          message: t('spu.loadDataError'),
+          message: error.message,
+          onConfirm: () => router.push('/admin/spu/create'),
         });
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
-    loadData();
-  }, [cas, t, router]);
+    loadPreviewData();
+  }, [cas]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 翻译
   const handleTranslate = useCallback(async () => {
-    const token = getAdminToken();
-    setTranslating(true);
-    setTranslationProgress({ status: 'translating', current: 0, total: 0 });
-
-    const translatableFields = [
-      { key: 'name', value: formData.nameEn },
-      { key: 'description', value: formData.description },
-      { key: 'physicalDescription', value: formData.physicalDescription },
-      { key: 'boilingPoint', value: formData.boilingPoint },
-      { key: 'meltingPoint', value: formData.meltingPoint },
-      { key: 'flashPoint', value: formData.flashPoint },
-      { key: 'hazardClasses', value: formData.hazardClasses },
-      { key: 'healthHazards', value: formData.healthHazards },
-      { key: 'ghsClassification', value: formData.ghsClassification },
-      { key: 'firstAid', value: formData.firstAid },
-      { key: 'storageConditions', value: formData.storageConditions },
-      { key: 'incompatibleMaterials', value: formData.incompatibleMaterials },
-      { key: 'solubility', value: formData.solubility },
-      { key: 'vaporPressure', value: formData.vaporPressure },
-      { key: 'refractiveIndex', value: formData.refractiveIndex },
-    ];
-
-    const fieldsToTranslate = translatableFields.filter(({ value }) => value && value !== '-');
-    setTranslatingFields(new Set(fieldsToTranslate.map(({ key }) => key)));
-    setTranslationProgress({ status: 'translating', current: 0, total: fieldsToTranslate.length });
-
-    const translations: Record<string, any> = { ...pendingTranslations };
-
-    for (let i = 0; i < fieldsToTranslate.length; i++) {
-      const { key, value } = fieldsToTranslate[i];
-      setTranslationProgress({ status: 'translating', current: i + 1, total: fieldsToTranslate.length });
-
-      try {
-        const response = await fetch('/api/admin/translate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ text: value, targetLang: 'zh' }),
-        });
-
-        const data = await response.json();
-        if (data.success && data.translatedText) {
-          translations[key] = data.translatedText;
-        }
-      } catch (error) {
-        console.error(`Failed to translate ${key}:`, error);
-      }
+    if (!formData.nameEn && !formData.description && !formData.physicalDescription) {
+      setDialogConfig({
+        type: 'error',
+        title: t('common.error'),
+        message: t('spu.noContentToTranslate'),
+      });
+      return;
     }
 
-    setPendingTranslations(translations);
-    setTranslating(false);
-    setTranslationProgress({ status: 'completed', current: fieldsToTranslate.length, total: fieldsToTranslate.length });
-    setNeedTranslate(false);
-    setDialogConfig({
-      type: 'success',
-      title: t('spu.translationCompleted'),
-      message: t('spu.translationFieldsComplete', { count: fieldsToTranslate.length }),
-    });
-  }, [formData, pendingTranslations, t]);
+    setTranslating(true);
+    setTranslationProgress({ status: 'translating', current: 0, total: 3 });
+    setTranslatingFields(new Set(['name', 'description', 'physicalDescription']));
+    setPendingTranslations({});
+
+    try {
+      const translations: Record<string, any> = {};
+
+      // 翻译名称
+      if (formData.nameEn) {
+        setTranslationProgress(prev => ({ ...prev, current: 1 }));
+        const response = await fetch('/api/ai/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: formData.nameEn, targetLanguage: 'zh' }),
+        });
+        const data = await response.json();
+        if (data.translatedText) {
+          translations.name = data.translatedText;
+        }
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+
+      // 翻译描述
+      if (formData.description) {
+        setTranslationProgress(prev => ({ ...prev, current: 2 }));
+        const response = await fetch('/api/ai/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: formData.description, targetLanguage: 'zh' }),
+        });
+        const data = await response.json();
+        if (data.translatedText) {
+          translations.description = data.translatedText;
+        }
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+
+      // 翻译物理描述
+      if (formData.physicalDescription) {
+        setTranslationProgress(prev => ({ ...prev, current: 3 }));
+        const response = await fetch('/api/ai/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: formData.physicalDescription, targetLanguage: 'zh' }),
+        });
+        const data = await response.json();
+        if (data.translatedText) {
+          translations.physicalDescription = data.translatedText;
+        }
+      }
+
+      // 应用翻译结果
+      setPendingTranslations(translations);
+      setFormData(prev => ({
+        ...prev,
+        name: translations.name || prev.name,
+        description: translations.description || prev.description,
+        physicalDescription: translations.physicalDescription || prev.physicalDescription,
+      }));
+
+      setNeedTranslate(false);
+      setTranslationProgress({ status: 'completed', current: 3, total: 3 });
+
+    } catch (error: any) {
+      console.error('Translation error:', error);
+      setDialogConfig({
+        type: 'error',
+        title: t('spu.translateFailed'),
+        message: error.message,
+      });
+    } finally {
+      setTranslating(false);
+      setTranslatingFields(new Set());
+    }
+  }, [formData, t]);
 
   // 保存
   const handleSave = useCallback(async () => {
-    if (!formData.cas) {
+    if (!formData.cas || !formData.name) {
       setDialogConfig({
         type: 'error',
-        title: t('common.notice'),
-        message: t('spu.casRequired'),
+        title: t('common.error'),
+        message: t('spu.requiredFieldsMissing'),
       });
       return;
     }
 
-    if (!formData.name && !formData.nameEn) {
-      setDialogConfig({
-        type: 'error',
-        title: t('common.notice'),
-        message: t('spu.nameRequired'),
-      });
-      return;
-    }
-
-    const token = getAdminToken();
     setSaving(true);
-
     try {
-      const translations = Object.keys(pendingTranslations).length > 0 ? pendingTranslations : undefined;
-
-      const spuData = {
-        id: productId || undefined, // 如果有产品ID，更新现有产品
+      const token = getAdminToken();
+      
+      // 构建保存数据，合并预览数据和表单数据
+      const saveData = {
         cas: formData.cas,
-        name: formData.name || formData.nameEn,
-        nameEn: formData.nameEn || null,
-        formula: formData.formula || null,
-        description: formData.description || null,
-        molecularWeight: formData.molecularWeight || null,
-        smiles: formData.smiles || null,
-        inchi: formData.inchi || null,
-        inchiKey: formData.inchiKey || null,
-        xlogp: formData.xlogp || null,
-        tpsa: formData.tpsa || null,
-        boilingPoint: formData.boilingPoint || null,
-        meltingPoint: formData.meltingPoint || null,
-        flashPoint: formData.flashPoint || null,
-        density: formData.density || null,
-        solubility: formData.solubility || null,
-        vaporPressure: formData.vaporPressure || null,
-        refractiveIndex: formData.refractiveIndex || null,
-        hazardClasses: formData.hazardClasses || null,
-        healthHazards: formData.healthHazards || null,
-        ghsClassification: formData.ghsClassification || null,
-        toxicitySummary: formData.toxicitySummary || null,
-        carcinogenicity: formData.carcinogenicity || null,
-        firstAid: formData.firstAid || null,
-        storageConditions: formData.storageConditions || null,
-        incompatibleMaterials: formData.incompatibleMaterials || null,
-        hsCode: formData.hsCode || null,
-        hsCodeExtensions: formData.hsCodeExtensions || null,
-        status: 'ACTIVE', // 保存时设置状态为ACTIVE
-        synonyms: formData.synonyms || [],
-        applications: formData.applications || [],
-        translations,
-        // 结构数据
-        structureSdf: structureData.sdf || null,
-        structureImageKey: structureData.imageKey || null,
-        structure2dSvg: structureData.svg || null,
-        // 产品图
-        productImageKey: productImageKey || null,
+        name: formData.name,
+        nameEn: formData.nameEn,
+        formula: formData.formula,
+        description: formData.description,
+        molecularWeight: formData.molecularWeight,
+        exactMass: formData.exactMass,
+        smiles: formData.smiles,
+        smilesCanonical: formData.smilesCanonical,
+        smilesIsomeric: formData.smilesIsomeric,
+        inchi: formData.inchi,
+        inchiKey: formData.inchiKey,
+        xlogp: formData.xlogp,
+        tpsa: formData.tpsa,
+        complexity: formData.complexity ? parseInt(formData.complexity) : null,
+        hBondDonorCount: formData.hBondDonorCount ? parseInt(formData.hBondDonorCount) : null,
+        hBondAcceptorCount: formData.hBondAcceptorCount ? parseInt(formData.hBondAcceptorCount) : null,
+        rotatableBondCount: formData.rotatableBondCount ? parseInt(formData.rotatableBondCount) : null,
+        heavyAtomCount: formData.heavyAtomCount ? parseInt(formData.heavyAtomCount) : null,
+        formalCharge: formData.formalCharge ? parseInt(formData.formalCharge) : null,
+        physicalDescription: formData.physicalDescription,
+        colorForm: formData.colorForm,
+        odor: formData.odor,
+        boilingPoint: formData.boilingPoint,
+        meltingPoint: formData.meltingPoint,
+        flashPoint: formData.flashPoint,
+        density: formData.density,
+        solubility: formData.solubility,
+        vaporPressure: formData.vaporPressure,
+        refractiveIndex: formData.refractiveIndex,
+        hazardClasses: formData.hazardClasses,
+        healthHazards: formData.healthHazards,
+        ghsClassification: formData.ghsClassification,
+        toxicitySummary: formData.toxicitySummary,
+        carcinogenicity: formData.carcinogenicity,
+        firstAid: formData.firstAid,
+        storageConditions: formData.storageConditions,
+        incompatibleMaterials: formData.incompatibleMaterials,
+        synonyms: formData.synonyms,
+        applications: formData.applications,
+        hsCode: formData.hsCode,
+        hsCodeExtensions: formData.hsCodeExtensions,
+        // PubChem 数据
+        pubchemCid: previewData.pubchemCid,
+        structureUrl: previewData.structureUrl,
+        structureImageKey: previewData.structureImageKey,
+        structureSdf: previewData.structureSdf,
+        structure2dSvg: previewData.structure2dSvg,
+        productImageKey: productImageKey,
+        status: 'ACTIVE',
       };
 
       const response = await fetch('/api/admin/spu/save', {
@@ -410,23 +408,26 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(spuData),
+        body: JSON.stringify(saveData),
       });
 
       const result = await response.json();
 
       if (result.success) {
+        // 清除 sessionStorage 中的预览数据
+        sessionStorage.removeItem(PREVIEW_DATA_KEY);
+        
         setDialogConfig({
           type: 'success',
-          title: t('spu.success'),
-          message: t('spu.createSuccess'),
+          title: t('spu.saveSuccess'),
+          message: t('spu.productCreated'),
           onConfirm: () => router.push('/admin/spu'),
         });
       } else {
         setDialogConfig({
           type: 'error',
           title: t('spu.saveFailed'),
-          message: result.error || t('spu.unknownError'),
+          message: result.error || t('common.unknownError'),
         });
       }
     } catch (error: any) {
@@ -434,33 +435,39 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
       setDialogConfig({
         type: 'error',
         title: t('spu.saveFailed'),
-        message: error.message || t('spu.unknownError'),
+        message: error.message,
       });
     } finally {
       setSaving(false);
     }
-  }, [formData, structureData, productImageKey, pendingTranslations, productId, t, router]);
+  }, [formData, previewData, productImageKey, router, t]);
 
-  // 返回
+  // 返回上一步
   const handleBack = useCallback(() => {
     router.push(`/admin/spu/create/image?cas=${encodeURIComponent(cas)}`);
-  }, [router, cas]);
+  }, [cas, router]);
 
   return {
+    // 状态
     loading,
     saving,
     translating,
     translatingFields,
     translationProgress,
     needTranslate,
+    
+    // 数据
     formData,
     setFormData,
     productImageUrl,
     pendingTranslations,
-    productId,
+    
+    // 方法
     handleTranslate,
     handleSave,
     handleBack,
+    
+    // 弹窗
     dialogConfig,
     setDialogConfig,
   };

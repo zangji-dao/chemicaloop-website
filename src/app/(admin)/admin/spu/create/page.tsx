@@ -45,6 +45,29 @@ interface SPUItem {
   pubchem_cid?: number | null;
 }
 
+// PubChem 预览数据接口（与 sync-pubchem preview 返回格式一致）
+interface PubChemPreviewData {
+  pubchemCid?: number | null;
+  nameZh?: string | null;
+  nameEn?: string | null;
+  formula?: string | null;
+  description?: string | null;
+  molecularWeight?: string | null;
+  structureUrl?: string | null;
+  structureImageKey?: string | null;
+  structureSdf?: string | null;
+  structure2dSvg?: string | null;
+  smiles?: string | null;
+  inchi?: string | null;
+  inchiKey?: string | null;
+  synonyms?: string[];
+  applications?: string[];
+  // ... 其他字段
+}
+
+// sessionStorage key for preview data
+const PREVIEW_DATA_KEY = 'spu_create_preview_data';
+
 // 搜索结果状态
 type SearchStatus = 'idle' | 'searching' | 'syncing' | 'found' | 'synced' | 'not_found' | 'error';
 
@@ -111,7 +134,7 @@ function ProductCreateContent() {
         setExistingSPU(data.data[0]);
         setSearchStatus('found');
       } else {
-        // 本地不存在 → 自动同步PubChem
+        // 本地不存在 → 使用 preview 模式同步PubChem（不写入数据库）
         setSearchStatus('syncing');
         
         const syncResponse = await fetch('/api/admin/spu/sync-pubchem', {
@@ -120,14 +143,20 @@ function ProductCreateContent() {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ cas, createIfNotExist: true }),
+          body: JSON.stringify({ cas, preview: true }),  // 使用 preview 模式
         });
         
         const syncData = await syncResponse.json();
         
-        if (syncData.success) {
-          // PubChem同步成功 → 可以下一步
-          setExistingSPU(syncData.product);
+        if (syncData.success && syncData.data) {
+          // 将预览数据存入 sessionStorage，供后续页面使用
+          const previewData: PubChemPreviewData = {
+            cas: cas,
+            ...syncData.data,
+          };
+          sessionStorage.setItem(PREVIEW_DATA_KEY, JSON.stringify(previewData));
+          
+          // 同步成功 → 可以下一步
           setSearchStatus('synced');
         } else if (syncData.error === 'PUBCHEM_NOT_FOUND') {
           // PubChem中不存在

@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
       structureSdf,
       structureImageKey,
       structure2dSvg,
+      structureUrl,
       productImageKey,
     } = body;
 
@@ -263,7 +264,7 @@ export async function POST(request: NextRequest) {
         hs_code, hs_code_extensions,
         synonyms, applications, translations,
         pubchem_cid,
-        structure_sdf, structure_image_key, structure_2d_svg,
+        structure_url, structure_sdf, structure_image_key, structure_2d_svg,
         product_image_key,
         created_at, updated_at
       ) VALUES (
@@ -312,6 +313,7 @@ export async function POST(request: NextRequest) {
         ${applications && applications.length > 0 ? JSON.stringify(applications) : null},
         ${translations ? JSON.stringify(translations) : null},
         ${pubchemCid || null},
+        ${structureUrl || null},
         ${structureSdf || null},
         ${structureImageKey || null},
         ${structure2dSvg || null},

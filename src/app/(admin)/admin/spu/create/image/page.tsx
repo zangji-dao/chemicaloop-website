@@ -25,7 +25,7 @@ function SPUCreateImageContent() {
     generatingImage,
     step,
     cas,
-    productData,
+    previewData,
     structureImageUrl,
     productImageUrl,
     errorMessage,
@@ -195,21 +195,21 @@ function SPUCreateImageContent() {
                     <div className="text-xs text-slate-400">{t('spu.casNumber')}</div>
                     <div className="text-lg font-medium">{cas}</div>
                   </div>
-                  {productData?.pubchem_cid && (
+                  {previewData?.pubchemCid && (
                     <div className="text-slate-600">|</div>
                   )}
-                  {productData?.pubchem_cid && (
+                  {previewData?.pubchemCid && (
                     <div>
                       <div className="text-xs text-slate-400">PubChem CID</div>
-                      <div className="text-blue-400">{productData.pubchem_cid}</div>
+                      <div className="text-blue-400">{previewData.pubchemCid}</div>
                     </div>
                   )}
-                  {productData?.name_en && (
+                  {previewData?.nameEn && (
                     <>
                       <div className="text-slate-600">|</div>
                       <div>
                         <div className="text-xs text-slate-400">{t('spu.englishName')}</div>
-                        <div className="text-sm">{productData.name_en}</div>
+                        <div className="text-sm">{previewData.nameEn}</div>
                       </div>
                     </>
                   )}
