@@ -2,10 +2,10 @@
  * 新建产品 - 填写表单页面 Hook
  * 
  * 流程：
- * 1. 从 sessionStorage 获取上一个页面传来的数据
+ * 1. 从数据库获取预存储的DRAFT产品数据（通过CAS号查询）
  * 2. 显示表单信息
  * 3. 用户点击翻译
- * 4. 用户点击保存
+ * 4. 用户点击保存（更新产品状态为ACTIVE）
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -59,13 +59,6 @@ const emptyFormData: FormData = {
   status: 'ACTIVE',
 };
 
-interface TransferData {
-  cas: string;
-  pubchemData: any;
-  productImageKey: string;
-  productImageUrl: string;
-}
-
 interface UseSPUCreateInfoReturn {
   // 状态
   loading: boolean;
@@ -78,9 +71,9 @@ interface UseSPUCreateInfoReturn {
   // 数据
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-  pubchemData: any;
   productImageUrl: string;
   pendingTranslations: Record<string, any>;
+  productId: string | null;
   
   // 方法
   handleTranslate: () => Promise<void>;
@@ -90,6 +83,18 @@ interface UseSPUCreateInfoReturn {
   // 弹窗
   dialogConfig: any;
   setDialogConfig: (config: any) => void;
+}
+
+/**
+ * 将数据库字段转换为驼峰命名
+ */
+function toCamelCase(obj: Record<string, any>): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    result[camelKey] = value;
+  }
+  return result;
 }
 
 export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
@@ -111,7 +116,6 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
   
   // 数据
   const [formData, setFormData] = useState<FormData>(emptyFormData);
-  const [pubchemData, setPubchemData] = useState<any>(null);
   const [productImageKey, setProductImageKey] = useState<string>('');
   const [productImageUrl, setProductImageUrl] = useState<string>('');
   const [pendingTranslations, setPendingTranslations] = useState<Record<string, any>>({});
@@ -120,136 +124,175 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
     imageKey?: string;
     svg?: string;
   }>({});
+  const [productId, setProductId] = useState<string | null>(null);
   
   // 弹窗
   const [dialogConfig, setDialogConfig] = useState<any>(null);
 
-  // 从 sessionStorage 加载数据
+  // 从数据库加载数据
   useEffect(() => {
     const loadData = async () => {
-      const storedData = sessionStorage.getItem('spu_create_data');
-      if (storedData) {
-        try {
-          const data: TransferData = JSON.parse(storedData);
-          setPubchemData(data.pubchemData);
-          setProductImageKey(data.productImageKey);
-          setProductImageUrl(data.productImageUrl);
-
-          // 填充表单数据
-          if (data.pubchemData) {
-            const pd = data.pubchemData;
-            setFormData({
-              ...emptyFormData,
-              cas: data.cas,
-              name: pd.nameZh || '',
-              nameEn: pd.nameEn || '',
-              formula: pd.formula || '',
-              molecularWeight: pd.molecularWeight || '',
-              exactMass: pd.exactMass || '',
-              smiles: pd.smiles || '',
-              smilesCanonical: pd.smilesCanonical || '',
-              smilesIsomeric: pd.smilesIsomeric || '',
-              inchi: pd.inchi || '',
-              inchiKey: pd.inchiKey || '',
-              xlogp: pd.xlogp || '',
-              tpsa: pd.tpsa || '',
-              complexity: pd.complexity || '',
-              hBondDonorCount: pd.hBondDonorCount || '',
-              hBondAcceptorCount: pd.hBondAcceptorCount || '',
-              rotatableBondCount: pd.rotatableBondCount || '',
-              heavyAtomCount: pd.heavyAtomCount || '',
-              formalCharge: pd.formalCharge || '',
-              physicalDescription: pd.physicalDescription || '',
-              colorForm: pd.colorForm || '',
-              odor: pd.odor || '',
-              boilingPoint: pd.boilingPoint || '',
-              meltingPoint: pd.meltingPoint || '',
-              flashPoint: pd.flashPoint || '',
-              density: pd.density || '',
-              solubility: pd.solubility || '',
-              vaporPressure: pd.vaporPressure || '',
-              refractiveIndex: pd.refractiveIndex || '',
-              hazardClasses: pd.hazardClasses || '',
-              healthHazards: pd.healthHazards || '',
-              ghsClassification: pd.ghsClassification || '',
-              toxicitySummary: pd.toxicitySummary || '',
-              carcinogenicity: pd.carcinogenicity || '',
-              firstAid: pd.firstAid || '',
-              storageConditions: pd.storageConditions || '',
-              incompatibleMaterials: pd.incompatibleMaterials || '',
-              description: pd.description || '',
-              synonyms: pd.synonyms || [],
-              applications: pd.applications || [],
-            });
-
-            // 保存结构数据
-            setStructureData({
-              sdf: pd.structureSdf,
-              imageKey: pd.structureImageKey,
-              svg: pd.structure2dSvg,
-            });
-
-            // 检查需要翻译的字段
-            const translatableFields = [
-              { key: 'name', value: pd.nameEn },
-              { key: 'description', value: pd.description },
-              { key: 'physicalDescription', value: pd.physicalDescription },
-              { key: 'boilingPoint', value: pd.boilingPoint },
-              { key: 'meltingPoint', value: pd.meltingPoint },
-              { key: 'flashPoint', value: pd.flashPoint },
-              { key: 'hazardClasses', value: pd.hazardClasses },
-              { key: 'healthHazards', value: pd.healthHazards },
-              { key: 'ghsClassification', value: pd.ghsClassification },
-              { key: 'firstAid', value: pd.firstAid },
-              { key: 'storageConditions', value: pd.storageConditions },
-              { key: 'incompatibleMaterials', value: pd.incompatibleMaterials },
-              { key: 'solubility', value: pd.solubility },
-              { key: 'vaporPressure', value: pd.vaporPressure },
-              { key: 'refractiveIndex', value: pd.refractiveIndex },
-            ];
-
-            const fieldsToTranslate = translatableFields
-              .filter(({ value }) => value && value !== '-')
-              .map(({ key }) => key);
-
-            if (fieldsToTranslate.length > 0) {
-              setNeedTranslate(true);
-            }
-          }
-        } catch (error) {
-          console.error('Failed to parse stored data:', error);
-        }
+      if (!cas) {
+        setLoading(false);
+        return;
       }
+
+      const token = getAdminToken();
+      
+      try {
+        // 从数据库查询产品数据
+        const response = await fetch(`/api/admin/spu/search?cas=${encodeURIComponent(cas)}`, {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+        });
+
+        const result = await response.json();
+
+        if (!result.success || !result.data) {
+          setDialogConfig({
+            type: 'error',
+            title: locale === 'zh' ? '加载失败' : 'Load Failed',
+            message: locale === 'zh' 
+              ? '未找到产品数据，请返回重新搜索' 
+              : 'Product data not found, please go back and search again',
+            onConfirm: () => router.push('/admin/spu/create'),
+          });
+          setLoading(false);
+          return;
+        }
+
+        const product = toCamelCase(result.data);
+        setProductId(product.id);
+
+        // 设置产品图片URL
+        if (product.productImageKey) {
+          setProductImageKey(product.productImageKey);
+          setProductImageUrl(`/api/storage/file?key=${product.productImageKey}`);
+        } else if (product.structureImageKey) {
+          // 如果没有产品图，使用结构图
+          setProductImageUrl(`/api/storage/file?key=${product.structureImageKey}`);
+        }
+
+        // 填充表单数据
+        setFormData({
+          cas: product.cas || cas,
+          name: product.name || '',
+          nameEn: product.nameEn || '',
+          formula: product.formula || '',
+          molecularWeight: product.molecularWeight || '',
+          exactMass: product.exactMass || '',
+          smiles: product.smiles || '',
+          smilesCanonical: product.smilesCanonical || '',
+          smilesIsomeric: product.smilesIsomeric || '',
+          inchi: product.inchi || '',
+          inchiKey: product.inchiKey || '',
+          xlogp: product.xlogp || '',
+          tpsa: product.tpsa || '',
+          complexity: product.complexity?.toString() || '',
+          hBondDonorCount: product.hBondDonorCount?.toString() || '',
+          hBondAcceptorCount: product.hBondAcceptorCount?.toString() || '',
+          rotatableBondCount: product.rotatableBondCount?.toString() || '',
+          heavyAtomCount: product.heavyAtomCount?.toString() || '',
+          formalCharge: product.formalCharge?.toString() || '',
+          physicalDescription: product.physicalDescription || '',
+          colorForm: product.colorForm || '',
+          odor: product.odor || '',
+          boilingPoint: product.boilingPoint || '',
+          meltingPoint: product.meltingPoint || '',
+          flashPoint: product.flashPoint || '',
+          density: product.density || '',
+          solubility: product.solubility || '',
+          vaporPressure: product.vaporPressure || '',
+          refractiveIndex: product.refractiveIndex || '',
+          hazardClasses: product.hazardClasses || '',
+          healthHazards: product.healthHazards || '',
+          ghsClassification: product.ghsClassification || '',
+          toxicitySummary: product.toxicitySummary || '',
+          carcinogenicity: product.carcinogenicity || '',
+          firstAid: product.firstAid || '',
+          storageConditions: product.storageConditions || '',
+          incompatibleMaterials: product.incompatibleMaterials || '',
+          description: product.description || '',
+          synonyms: product.synonyms || [],
+          applications: product.applications || [],
+          hsCode: product.hsCode || '',
+          hsCodeExtensions: product.hsCodeExtensions || {},
+          status: 'ACTIVE',
+        });
+
+        // 保存结构数据
+        setStructureData({
+          sdf: product.structureSdf,
+          imageKey: product.structureImageKey,
+          svg: product.structure2dSvg,
+        });
+
+        // 检查需要翻译的字段
+        const translatableFields = [
+          { key: 'name', value: product.nameEn },
+          { key: 'description', value: product.description },
+          { key: 'physicalDescription', value: product.physicalDescription },
+          { key: 'boilingPoint', value: product.boilingPoint },
+          { key: 'meltingPoint', value: product.meltingPoint },
+          { key: 'flashPoint', value: product.flashPoint },
+          { key: 'hazardClasses', value: product.hazardClasses },
+          { key: 'healthHazards', value: product.healthHazards },
+          { key: 'ghsClassification', value: product.ghsClassification },
+          { key: 'firstAid', value: product.firstAid },
+          { key: 'storageConditions', value: product.storageConditions },
+          { key: 'incompatibleMaterials', value: product.incompatibleMaterials },
+          { key: 'solubility', value: product.solubility },
+          { key: 'vaporPressure', value: product.vaporPressure },
+          { key: 'refractiveIndex', value: product.refractiveIndex },
+        ];
+
+        const fieldsToTranslate = translatableFields
+          .filter(({ value }) => value && value !== '-')
+          .map(({ key }) => key);
+
+        if (fieldsToTranslate.length > 0) {
+          setNeedTranslate(true);
+        }
+      } catch (error) {
+        console.error('Failed to load product data:', error);
+        setDialogConfig({
+          type: 'error',
+          title: locale === 'zh' ? '加载失败' : 'Load Failed',
+          message: locale === 'zh' 
+            ? '加载产品数据失败，请重试' 
+            : 'Failed to load product data, please try again',
+        });
+      }
+      
       setLoading(false);
     };
 
     loadData();
-  }, [cas]);
+  }, [cas, locale, router]);
 
   // 翻译
   const handleTranslate = useCallback(async () => {
-    if (!pubchemData) return;
-
     const token = getAdminToken();
     setTranslating(true);
     setTranslationProgress({ status: 'translating', current: 0, total: 0 });
 
     const translatableFields = [
-      { key: 'name', value: pubchemData.nameEn },
-      { key: 'description', value: pubchemData.description },
-      { key: 'physicalDescription', value: pubchemData.physicalDescription },
-      { key: 'boilingPoint', value: pubchemData.boilingPoint },
-      { key: 'meltingPoint', value: pubchemData.meltingPoint },
-      { key: 'flashPoint', value: pubchemData.flashPoint },
-      { key: 'hazardClasses', value: pubchemData.hazardClasses },
-      { key: 'healthHazards', value: pubchemData.healthHazards },
-      { key: 'ghsClassification', value: pubchemData.ghsClassification },
-      { key: 'firstAid', value: pubchemData.firstAid },
-      { key: 'storageConditions', value: pubchemData.storageConditions },
-      { key: 'incompatibleMaterials', value: pubchemData.incompatibleMaterials },
-      { key: 'solubility', value: pubchemData.solubility },
-      { key: 'vaporPressure', value: pubchemData.vaporPressure },
-      { key: 'refractiveIndex', value: pubchemData.refractiveIndex },
+      { key: 'name', value: formData.nameEn },
+      { key: 'description', value: formData.description },
+      { key: 'physicalDescription', value: formData.physicalDescription },
+      { key: 'boilingPoint', value: formData.boilingPoint },
+      { key: 'meltingPoint', value: formData.meltingPoint },
+      { key: 'flashPoint', value: formData.flashPoint },
+      { key: 'hazardClasses', value: formData.hazardClasses },
+      { key: 'healthHazards', value: formData.healthHazards },
+      { key: 'ghsClassification', value: formData.ghsClassification },
+      { key: 'firstAid', value: formData.firstAid },
+      { key: 'storageConditions', value: formData.storageConditions },
+      { key: 'incompatibleMaterials', value: formData.incompatibleMaterials },
+      { key: 'solubility', value: formData.solubility },
+      { key: 'vaporPressure', value: formData.vaporPressure },
+      { key: 'refractiveIndex', value: formData.refractiveIndex },
     ];
 
     const fieldsToTranslate = translatableFields.filter(({ value }) => value && value !== '-');
@@ -292,7 +335,7 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
         ? `已翻译 ${fieldsToTranslate.length} 个字段。点击"保存"按钮保存数据。`
         : `Translated ${fieldsToTranslate.length} fields. Click "Save" button to save.`,
     });
-  }, [pubchemData, pendingTranslations, locale]);
+  }, [formData, pendingTranslations, locale]);
 
   // 保存
   const handleSave = useCallback(async () => {
@@ -321,6 +364,7 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
       const translations = Object.keys(pendingTranslations).length > 0 ? pendingTranslations : undefined;
 
       const spuData = {
+        id: productId || undefined, // 如果有产品ID，更新现有产品
         cas: formData.cas,
         name: formData.name || formData.nameEn,
         nameEn: formData.nameEn || null,
@@ -349,11 +393,10 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
         incompatibleMaterials: formData.incompatibleMaterials || null,
         hsCode: formData.hsCode || null,
         hsCodeExtensions: formData.hsCodeExtensions || null,
-        status: formData.status,
+        status: 'ACTIVE', // 保存时设置状态为ACTIVE
         synonyms: formData.synonyms || [],
         applications: formData.applications || [],
         translations,
-        pubchemCid: pubchemData?.cid,
         // 结构数据
         structureSdf: structureData.sdf || null,
         structureImageKey: structureData.imageKey || null,
@@ -374,9 +417,6 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
       const result = await response.json();
 
       if (result.success) {
-        // 清除 sessionStorage
-        sessionStorage.removeItem('spu_create_data');
-        
         setDialogConfig({
           type: 'success',
           title: locale === 'zh' ? '保存成功' : 'Success',
@@ -400,7 +440,7 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
     } finally {
       setSaving(false);
     }
-  }, [formData, pubchemData, structureData, productImageKey, pendingTranslations, locale, router]);
+  }, [formData, structureData, productImageKey, pendingTranslations, productId, locale, router]);
 
   // 返回
   const handleBack = useCallback(() => {
@@ -416,9 +456,9 @@ export function useSPUCreateInfo(locale: string): UseSPUCreateInfoReturn {
     needTranslate,
     formData,
     setFormData,
-    pubchemData,
     productImageUrl,
     pendingTranslations,
+    productId,
     handleTranslate,
     handleSave,
     handleBack,
