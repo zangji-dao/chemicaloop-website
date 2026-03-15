@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
-import { sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import * as schema from '@/db';
 
 /**
@@ -22,36 +22,26 @@ export async function GET(request: NextRequest) {
 
     const db = await getDb(schema);
 
-    // 根据 CAS 号精确查询
-    const result = await db.execute(sql`
-      SELECT 
-        id,
-        cas,
-        name,
-        name_en,
-        formula,
-        status,
-        image_url,
-        structure_image_key
-      FROM products
-      WHERE cas = ${query}
-      LIMIT 1
-    `);
+    // 使用 Drizzle ORM 查询构建器，更高效
+    const result = await db
+      .select({
+        id: schema.products.id,
+        cas: schema.products.cas,
+        name: schema.products.name,
+        nameEn: schema.products.nameEn,
+        formula: schema.products.formula,
+        status: schema.products.status,
+        imageUrl: schema.products.imageUrl,
+        structureImageKey: schema.products.structureImageKey,
+      })
+      .from(schema.products)
+      .where(eq(schema.products.cas, query))
+      .limit(1);
 
-    if (result.rows.length > 0) {
-      const row = result.rows[0];
+    if (result.length > 0) {
       return NextResponse.json({
         success: true,
-        data: [{
-          id: row.id,
-          cas: row.cas,
-          name: row.name,
-          name_en: row.name_en,
-          formula: row.formula,
-          status: row.status,
-          imageUrl: row.image_url,
-          structureImageKey: row.structure_image_key,
-        }],
+        data: [result[0]],
       });
     }
 

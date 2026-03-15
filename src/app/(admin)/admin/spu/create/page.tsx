@@ -66,11 +66,12 @@ function ProductCreateContent() {
       return;
     }
 
+    // 批量更新状态，减少重渲染
     setError(null);
     setExistingSPU(null);
-    setSearchStatus('searching');
     setSearchedCas(cas);
     setSearching(true);
+    setSearchStatus('searching');
 
     try {
       // Step 2: 搜索本地SPU库
