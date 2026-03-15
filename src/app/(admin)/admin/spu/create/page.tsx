@@ -102,32 +102,6 @@ function ProductCreateContent() {
     router.push(`/admin/spu/create/image?cas=${encodeURIComponent(searchedCas)}`);
   };
 
-  // ========== 渲染右侧按钮 ==========
-  const renderRightButton = () => {
-    if (searchStatus === 'not_found') {
-      return (
-        <button
-          onClick={handleNext}
-          className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm"
-        >
-          {locale === 'zh' ? '下一步' : 'Next'}
-          <ArrowRight className="h-4 w-4" />
-        </button>
-      );
-    }
-    if (searchStatus === 'found') {
-      return (
-        <button
-          onClick={() => router.push('/admin/spu')}
-          className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm"
-        >
-          {locale === 'zh' ? '前往列表' : 'Go to List'}
-        </button>
-      );
-    }
-    return null;
-  };
-
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full">
       {/* 顶部导航 */}
@@ -144,11 +118,17 @@ function ProductCreateContent() {
             <h2 className="text-lg font-medium text-white">
               {t('spu.newSpu')}
             </h2>
-            <div className="min-w-[100px] flex justify-end">
-              <div className="whitespace-nowrap">
-                {renderRightButton()}
-              </div>
-            </div>
+            {searchStatus === 'not_found' ? (
+              <button
+                onClick={handleNext}
+                className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm whitespace-nowrap"
+              >
+                {locale === 'zh' ? '下一步' : 'Next'}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            ) : (
+              <div className="w-[88px]" />
+            )}
           </div>
         </div>
       </div>
@@ -235,8 +215,8 @@ function ProductCreateContent() {
 
               <p className="text-xs text-slate-400">
                 {locale === 'zh' 
-                  ? '如需修改该产品信息，请点击右上角「前往列表」按钮。' 
-                  : 'To edit this product, click "Go to List" button on the top right.'}
+                  ? '如需修改该产品信息，请点击左上角「返回列表」按钮。' 
+                  : 'To edit this product, click "Back" button on the top left.'}
               </p>
             </div>
           )}
