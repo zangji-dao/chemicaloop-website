@@ -9,6 +9,7 @@ export interface ChemicalInfo {
   name: string;
   cas?: string;
   formula?: string;
+  sdf?: string;  // 本地存储的 SDF 数据，优先使用
 }
 
 export interface SVGGenerationResult {
@@ -393,12 +394,18 @@ export async function generateChemicalSVG(
   try {
     const name = chemical.name;
     const cas = chemical.cas;
+    const sdf = chemical.sdf;
     
-    // 优先使用 CAS 查询 PubChem（CAS 是唯一标识符，中文名称可能查不到）
-    // 先尝试用 CAS，再用名称
+    // 1. 优先使用本地存储的 SDF 数据（避免重复从 PubChem 获取）
     let structure = null;
     
-    if (cas) {
+    if (sdf) {
+      console.log(`[ChemicalSVG] Using local SDF data, length: ${sdf.length}`);
+      structure = parseSDF(sdf);
+    }
+    
+    // 2. 如果没有本地数据，从 PubChem 获取（优先用 CAS）
+    if (!structure && cas) {
       console.log(`[ChemicalSVG] Fetching from PubChem using CAS: ${cas}`);
       structure = await getSDFStructure(cas);
     }
@@ -413,7 +420,7 @@ export async function generateChemicalSVG(
       return { success: true, svg, formula: structure.formula };
     }
     
-    // 使用 LLM 生成
+    // 3. 使用 LLM 生成（最后的备选方案）
     console.log(`[ChemicalSVG] PubChem not found, using LLM: ${name || cas}`);
     return generateWithLLM(name || cas || 'Unknown');
     

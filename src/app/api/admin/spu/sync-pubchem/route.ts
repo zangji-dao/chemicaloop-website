@@ -286,6 +286,7 @@ interface PubChemData {
   // 结构图片
   structureUrl?: string | null;
   structureImageKey?: string | null;
+  structureSdf?: string | null;          // SDF 结构数据（用于重绘）
   structure2dSvg?: string | null;
 }
 
@@ -961,6 +962,19 @@ async function fetchPubChemData(cas: string): Promise<PubChemData | null> {
       console.error(`[PubChem] Failed to fetch SVG for CID ${cid}:`, svgError);
     }
     
+    // 7. 获取 SDF 结构数据（用于重绘美化的 SVG）
+    try {
+      const sdfUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/SDF?record_type=2d`;
+      const sdfResponse = await fetchWithRetry(sdfUrl, 2, FETCH_TIMEOUT);
+      
+      if (sdfResponse && sdfResponse.ok) {
+        result.structureSdf = await sdfResponse.text();
+        console.log(`[PubChem] Fetched SDF for CID ${cid}, length: ${result.structureSdf?.length}`);
+      }
+    } catch (sdfError) {
+      console.error(`[PubChem] Failed to fetch SDF for CID ${cid}:`, sdfError);
+    }
+    
     return result;
   } catch (error) {
     console.error(`Error fetching PubChem data for ${cas}:`, error);
@@ -1069,6 +1083,7 @@ export async function POST(request: NextRequest) {
         // 结构图
         structureUrl: pubchemData.structureUrl,
         structureImageKey: pubchemData.structureImageKey,
+        structureSdf: pubchemData.structureSdf,
         structure2dSvg: pubchemData.structure2dSvg,
       };
       
@@ -1168,6 +1183,7 @@ export async function POST(request: NextRequest) {
             incompatibleMaterials: safeString(pubchemData.incompatibleMaterials),
             structureUrl: safeString(pubchemData.structureUrl),
             structureImageKey: safeString(pubchemData.structureImageKey),
+            structureSdf: safeString(pubchemData.structureSdf),
             structure2dSvg: safeString(pubchemData.structure2dSvg),
             synonyms: pubchemData.synonyms && pubchemData.synonyms.length > 0 ? pubchemData.synonyms : null,
             applications: pubchemData.applications && pubchemData.applications.length > 0 ? pubchemData.applications : null,

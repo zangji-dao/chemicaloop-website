@@ -145,10 +145,11 @@ export const products = pgTable("products", {
 	// ========== PubChem 结构图片 ==========
 	structureUrl: text("structure_url"),                          // PubChem 2D 结构图片 URL（临时）
 	structureImageKey: text("structure_image_key"),               // 对象存储 2D 结构图 key
+	structureSdf: text("structure_sdf"),                          // SDF 结构数据（用于重绘）
 	structure2dSvg: text("structure_2d_svg"),                     // 2D SVG 结构数据
 	structure3dUrl: text("structure_3d_url"),                     // 3D 结构 URL
 	
-	// ========== 产品图（AI 生成）==========
+	// ========== 产品图（重绘生成）==========
 	productImageKey: text("product_image_key"),                   // 对象存储 key
 	productImageGeneratedAt: timestamp("product_image_generated_at", { withTimezone: true, mode: 'string' }),
 	
