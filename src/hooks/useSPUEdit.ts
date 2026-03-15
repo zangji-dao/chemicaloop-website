@@ -12,6 +12,7 @@ import {
   DialogConfig,
 } from '@/types/spu';
 import { getAdminToken } from '@/services/adminAuthService';
+import { translateFields as translateFieldsUtil, SUPPORTED_LANGUAGES } from '@/lib/translate-utils';
 
 interface UseSPUEditOptions {
   spuId: string | null;
@@ -418,74 +419,9 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
     }
   };
 
-  // 翻译字段
-  const translateFields = async (fieldsToTranslate: string[], translations: Record<string, any>) => {
-    const allLanguages = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'ru', 'pt', 'ar'];
-    const currentLang = allLanguages.includes(locale) ? locale : 'en';
-    const token = getAdminToken();
-
-    setTranslating(true);
-    setTranslationProgress({ current: 0, total: fieldsToTranslate.length, status: 'translating' });
-
-    const abortController = new AbortController();
-    translateAbortControllerRef.current = abortController;
-
-    const translationPromises = fieldsToTranslate.map(async (fieldName) => {
-      const value = formData[fieldName as keyof typeof formData] as string;
-      if (!value) return { fieldName, success: false };
-
-      setTranslatingFields(prev => new Set([...prev, fieldName]));
-
-      try {
-        const res = await fetch('/api/common/ai/translate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            text: value,
-            targetLanguages: allLanguages
-          }),
-          signal: abortController.signal,
-        });
-        const data = await res.json();
-
-        if (data.translations) {
-          translations[fieldName] = data.translations;
-          const currentLangTranslation = data.translations[currentLang];
-          if (currentLangTranslation) {
-            setFormData(prev => ({
-              ...prev,
-              [fieldName]: currentLangTranslation
-            }));
-          }
-          setTranslationProgress(prev => ({ ...prev, current: prev.current + 1 }));
-          return { fieldName, success: true };
-        }
-        return { fieldName, success: false };
-      } catch (error) {
-        console.log(`Translation error for ${fieldName}:`, error);
-        return { fieldName, success: false };
-      } finally {
-        setTranslatingFields(prev => {
-          const next = new Set(prev);
-          next.delete(fieldName);
-          return next;
-        });
-      }
-    });
-
-    await Promise.all(translationPromises);
-    setTranslating(false);
-    setTranslationProgress(prev => ({ ...prev, status: 'completed' }));
-    translateAbortControllerRef.current = null;
-    return translations;
-  };
-
   // 处理翻译
   const handleTranslate = async () => {
-    const translatableFields = [
+    const translatableFields: Array<{ key: string; value: string }> = [
       { key: 'name', value: formData.nameEn },
       { key: 'description', value: formData.description },
       { key: 'physicalDescription', value: formData.physicalDescription },
@@ -501,13 +437,9 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
       { key: 'solubility', value: formData.solubility },
       { key: 'vaporPressure', value: formData.vaporPressure },
       { key: 'refractiveIndex', value: formData.refractiveIndex },
-    ];
+    ].filter((f): f is { key: string; value: string } => !!f.value);
 
-    const fieldsToTranslate = translatableFields
-      .filter(({ value }) => value)
-      .map(({ key }) => key);
-
-    if (fieldsToTranslate.length === 0) {
+    if (translatableFields.length === 0) {
       setDialogConfig({
         type: 'error',
         title: locale === 'zh' ? '无可翻译内容' : 'No Content to Translate',
@@ -518,17 +450,73 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
       return;
     }
 
-    const translations: Record<string, any> = { ...pendingTranslations };
-    await translateFields(fieldsToTranslate, translations);
+    const currentLang = SUPPORTED_LANGUAGES.includes(locale) ? locale : 'en';
+    const token = getAdminToken();
 
-    setNeedTranslate(false);
-    setDialogConfig({
-      type: 'success',
-      title: locale === 'zh' ? '翻译完成' : 'Translation Completed',
-      message: locale === 'zh'
-        ? `已翻译 ${fieldsToTranslate.length} 个字段。点击"保存"按钮保存数据。`
-        : `Translated ${fieldsToTranslate.length} fields. Click "Save" button to save.`,
-    });
+    setTranslating(true);
+    setTranslationProgress({ current: 0, total: translatableFields.length, status: 'translating' });
+    setTranslatingFields(new Set());
+
+    const abortController = new AbortController();
+    translateAbortControllerRef.current = abortController;
+
+    try {
+      const result = await translateFieldsUtil({
+        fields: translatableFields,
+        token,
+        signal: abortController.signal,
+        onProgress: (current, total) => {
+          setTranslationProgress(prev => ({ ...prev, current }));
+        },
+        onFieldStart: (key) => {
+          setTranslatingFields(prev => new Set([...prev, key]));
+        },
+        onFieldEnd: (key) => {
+          setTranslatingFields(prev => {
+            const next = new Set(prev);
+            next.delete(key);
+            return next;
+          });
+        },
+      });
+
+      // 应用翻译结果到表单
+      const newPendingTranslations = { ...pendingTranslations, ...result.translations };
+      setPendingTranslations(newPendingTranslations);
+
+      // 用当前语言更新表单
+      setFormData(prev => {
+        const updated = { ...prev };
+        translatableFields.forEach(({ key }) => {
+          const translatedValue = result.translations[key]?.[currentLang];
+          if (translatedValue) {
+            (updated as any)[key] = translatedValue;
+          }
+        });
+        return updated;
+      });
+
+      setNeedTranslate(false);
+      setTranslationProgress(prev => ({ ...prev, status: 'completed' }));
+      setDialogConfig({
+        type: 'success',
+        title: locale === 'zh' ? '翻译完成' : 'Translation Completed',
+        message: locale === 'zh'
+          ? `已翻译 ${translatableFields.length} 个字段。点击"保存"按钮保存数据。`
+          : `Translated ${translatableFields.length} fields. Click "Save" button to save.`,
+      });
+    } catch (error: any) {
+      console.error('Translation error:', error);
+      setDialogConfig({
+        type: 'error',
+        title: locale === 'zh' ? '翻译失败' : 'Translation Failed',
+        message: error.message,
+      });
+    } finally {
+      setTranslating(false);
+      setTranslatingFields(new Set());
+      translateAbortControllerRef.current = null;
+    }
   };
 
   // 生成产品图

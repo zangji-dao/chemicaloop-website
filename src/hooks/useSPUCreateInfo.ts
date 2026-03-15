@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAdminToken } from '@/services/adminAuthService';
 import { FormData, TranslationProgress } from '@/types/spu';
+import { translateFields as translateFieldsUtil, SUPPORTED_LANGUAGES } from '@/lib/translate-utils';
 
 // sessionStorage key for preview data
 const PREVIEW_DATA_KEY = 'spu_create_preview_data';
@@ -239,8 +240,8 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
 
   // 翻译（并行执行多字段翻译，翻译到10种语言）
   const handleTranslate = useCallback(async () => {
-    // 定义需要翻译的字段列表（参考 useSPUEdit.ts）
-    const translatableFields: Array<{ key: string; value: string | undefined }> = [
+    // 定义需要翻译的字段列表
+    const translatableFields: Array<{ key: string; value: string }> = [
       { key: 'name', value: formData.nameEn },
       { key: 'description', value: formData.description },
       { key: 'physicalDescription', value: formData.physicalDescription },
@@ -256,7 +257,7 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
       { key: 'solubility', value: formData.solubility },
       { key: 'vaporPressure', value: formData.vaporPressure },
       { key: 'refractiveIndex', value: formData.refractiveIndex },
-    ].filter(f => f.value);
+    ].filter((f): f is { key: string; value: string } => !!f.value);
 
     if (translatableFields.length === 0) {
       setDialogConfig({
@@ -267,71 +268,43 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
       return;
     }
 
-    // 所有支持的语言
-    const allLanguages = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'ru', 'pt', 'ar'];
-    const currentLang = allLanguages.includes(locale) ? locale : 'en';
+    const currentLang = SUPPORTED_LANGUAGES.includes(locale) ? locale : 'en';
+    const token = getAdminToken();
 
     setTranslating(true);
     setTranslationProgress({ status: 'translating', current: 0, total: translatableFields.length });
     setTranslatingFields(new Set());
     setPendingTranslations({});
 
-    const translations: Record<string, Record<string, string>> = {};
-    let completedCount = 0;
-
     try {
-      // 并行翻译所有字段
-      const translationPromises = translatableFields.map(async (field) => {
-        // 标记当前字段正在翻译
-        setTranslatingFields(prev => new Set([...prev, field.key]));
-        
-        try {
-          const response = await fetch('/api/common/ai/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              text: field.value, 
-              targetLanguages: allLanguages 
-            }),
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.translations) {
-              translations[field.key] = data.translations;
-            }
-          } else {
-            console.error(`Failed to translate ${field.key}: HTTP ${response.status}`);
-          }
-        } catch (error) {
-          console.error(`Failed to translate ${field.key}:`, error);
-        } finally {
-          // 移除当前字段的翻译标记
+      const result = await translateFieldsUtil({
+        fields: translatableFields,
+        token,
+        onProgress: (current, total) => {
+          setTranslationProgress(prev => ({ ...prev, current }));
+        },
+        onFieldStart: (key) => {
+          setTranslatingFields(prev => new Set([...prev, key]));
+        },
+        onFieldEnd: (key) => {
           setTranslatingFields(prev => {
             const next = new Set(prev);
-            next.delete(field.key);
+            next.delete(key);
             return next;
           });
-          // 更新进度
-          completedCount++;
-          setTranslationProgress(prev => ({ ...prev, current: completedCount }));
-        }
+        },
       });
 
-      await Promise.all(translationPromises);
-
       // 应用翻译结果到表单（使用当前语言）
-      setPendingTranslations(translations);
+      setPendingTranslations(result.translations);
       setFormData(prev => {
         const updated = { ...prev };
-        
-        // 用当前语言的翻译更新表单字段
         translatableFields.forEach(({ key }) => {
-          if (translations[key]?.[currentLang]) {
-            (updated as any)[key] = translations[key][currentLang];
+          const translatedValue = result.translations[key]?.[currentLang];
+          if (translatedValue) {
+            (updated as any)[key] = translatedValue;
           }
         });
-        
         return updated;
       });
 
