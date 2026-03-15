@@ -126,10 +126,7 @@ function SPUEditContent() {
       />
 
       {/* 顶部导航 */}
-      <div className="sticky top-0 z-10">
-        {/* 遮挡层 - 覆盖导航栏下方的间隙 */}
-        <div className="absolute inset-x-0 -bottom-8 h-8 bg-slate-900 pointer-events-none" />
-        <div className="relative bg-slate-900 border-b border-slate-700/50 px-5 py-3">
+      <div className="bg-slate-900 border-b border-slate-700/50 px-5 py-3 pb-6 sticky top-0 z-10">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center justify-between">
               {/* 左侧：返回 + 同步按钮 */}
@@ -207,10 +204,9 @@ function SPUEditContent() {
           </div>
         </div>
       </div>
-      </div>
 
       {/* 内容区域 */}
-      <div className="max-w-4xl mx-auto px-5 pb-20 pt-4">
+      <div className="max-w-4xl mx-auto px-5 pb-20">
         {/* 图片展示区域 */}
         <ImageSection
           structureImageUrl={structureImageUrl}
