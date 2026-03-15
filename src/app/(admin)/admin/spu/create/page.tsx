@@ -10,7 +10,6 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  Plus,
 } from 'lucide-react';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
 import { getAdminToken } from '@/services/adminAuthService';
@@ -111,6 +110,32 @@ function ProductCreateContent() {
     setCasInput('');
   };
 
+  // ========== 渲染右侧按钮 ==========
+  const renderRightButton = () => {
+    if (searchStatus === 'not_found') {
+      return (
+        <button
+          onClick={handleNext}
+          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors font-medium"
+        >
+          {locale === 'zh' ? '下一步' : 'Next'}
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      );
+    }
+    if (searchStatus === 'found') {
+      return (
+        <button
+          onClick={() => router.push('/admin/spu')}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors font-medium"
+        >
+          {locale === 'zh' ? '前往列表' : 'Go to List'}
+        </button>
+      );
+    }
+    return <div className="w-[100px]" />;
+  };
+
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full">
       {/* 顶部导航 */}
@@ -127,7 +152,7 @@ function ProductCreateContent() {
             <h2 className="text-lg font-semibold text-white">
               {t('spu.newSpu')}
             </h2>
-            <div className="w-[100px]" /> {/* 占位，保持标题居中 */}
+            {renderRightButton()}
           </div>
         </div>
       </div>
@@ -212,26 +237,11 @@ function ProductCreateContent() {
                 )}
               </div>
 
-              <p className="text-xs text-slate-400 mb-4">
+              <p className="text-xs text-slate-400">
                 {locale === 'zh' 
-                  ? '如需修改该产品信息，请前往产品列表进行编辑。' 
-                  : 'To edit this product, please go to the product list.'}
+                  ? '如需修改该产品信息，请点击右上角「前往列表」按钮。' 
+                  : 'To edit this product, click "Go to List" button on the top right.'}
               </p>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleReset}
-                  className="flex-1 py-2.5 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors font-medium text-sm"
-                >
-                  {locale === 'zh' ? '重新搜索' : 'Search Again'}
-                </button>
-                <button
-                  onClick={() => router.push('/admin/spu')}
-                  className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors font-medium text-sm"
-                >
-                  {locale === 'zh' ? '前往产品列表' : 'Go to Product List'}
-                </button>
-              </div>
             </div>
           )}
 
@@ -250,26 +260,9 @@ function ProductCreateContent() {
                 <div className="font-mono text-xl font-medium text-blue-400">{searchedCas}</div>
                 <p className="text-xs text-slate-400 mt-2">
                   {locale === 'zh' 
-                    ? '数据库中未找到该CAS号，您可以新建该产品。' 
-                    : 'This CAS number was not found in database. You can create a new product.'}
+                    ? '数据库中未找到该CAS号，您可以新建该产品。点击右上角「下一步」继续。' 
+                    : 'This CAS number was not found in database. Click "Next" button on the top right to continue.'}
                 </p>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleReset}
-                  className="flex-1 py-2.5 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors font-medium text-sm"
-                >
-                  {locale === 'zh' ? '重新搜索' : 'Search Again'}
-                </button>
-                <button
-                  onClick={handleNext}
-                  className="flex-1 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors font-medium text-sm flex items-center justify-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  {locale === 'zh' ? '新建产品' : 'Create Product'}
-                  <ArrowRight className="h-4 w-4" />
-                </button>
               </div>
             </div>
           )}
