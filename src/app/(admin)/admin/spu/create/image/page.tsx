@@ -1,16 +1,14 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
 import {
   ArrowLeft,
   Loader2,
-  RefreshCw,
   ImageIcon,
   ArrowRight,
-  AlertCircle,
   CheckCircle2,
   Circle,
+  Sparkles,
 } from 'lucide-react';
 import { useAdminLocale } from '@/contexts/AdminLocaleContext';
 import { useSPUCreateImage } from '@/hooks/useSPUCreateImage';
@@ -18,18 +16,15 @@ import { StatusDialog } from '@/components/spu/StatusDialog';
 
 function SPUCreateImageContent() {
   const { locale, t } = useAdminLocale();
-  const router = useRouter();
 
   const {
-    syncingPubChem,
-    syncProgress,
+    loading,
     generatingImage,
     step,
     cas,
     pubchemData,
     structureImageUrl,
     productImageUrl,
-    handleSyncPubChem,
     handleGenerateProductImage,
     handleNext,
     handleBack,
@@ -37,82 +32,15 @@ function SPUCreateImageContent() {
     setDialogConfig,
   } = useSPUCreateImage(locale);
 
-  // 禁止滚动 - 当遮罩层显示时
-  useEffect(() => {
-    if (syncingPubChem) {
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-    } else {
-      const scrollY = document.body.style.top;
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
-      }
-    }
-    return () => {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-    };
-  }, [syncingPubChem]);
-
-  // 同步进度遮罩
-  const SyncProgressOverlay = () => {
-    if (!syncingPubChem) return null;
-
-    const getStepIcon = () => {
-      switch (syncProgress.step) {
-        case 'connecting':
-        case 'fetching':
-        case 'updating':
-          return <Loader2 className="w-12 h-12 animate-spin text-blue-400" />;
-        case 'done':
-          return <CheckCircle2 className="w-12 h-12 text-green-400" />;
-        case 'error':
-          return <AlertCircle className="w-12 h-12 text-red-400" />;
-        default:
-          return <Loader2 className="w-12 h-12 animate-spin text-blue-400" />;
-      }
-    };
-
-    return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div className="bg-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl">
-          {getStepIcon()}
-          <p className="mt-4 text-lg text-white">{syncProgress.message}</p>
-          {syncProgress.step !== 'error' && (
-            <div className="mt-4 flex justify-center gap-1">
-              {['connecting', 'fetching', 'updating'].map((s, index) => (
-                <div
-                  key={s}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    ['connecting', 'fetching', 'updating'].indexOf(syncProgress.step) >= index
-                      ? 'bg-blue-400'
-                      : 'bg-slate-600'
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  // 步骤指示器
+  // 步骤指示器（简化版：只显示生成产品图和填写信息两步）
   const StepIndicator = () => {
     const steps = [
-      { key: 'sync', label: t('spu.getStructure') },
       { key: 'generate', label: t('spu.generateImage') },
       { key: 'next', label: t('spu.fillInfo') },
     ];
 
     const getStepStatus = (stepKey: string) => {
-      const stepOrder = ['sync', 'generate', 'next'];
+      const stepOrder = ['loading', 'generate', 'next'];
       const currentOrder = stepOrder.indexOf(step);
       const thisOrder = stepOrder.indexOf(stepKey);
       
@@ -156,71 +84,17 @@ function SPUCreateImageContent() {
 
   // 渲染顶部操作按钮
   const renderActionButtons = () => {
-    if (step === 'sync') {
+    if (loading) {
       return (
-        <button
-          onClick={handleSyncPubChem}
-          disabled={syncingPubChem}
-          className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-        >
-          {syncingPubChem ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>{t('spu.fetching')}</span>
-            </>
-          ) : (
-            <>
-              <RefreshCw className="h-4 w-4" />
-              <span>{t('spu.getStructure')}</span>
-            </>
-          )}
-        </button>
-      );
-    }
-
-    if (step === 'generate') {
-      return (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleSyncPubChem}
-            disabled={syncingPubChem}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg text-sm transition-colors"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${syncingPubChem ? 'animate-spin' : ''}`} />
-            <span>{t('spu.reGet')}</span>
-          </button>
-          <button
-            onClick={handleGenerateProductImage}
-            disabled={generatingImage}
-            className="flex items-center gap-2 px-4 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-          >
-            {generatingImage ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{t('spu.generating')}</span>
-              </>
-            ) : (
-              <>
-                <ImageIcon className="h-4 w-4" />
-                <span>{t('spu.generateImage')}</span>
-              </>
-            )}
-          </button>
+        <div className="flex items-center gap-2 text-slate-400">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-sm">{t('spu.loading')}</span>
         </div>
       );
     }
 
-    // step === 'next'
-    return (
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handleGenerateProductImage}
-          disabled={generatingImage}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg text-sm transition-colors"
-        >
-          <ImageIcon className="h-3.5 w-3.5" />
-          <span>{t('spu.regenerate')}</span>
-        </button>
+    if (step === 'next') {
+      return (
         <button
           onClick={handleNext}
           className="flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-medium transition-colors"
@@ -228,15 +102,14 @@ function SPUCreateImageContent() {
           <span>{t('spu.next')}</span>
           <ArrowRight className="h-4 w-4" />
         </button>
-      </div>
-    );
+      );
+    }
+
+    return null;
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      {/* 同步遮罩层 */}
-      <SyncProgressOverlay />
-
       {/* 顶部导航 */}
       <div className="bg-slate-800/50 border-b border-slate-700/50 px-5 py-3 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto">
@@ -266,93 +139,112 @@ function SPUCreateImageContent() {
 
       {/* 内容区域 */}
       <div className="max-w-2xl mx-auto px-5 py-4">
-        {/* CAS 信息卡片 - 紧凑版 */}
-        <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div>
-                <div className="text-xs text-slate-400">{t('spu.casNumber')}</div>
-                <div className="text-lg font-medium">{cas}</div>
-              </div>
-              {pubchemData?.cid && (
-                <div className="text-slate-600">|</div>
-              )}
-              {pubchemData?.cid && (
-                <div>
-                  <div className="text-xs text-slate-400">PubChem CID</div>
-                  <div className="text-blue-400">{pubchemData.cid}</div>
-                </div>
-              )}
-              {pubchemData?.nameEn && (
-                <>
-                  <div className="text-slate-600">|</div>
+        {/* 加载状态 */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-10 h-10 animate-spin text-blue-400" />
+            <p className="mt-4 text-slate-400">{t('spu.loading')}</p>
+          </div>
+        ) : (
+          <>
+            {/* CAS 信息卡片 - 紧凑版 */}
+            <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
                   <div>
-                    <div className="text-xs text-slate-400">{t('spu.englishName')}</div>
-                    <div className="text-sm">{pubchemData.nameEn}</div>
+                    <div className="text-xs text-slate-400">{t('spu.casNumber')}</div>
+                    <div className="text-lg font-medium">{cas}</div>
                   </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* 图片展示区域 - 压缩版 */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* 2D 结构图 */}
-          <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs text-slate-400">
-                {t('spu.structure2D')}
-              </div>
-              {structureImageUrl && (
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-              )}
-            </div>
-            <div className="aspect-[4/3] bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
-              {structureImageUrl ? (
-                <img
-                  src={structureImageUrl}
-                  alt="2D Structure"
-                  className="max-w-full max-h-full object-contain"
-                />
-              ) : (
-                <div className="text-slate-500 text-xs text-center px-3">
-                  {syncingPubChem 
-                    ? t('spu.loading') 
-                    : t('spu.clickButtonAbove')}
+                  {pubchemData?.cid && (
+                    <div className="text-slate-600">|</div>
+                  )}
+                  {pubchemData?.cid && (
+                    <div>
+                      <div className="text-xs text-slate-400">PubChem CID</div>
+                      <div className="text-blue-400">{pubchemData.cid}</div>
+                    </div>
+                  )}
+                  {pubchemData?.nameEn && (
+                    <>
+                      <div className="text-slate-600">|</div>
+                      <div>
+                        <div className="text-xs text-slate-400">{t('spu.englishName')}</div>
+                        <div className="text-sm">{pubchemData.nameEn}</div>
+                      </div>
+                    </>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* 产品图 */}
-          <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs text-slate-400">
-                {t('spu.productImage')}
               </div>
-              {productImageUrl && (
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-              )}
             </div>
-            <div className="aspect-[4/3] bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
-              {productImageUrl ? (
-                <img
-                  src={productImageUrl}
-                  alt="Product Image"
-                  className="max-w-full max-h-full object-contain"
-                />
-              ) : (
-                <div className="text-slate-500 text-xs flex flex-col items-center gap-1.5 text-center px-3">
-                  <ImageIcon className="w-6 h-6 opacity-50" />
-                  {step === 'sync' 
-                    ? t('spu.getStructureFirst')
-                    : t('spu.clickButtonGenerate')}
+
+            {/* 图片展示区域 */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* 2D 结构图 - 已获取 */}
+              <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs text-slate-400">
+                    {t('spu.structure2D')}
+                  </div>
+                  {structureImageUrl && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                  )}
                 </div>
-              )}
+                <div className="aspect-[4/3] bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
+                  {structureImageUrl ? (
+                    <img
+                      src={structureImageUrl}
+                      alt="2D Structure"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  ) : (
+                    <div className="text-slate-500 text-xs text-center px-3">
+                      {t('spu.loading')}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 产品图 - 可生成 */}
+              <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs text-slate-400">
+                    {t('spu.productImage')}
+                  </div>
+                  {productImageUrl && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                  )}
+                </div>
+                <div className="aspect-[4/3] bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
+                  {productImageUrl ? (
+                    <img
+                      src={productImageUrl}
+                      alt="Product Image"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  ) : (
+                    <button
+                      onClick={handleGenerateProductImage}
+                      disabled={generatingImage}
+                      className="flex flex-col items-center gap-2 text-center px-3 py-4 hover:bg-white/5 rounded-lg transition-colors w-full h-full justify-center"
+                    >
+                      {generatingImage ? (
+                        <>
+                          <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+                          <span className="text-xs text-slate-400">{t('spu.generating')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-6 h-6 text-purple-400" />
+                          <span className="text-xs text-purple-400">{t('spu.generateImage')}</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* 弹窗 */}
