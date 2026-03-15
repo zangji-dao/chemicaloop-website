@@ -122,20 +122,20 @@ function SPUCreateImageContent() {
     };
 
     return (
-      <div className="flex items-center justify-center gap-2 mb-8">
+      <div className="flex items-center justify-center gap-1">
         {steps.map((s, index) => {
           const status = getStepStatus(s.key);
           return (
             <div key={s.key} className="flex items-center">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {status === 'completed' ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  <CheckCircle2 className="w-4 h-4 text-green-400" />
                 ) : status === 'current' ? (
-                  <Circle className="w-5 h-5 text-blue-400 fill-blue-400" />
+                  <Circle className="w-4 h-4 text-blue-400 fill-blue-400" />
                 ) : (
-                  <Circle className="w-5 h-5 text-slate-600" />
+                  <Circle className="w-4 h-4 text-slate-600" />
                 )}
-                <span className={`text-sm ${
+                <span className={`text-xs font-medium ${
                   status === 'completed' ? 'text-green-400' :
                   status === 'current' ? 'text-white' : 'text-slate-500'
                 }`}>
@@ -143,13 +143,91 @@ function SPUCreateImageContent() {
                 </span>
               </div>
               {index < steps.length - 1 && (
-                <div className={`w-8 h-0.5 mx-2 ${
+                <div className={`w-6 h-px mx-1.5 ${
                   status === 'completed' ? 'bg-green-400' : 'bg-slate-600'
                 }`} />
               )}
             </div>
           );
         })}
+      </div>
+    );
+  };
+
+  // 渲染顶部操作按钮
+  const renderActionButtons = () => {
+    if (step === 'sync') {
+      return (
+        <button
+          onClick={handleSyncPubChem}
+          disabled={syncingPubChem}
+          className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+        >
+          {syncingPubChem ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{locale === 'zh' ? '获取中...' : 'Fetching...'}</span>
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-4 w-4" />
+              <span>{locale === 'zh' ? '获取结构图' : 'Get Structure'}</span>
+            </>
+          )}
+        </button>
+      );
+    }
+
+    if (step === 'generate') {
+      return (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSyncPubChem}
+            disabled={syncingPubChem}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg text-sm transition-colors"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${syncingPubChem ? 'animate-spin' : ''}`} />
+            <span>{locale === 'zh' ? '重新获取' : 'Re-get'}</span>
+          </button>
+          <button
+            onClick={handleGenerateProductImage}
+            disabled={generatingImage}
+            className="flex items-center gap-2 px-4 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            {generatingImage ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>{locale === 'zh' ? '生成中...' : 'Generating...'}</span>
+              </>
+            ) : (
+              <>
+                <ImageIcon className="h-4 w-4" />
+                <span>{locale === 'zh' ? '生成产品图' : 'Generate Image'}</span>
+              </>
+            )}
+          </button>
+        </div>
+      );
+    }
+
+    // step === 'next'
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleGenerateProductImage}
+          disabled={generatingImage}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg text-sm transition-colors"
+        >
+          <ImageIcon className="h-3.5 w-3.5" />
+          <span>{locale === 'zh' ? '重新生成' : 'Regenerate'}</span>
+        </button>
+        <button
+          onClick={handleNext}
+          className="flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-medium transition-colors"
+        >
+          <span>{locale === 'zh' ? '下一步' : 'Next'}</span>
+          <ArrowRight className="h-4 w-4" />
+        </button>
       </div>
     );
   };
@@ -162,6 +240,7 @@ function SPUCreateImageContent() {
       {/* 顶部导航 */}
       <div className="bg-slate-800/50 border-b border-slate-700/50 px-5 py-3 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto">
+          {/* 第一行：返回 + 标题 + 操作按钮 */}
           <div className="flex items-center justify-between">
             <button
               onClick={handleBack}
@@ -175,17 +254,19 @@ function SPUCreateImageContent() {
               {locale === 'zh' ? '新建产品' : 'Create Product'}
             </h1>
 
-            <div className="w-20" />
+            {renderActionButtons()}
+          </div>
+
+          {/* 第二行：步骤指示器 */}
+          <div className="mt-3 pt-3 border-t border-slate-700/30">
+            <StepIndicator />
           </div>
         </div>
       </div>
 
       {/* 内容区域 */}
-      <div className="max-w-2xl mx-auto px-5 py-8">
-        {/* 步骤指示器 */}
-        <StepIndicator />
-
-        {/* CAS 信息 */}
+      <div className="max-w-2xl mx-auto px-5 py-6">
+        {/* CAS 信息卡片 */}
         <div className="mb-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
           <div className="flex items-center justify-between">
             <div>
@@ -195,7 +276,7 @@ function SPUCreateImageContent() {
             {pubchemData?.cid && (
               <div className="text-right">
                 <div className="text-sm text-slate-400">PubChem CID</div>
-                <div className="text-lg mt-1">{pubchemData.cid}</div>
+                <div className="text-lg mt-1 text-blue-400">{pubchemData.cid}</div>
               </div>
             )}
           </div>
@@ -208,7 +289,7 @@ function SPUCreateImageContent() {
         </div>
 
         {/* 图片展示区域 */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-4">
           {/* 2D 结构图 */}
           <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
             <div className="flex items-center justify-between mb-3">
@@ -227,10 +308,10 @@ function SPUCreateImageContent() {
                   className="max-w-full max-h-full object-contain"
                 />
               ) : (
-                <div className="text-slate-500 text-sm">
+                <div className="text-slate-500 text-sm text-center px-4">
                   {syncingPubChem 
                     ? (locale === 'zh' ? '加载中...' : 'Loading...') 
-                    : (locale === 'zh' ? '点击下方获取' : 'Click below')}
+                    : (locale === 'zh' ? '点击上方按钮获取' : 'Click button above')}
                 </div>
               )}
             </div>
@@ -254,93 +335,15 @@ function SPUCreateImageContent() {
                   className="max-w-full max-h-full object-contain"
                 />
               ) : (
-                <div className="text-slate-500 text-sm flex flex-col items-center gap-2">
+                <div className="text-slate-500 text-sm flex flex-col items-center gap-2 text-center px-4">
                   <ImageIcon className="w-8 h-8 opacity-50" />
-                  {locale === 'zh' ? '等待生成' : 'Pending'}
+                  {step === 'sync' 
+                    ? (locale === 'zh' ? '请先获取结构图' : 'Get structure first')
+                    : (locale === 'zh' ? '点击上方按钮生成' : 'Click button above')}
                 </div>
               )}
             </div>
           </div>
-        </div>
-
-        {/* 操作按钮 */}
-        <div className="mt-8 flex flex-col gap-4">
-          {/* 第一步：获取2D结构图 */}
-          {step === 'sync' && (
-            <button
-              onClick={handleSyncPubChem}
-              disabled={syncingPubChem}
-              className="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-xl font-medium text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-            >
-              {syncingPubChem ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  {locale === 'zh' ? '获取中...' : 'Fetching...'}
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-5 h-5" />
-                  {locale === 'zh' ? '获取2D结构图' : 'Get 2D Structure'}
-                </>
-              )}
-            </button>
-          )}
-
-          {/* 第二步：生成产品图 */}
-          {step === 'generate' && (
-            <>
-              <button
-                onClick={handleGenerateProductImage}
-                disabled={generatingImage}
-                className="w-full py-4 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 rounded-xl font-medium text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-              >
-                {generatingImage ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    {locale === 'zh' ? '生成中...' : 'Generating...'}
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="w-5 h-5" />
-                    {locale === 'zh' ? '生成产品图' : 'Generate Product Image'}
-                  </>
-                )}
-              </button>
-              
-              {/* 重新获取结构图 */}
-              <button
-                onClick={handleSyncPubChem}
-                disabled={syncingPubChem || generatingImage}
-                className="text-sm text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                {locale === 'zh' ? '重新获取2D结构图' : 'Re-get 2D Structure'}
-              </button>
-            </>
-          )}
-
-          {/* 第三步：下一步 */}
-          {step === 'next' && (
-            <>
-              <button
-                onClick={handleNext}
-                className="w-full py-4 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 rounded-xl font-medium text-lg transition-all flex items-center justify-center gap-3"
-              >
-                {locale === 'zh' ? '下一步：填写产品信息' : 'Next: Fill Product Info'}
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              
-              {/* 重新生成产品图 */}
-              <button
-                onClick={handleGenerateProductImage}
-                disabled={generatingImage}
-                className="text-sm text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-2"
-              >
-                <ImageIcon className="w-4 h-4" />
-                {locale === 'zh' ? '重新生成产品图' : 'Regenerate Product Image'}
-              </button>
-            </>
-          )}
         </div>
       </div>
 
