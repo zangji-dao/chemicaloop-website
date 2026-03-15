@@ -11,15 +11,20 @@ import { LLMClient, Config } from 'coze-coding-dev-sdk';
 
 // 常见化学品 HS 编码参考表
 const HS_CODE_REFERENCE: Record<string, { code: string; description: string }> = {
+  // 农药类（杀虫剂、杀螨剂、除草剂等）
+  'glyphosate': { code: '380893', description: '草甘膦除草剂' },
+  'spirodiclofen': { code: '380893', description: '螺螨酯杀螨剂' },
+  'abamectin': { code: '380893', description: '阿维菌素杀虫剂' },
+  'imidacloprid': { code: '380893', description: '吡虫啉杀虫剂' },
+  'chlorpyrifos': { code: '380893', description: '毒死蜱杀虫剂' },
+  'cypermethrin': { code: '380893', description: '氯氰菊酯杀虫剂' },
+  '2,4-dichlorophenoxyacetic acid': { code: '380893', description: '2,4-滴除草剂' },
+  
   // 无机化学品
   'ferric chloride': { code: '282739', description: '三氯化铁' },
   'iron chloride': { code: '282739', description: '氯化铁' },
   'ferrous chloride': { code: '282739', description: '氯化亚铁' },
-  
-  // 除草剂
-  'glyphosate': { code: '380893', description: '草甘膦除草剂' },
-  '2,4-dichlorophenoxyacetic acid': { code: '291890', description: '2,4-滴' },
-  '2,4-d': { code: '291890', description: '2,4-滴' },
+  'potassium iodide': { code: '282760', description: '碘化钾' },
   
   // 有机化学品
   'ethanol': { code: '220710', description: '未改性乙醇' },
@@ -39,6 +44,8 @@ const HS_CODE_REFERENCE: Record<string, { code: string; description: string }> =
   'hydrochloric acid': { code: '280610', description: '盐酸' },
   'nitric acid': { code: '280800', description: '硝酸' },
   'phosphoric acid': { code: '280920', description: '磷酸' },
+  '1,3-butadiene': { code: '290124', description: '丁二烯' },
+  'd-glucopyranose': { code: '294000', description: '葡萄糖' },
 };
 
 // HS 编码章节描述

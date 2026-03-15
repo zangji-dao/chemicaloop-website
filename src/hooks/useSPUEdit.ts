@@ -301,6 +301,11 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
           incompatibleMaterials: data.incompatibleMaterials || prev.incompatibleMaterials,
           synonyms: data.synonyms || prev.synonyms,
           applications: data.applications || prev.applications,
+          // 保留 HS 编码（PubChem 不提供此数据，使用已匹配的值）
+          hsCode: prev.hsCode,
+          hsCodeExtensions: prev.hsCodeExtensions,
+          // 保留状态
+          status: prev.status,
         }));
 
         // 更新 PubChem 信息

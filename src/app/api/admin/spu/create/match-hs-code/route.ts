@@ -7,6 +7,24 @@ import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth
 
 // 常见化学品 HS 编码参考表
 const HS_CODE_REFERENCE: Record<string, { code: string; description: string }> = {
+  // 农药类（杀虫剂、杀螨剂、除草剂等）
+  'glyphosate': { code: '380893', description: '草甘膦除草剂' },
+  'spirodiclofen': { code: '380893', description: '螺螨酯杀螨剂' },
+  'abamectin': { code: '380893', description: '阿维菌素杀虫剂' },
+  'imidacloprid': { code: '380893', description: '吡虫啉杀虫剂' },
+  'chlorpyrifos': { code: '380893', description: '毒死蜱杀虫剂' },
+  'cypermethrin': { code: '380893', description: '氯氰菊酯杀虫剂' },
+  'lambda-cyhalothrin': { code: '380893', description: '高效氯氟氰菊酯杀虫剂' },
+  'emamectin benzoate': { code: '380893', description: '甲维盐杀虫剂' },
+  'dichlorvos': { code: '380893', description: '敌敌畏杀虫剂' },
+  'acephate': { code: '380893', description: '乙酰甲胺磷杀虫剂' },
+  '2,4-d': { code: '380893', description: '2,4-滴除草剂' },
+  'atrazine': { code: '380893', description: '莠去津除草剂' },
+  'paraquat': { code: '380893', description: '百草枯除草剂' },
+  'mancozeb': { code: '380893', description: '代森锰锌杀菌剂' },
+  'carbendazim': { code: '380893', description: '多菌灵杀菌剂' },
+  'tebuconazole': { code: '380893', description: '戊唑醇杀菌剂' },
+  'azoxystrobin': { code: '380893', description: '嘧菌酯杀菌剂' },
   // 有机化学品
   'ethanol': { code: '220710', description: '未改性乙醇，按容量计酒精浓度≥80%' },
   'methanol': { code: '290511', description: '甲醇' },
@@ -39,6 +57,7 @@ const HS_CODE_REFERENCE: Record<string, { code: string; description: string }> =
   'sodium chloride': { code: '250100', description: '氯化钠' },
   'calcium carbonate': { code: '283650', description: '碳酸钙' },
   'titanium dioxide': { code: '320611', description: '二氧化钛' },
+  'ferric chloride': { code: '282739', description: '三氯化铁' },
   // 其他常见化学品
   'paracetamol': { code: '292429', description: '对乙酰氨基酚' },
   'ibuprofen': { code: '291631', description: '布洛芬' },
