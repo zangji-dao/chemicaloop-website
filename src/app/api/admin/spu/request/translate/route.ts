@@ -3,7 +3,7 @@ import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
-import { API_CONFIG } from '@/lib/config';
+import { translateText } from '@/services/productSyncService';
 
 interface TranslationRequest {
   productId: string;
@@ -76,28 +76,11 @@ export async function POST(request: NextRequest) {
       const fieldValue = product[field as keyof typeof product] as string;
       if (!fieldValue) return null;
 
-      try {
-        const response = await fetch(`${API_CONFIG.backendURL}/api/ai/translate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: fieldValue,
-            targetLanguage,
-          }),
-        });
-
-        const data = await response.json();
-        return {
-          field,
-          translatedText: data.translatedText || fieldValue,
-        };
-      } catch (error) {
-        console.error(`Failed to translate ${field}:`, error);
-        return {
-          field,
-          translatedText: fieldValue, // 翻译失败返回原文
-        };
-      }
+      const translatedText = await translateText(fieldValue, targetLanguage);
+      return {
+        field,
+        translatedText: translatedText || fieldValue,
+      };
     });
 
     const results = await Promise.all(translatePromises);

@@ -5,6 +5,7 @@ import * as schema from '@/db';
 import { API_CONFIG } from '@/lib/config';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { translateText as translateTextBase } from '@/services/productSyncService';
 
 const execAsync = promisify(exec);
 
@@ -57,26 +58,11 @@ function extractChineseName(synonyms: string[]): string | null {
 
 /**
  * 翻译文本（调用内部翻译 API）
+ * 包装 productSyncService 的 translateText，失败时返回原文本
  */
 async function translateText(text: string, targetLang: string): Promise<string> {
-  try {
-    const response = await fetch(`${API_CONFIG.backendURL}/api/ai/translate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, targetLanguage: targetLang }),
-    });
-    
-    if (!response.ok) {
-      console.error(`[Translate] Failed: ${response.status}`);
-      return text;
-    }
-    
-    const data = await response.json();
-    return data.translatedText || text;
-  } catch (error) {
-    console.error(`[Translate] Error:`, error);
-    return text;
-  }
+  const result = await translateTextBase(text, targetLang);
+  return result || text;
 }
 
 /**

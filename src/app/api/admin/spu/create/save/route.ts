@@ -4,74 +4,136 @@ import { sql, eq } from 'drizzle-orm';
 import * as schema from '@/db';
 
 /**
+ * 构建产品更新数据
+ */
+function buildProductUpdateData(body: Record<string, any>) {
+  const {
+    name,
+    nameEn,
+    formula,
+    description,
+    molecularWeight,
+    exactMass,
+    smiles,
+    smilesCanonical,
+    smilesIsomeric,
+    inchi,
+    inchiKey,
+    xlogp,
+    tpsa,
+    complexity,
+    hBondDonorCount,
+    hBondAcceptorCount,
+    rotatableBondCount,
+    heavyAtomCount,
+    formalCharge,
+    physicalDescription,
+    colorForm,
+    odor,
+    boilingPoint,
+    meltingPoint,
+    flashPoint,
+    density,
+    solubility,
+    vaporPressure,
+    refractiveIndex,
+    hazardClasses,
+    healthHazards,
+    ghsClassification,
+    toxicitySummary,
+    carcinogenicity,
+    firstAid,
+    storageConditions,
+    incompatibleMaterials,
+    hsCode,
+    hsCodeExtensions,
+    status = 'ACTIVE',
+    synonyms,
+    applications,
+    translations,
+    pubchemCid,
+    structureSdf,
+    structureImageKey,
+    structure2dSvg,
+    productImageKey,
+  } = body;
+
+  return {
+    name,
+    nameEn: nameEn || null,
+    formula: formula || null,
+    description: description || null,
+    molecularWeight: molecularWeight || null,
+    exactMass: exactMass || null,
+    smiles: smiles || null,
+    smilesCanonical: smilesCanonical || null,
+    smilesIsomeric: smilesIsomeric || null,
+    inchi: inchi || null,
+    inchiKey: inchiKey || null,
+    xlogp: xlogp || null,
+    tpsa: tpsa || null,
+    complexity: complexity ? parseInt(complexity) : null,
+    hBondDonorCount: hBondDonorCount ? parseInt(hBondDonorCount) : null,
+    hBondAcceptorCount: hBondAcceptorCount ? parseInt(hBondAcceptorCount) : null,
+    rotatableBondCount: rotatableBondCount ? parseInt(rotatableBondCount) : null,
+    heavyAtomCount: heavyAtomCount ? parseInt(heavyAtomCount) : null,
+    formalCharge: formalCharge ? parseInt(formalCharge) : null,
+    physicalDescription: physicalDescription || null,
+    colorForm: colorForm || null,
+    odor: odor || null,
+    boilingPoint: boilingPoint || null,
+    meltingPoint: meltingPoint || null,
+    flashPoint: flashPoint || null,
+    density: density || null,
+    solubility: solubility || null,
+    vaporPressure: vaporPressure || null,
+    refractiveIndex: refractiveIndex || null,
+    hazardClasses: hazardClasses || null,
+    healthHazards: healthHazards || null,
+    ghsClassification: ghsClassification || null,
+    toxicitySummary: toxicitySummary || null,
+    carcinogenicity: carcinogenicity || null,
+    firstAid: firstAid || null,
+    storageConditions: storageConditions || null,
+    incompatibleMaterials: incompatibleMaterials || null,
+    hsCode: hsCode || null,
+    hsCodeExtensions: hsCodeExtensions || null,
+    status,
+    synonyms: synonyms && synonyms.length > 0 ? synonyms : null,
+    applications: applications && applications.length > 0 ? applications : null,
+    translations: translations || null,
+    pubchemCid: pubchemCid || null,
+    structureSdf: structureSdf || null,
+    structureImageKey: structureImageKey || null,
+    structure2dSvg: structure2dSvg || null,
+    productImageKey: productImageKey || null,
+    updatedAt: sql`NOW()`,
+  };
+}
+
+/**
+ * 更新产品并返回结果
+ */
+async function updateProduct(db: any, productId: string, updateData: Record<string, any>) {
+  await db.update(schema.products)
+    .set(updateData)
+    .where(eq(schema.products.id, productId));
+
+  const result = await db.execute(sql`
+    SELECT * FROM products WHERE id = ${productId}
+  `);
+
+  return result.rows[0];
+}
+
+/**
  * POST /api/admin/spu/create/save
  * 保存或更新 SPU 产品数据
- * 
- * 参数：
- * - id: string (可选) - 产品ID，如果提供则更新现有产品
- * - cas: string - CAS号（必填）
- * - name: string - 产品名称（必填）
- * - status: 'DRAFT' | 'ACTIVE' - 产品状态
- * - 其他产品字段...
- * - translations: 翻译数据
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    const {
-      id,
-      cas,
-      name,
-      nameEn,
-      formula,
-      description,
-      molecularWeight,
-      exactMass,
-      smiles,
-      smilesCanonical,
-      smilesIsomeric,
-      inchi,
-      inchiKey,
-      xlogp,
-      tpsa,
-      complexity,
-      hBondDonorCount,
-      hBondAcceptorCount,
-      rotatableBondCount,
-      heavyAtomCount,
-      formalCharge,
-      physicalDescription,
-      colorForm,
-      odor,
-      boilingPoint,
-      meltingPoint,
-      flashPoint,
-      density,
-      solubility,
-      vaporPressure,
-      refractiveIndex,
-      hazardClasses,
-      healthHazards,
-      ghsClassification,
-      toxicitySummary,
-      carcinogenicity,
-      firstAid,
-      storageConditions,
-      incompatibleMaterials,
-      hsCode,
-      hsCodeExtensions,
-      status = 'ACTIVE',
-      synonyms,
-      applications,
-      translations,
-      pubchemCid,
-      structureSdf,
-      structureImageKey,
-      structure2dSvg,
-      structureUrl,
-      productImageKey,
-    } = body;
+    const { id, cas, name, status = 'ACTIVE' } = body;
 
     // 验证必填字段
     if (!cas) {
@@ -89,10 +151,10 @@ export async function POST(request: NextRequest) {
     }
 
     const db = await getDb(schema);
+    const updateData = buildProductUpdateData(body);
 
     // 如果提供了ID，更新现有产品
     if (id) {
-      // 检查产品是否存在
       const existingProduct = await db.execute(sql`
         SELECT id FROM products WHERE id = ${id}
       `);
@@ -104,145 +166,28 @@ export async function POST(request: NextRequest) {
         }, { status: 404 });
       }
 
-      // 更新产品
-      await db.update(schema.products)
-        .set({
-          name,
-          nameEn: nameEn || null,
-          formula: formula || null,
-          description: description || null,
-          molecularWeight: molecularWeight || null,
-          exactMass: exactMass || null,
-          smiles: smiles || null,
-          smilesCanonical: smilesCanonical || null,
-          smilesIsomeric: smilesIsomeric || null,
-          inchi: inchi || null,
-          inchiKey: inchiKey || null,
-          xlogp: xlogp || null,
-          tpsa: tpsa || null,
-          complexity: complexity ? parseInt(complexity) : null,
-          hBondDonorCount: hBondDonorCount ? parseInt(hBondDonorCount) : null,
-          hBondAcceptorCount: hBondAcceptorCount ? parseInt(hBondAcceptorCount) : null,
-          rotatableBondCount: rotatableBondCount ? parseInt(rotatableBondCount) : null,
-          heavyAtomCount: heavyAtomCount ? parseInt(heavyAtomCount) : null,
-          formalCharge: formalCharge ? parseInt(formalCharge) : null,
-          physicalDescription: physicalDescription || null,
-          colorForm: colorForm || null,
-          odor: odor || null,
-          boilingPoint: boilingPoint || null,
-          meltingPoint: meltingPoint || null,
-          flashPoint: flashPoint || null,
-          density: density || null,
-          solubility: solubility || null,
-          vaporPressure: vaporPressure || null,
-          refractiveIndex: refractiveIndex || null,
-          hazardClasses: hazardClasses || null,
-          healthHazards: healthHazards || null,
-          ghsClassification: ghsClassification || null,
-          toxicitySummary: toxicitySummary || null,
-          carcinogenicity: carcinogenicity || null,
-          firstAid: firstAid || null,
-          storageConditions: storageConditions || null,
-          incompatibleMaterials: incompatibleMaterials || null,
-          hsCode: hsCode || null,
-          hsCodeExtensions: hsCodeExtensions || null,
-          status,
-          synonyms: synonyms && synonyms.length > 0 ? synonyms : null,
-          applications: applications && applications.length > 0 ? applications : null,
-          translations: translations || null,
-          pubchemCid: pubchemCid || null,
-          structureSdf: structureSdf || null,
-          structureImageKey: structureImageKey || null,
-          structure2dSvg: structure2dSvg || null,
-          productImageKey: productImageKey || null,
-          updatedAt: sql`NOW()`,
-        })
-        .where(eq(schema.products.id, id));
-
-      // 返回更新后的产品
-      const updatedProduct = await db.execute(sql`
-        SELECT * FROM products WHERE id = ${id}
-      `);
-
+      const product = await updateProduct(db, id, updateData);
       return NextResponse.json({
         success: true,
         message: 'Product updated successfully',
-        product: updatedProduct.rows[0],
+        product,
       });
     }
 
     // 没有提供ID，检查是否已存在相同CAS的产品
     const existingProduct = await db.execute(sql`
-      SELECT id, status FROM products WHERE cas = ${cas}
+      SELECT id FROM products WHERE cas = ${cas}
     `);
 
     if (existingProduct.rows.length > 0) {
       // 产品已存在，更新它
       const productId = (existingProduct.rows[0] as any).id;
+      const product = await updateProduct(db, productId, updateData);
       
-      await db.update(schema.products)
-        .set({
-          name,
-          nameEn: nameEn || null,
-          formula: formula || null,
-          description: description || null,
-          molecularWeight: molecularWeight || null,
-          exactMass: exactMass || null,
-          smiles: smiles || null,
-          smilesCanonical: smilesCanonical || null,
-          smilesIsomeric: smilesIsomeric || null,
-          inchi: inchi || null,
-          inchiKey: inchiKey || null,
-          xlogp: xlogp || null,
-          tpsa: tpsa || null,
-          complexity: complexity ? parseInt(complexity) : null,
-          hBondDonorCount: hBondDonorCount ? parseInt(hBondDonorCount) : null,
-          hBondAcceptorCount: hBondAcceptorCount ? parseInt(hBondAcceptorCount) : null,
-          rotatableBondCount: rotatableBondCount ? parseInt(rotatableBondCount) : null,
-          heavyAtomCount: heavyAtomCount ? parseInt(heavyAtomCount) : null,
-          formalCharge: formalCharge ? parseInt(formalCharge) : null,
-          physicalDescription: physicalDescription || null,
-          colorForm: colorForm || null,
-          odor: odor || null,
-          boilingPoint: boilingPoint || null,
-          meltingPoint: meltingPoint || null,
-          flashPoint: flashPoint || null,
-          density: density || null,
-          solubility: solubility || null,
-          vaporPressure: vaporPressure || null,
-          refractiveIndex: refractiveIndex || null,
-          hazardClasses: hazardClasses || null,
-          healthHazards: healthHazards || null,
-          ghsClassification: ghsClassification || null,
-          toxicitySummary: toxicitySummary || null,
-          carcinogenicity: carcinogenicity || null,
-          firstAid: firstAid || null,
-          storageConditions: storageConditions || null,
-          incompatibleMaterials: incompatibleMaterials || null,
-          hsCode: hsCode || null,
-          hsCodeExtensions: hsCodeExtensions || null,
-          status,
-          synonyms: synonyms && synonyms.length > 0 ? synonyms : null,
-          applications: applications && applications.length > 0 ? applications : null,
-          translations: translations || null,
-          pubchemCid: pubchemCid || null,
-          structureSdf: structureSdf || null,
-          structureImageKey: structureImageKey || null,
-          structure2dSvg: structure2dSvg || null,
-          productImageKey: productImageKey || null,
-          updatedAt: sql`NOW()`,
-        })
-        .where(eq(schema.products.id, productId));
-
-      // 返回更新后的产品
-      const updatedProduct = await db.execute(sql`
-        SELECT * FROM products WHERE id = ${productId}
-      `);
-
       return NextResponse.json({
         success: true,
         message: 'Product updated successfully',
-        product: updatedProduct.rows[0],
+        product,
       });
     }
 
@@ -269,55 +214,55 @@ export async function POST(request: NextRequest) {
         created_at, updated_at
       ) VALUES (
         ${cas},
-        ${name},
-        ${nameEn || null},
-        ${formula || null},
-        ${description || null},
+        ${body.name},
+        ${body.nameEn || null},
+        ${body.formula || null},
+        ${body.description || null},
         ${status},
-        ${molecularWeight || null},
-        ${exactMass || null},
-        ${smiles || null},
-        ${smilesCanonical || null},
-        ${smilesIsomeric || null},
-        ${inchi || null},
-        ${inchiKey || null},
-        ${xlogp || null},
-        ${tpsa || null},
-        ${complexity ? parseInt(complexity) : null},
-        ${hBondDonorCount ? parseInt(hBondDonorCount) : null},
-        ${hBondAcceptorCount ? parseInt(hBondAcceptorCount) : null},
-        ${rotatableBondCount ? parseInt(rotatableBondCount) : null},
-        ${heavyAtomCount ? parseInt(heavyAtomCount) : null},
-        ${formalCharge ? parseInt(formalCharge) : null},
-        ${physicalDescription || null},
-        ${colorForm || null},
-        ${odor || null},
-        ${boilingPoint || null},
-        ${meltingPoint || null},
-        ${flashPoint || null},
-        ${density || null},
-        ${solubility || null},
-        ${vaporPressure || null},
-        ${refractiveIndex || null},
-        ${hazardClasses || null},
-        ${healthHazards || null},
-        ${ghsClassification || null},
-        ${toxicitySummary || null},
-        ${carcinogenicity || null},
-        ${firstAid || null},
-        ${storageConditions || null},
-        ${incompatibleMaterials || null},
-        ${hsCode || null},
-        ${hsCodeExtensions ? JSON.stringify(hsCodeExtensions) : null},
-        ${synonyms && synonyms.length > 0 ? JSON.stringify(synonyms) : null},
-        ${applications && applications.length > 0 ? JSON.stringify(applications) : null},
-        ${translations ? JSON.stringify(translations) : null},
-        ${pubchemCid || null},
-        ${structureUrl || null},
-        ${structureSdf || null},
-        ${structureImageKey || null},
-        ${structure2dSvg || null},
-        ${productImageKey || null},
+        ${body.molecularWeight || null},
+        ${body.exactMass || null},
+        ${body.smiles || null},
+        ${body.smilesCanonical || null},
+        ${body.smilesIsomeric || null},
+        ${body.inchi || null},
+        ${body.inchiKey || null},
+        ${body.xlogp || null},
+        ${body.tpsa || null},
+        ${body.complexity ? parseInt(body.complexity) : null},
+        ${body.hBondDonorCount ? parseInt(body.hBondDonorCount) : null},
+        ${body.hBondAcceptorCount ? parseInt(body.hBondAcceptorCount) : null},
+        ${body.rotatableBondCount ? parseInt(body.rotatableBondCount) : null},
+        ${body.heavyAtomCount ? parseInt(body.heavyAtomCount) : null},
+        ${body.formalCharge ? parseInt(body.formalCharge) : null},
+        ${body.physicalDescription || null},
+        ${body.colorForm || null},
+        ${body.odor || null},
+        ${body.boilingPoint || null},
+        ${body.meltingPoint || null},
+        ${body.flashPoint || null},
+        ${body.density || null},
+        ${body.solubility || null},
+        ${body.vaporPressure || null},
+        ${body.refractiveIndex || null},
+        ${body.hazardClasses || null},
+        ${body.healthHazards || null},
+        ${body.ghsClassification || null},
+        ${body.toxicitySummary || null},
+        ${body.carcinogenicity || null},
+        ${body.firstAid || null},
+        ${body.storageConditions || null},
+        ${body.incompatibleMaterials || null},
+        ${body.hsCode || null},
+        ${body.hsCodeExtensions ? JSON.stringify(body.hsCodeExtensions) : null},
+        ${body.synonyms && body.synonyms.length > 0 ? JSON.stringify(body.synonyms) : null},
+        ${body.applications && body.applications.length > 0 ? JSON.stringify(body.applications) : null},
+        ${body.translations ? JSON.stringify(body.translations) : null},
+        ${body.pubchemCid || null},
+        ${body.structureUrl || null},
+        ${body.structureSdf || null},
+        ${body.structureImageKey || null},
+        ${body.structure2dSvg || null},
+        ${body.productImageKey || null},
         NOW(),
         NOW()
       )
