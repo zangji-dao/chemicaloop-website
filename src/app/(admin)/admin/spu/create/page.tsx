@@ -75,8 +75,8 @@ function ProductCreateContent() {
         // 本地已存在 → 提示用户
         setExistingSPU(data.data[0]);
       } else {
-        // 本地不存在 → 跳转到编辑页面
-        router.push(`/admin/spu/edit?cas=${encodeURIComponent(cas)}`);
+        // 本地不存在 → 跳转到生成产品图页面
+        router.push(`/admin/spu/create/image?cas=${encodeURIComponent(cas)}`);
       }
     } catch (err) {
       console.error('Search error:', err);
