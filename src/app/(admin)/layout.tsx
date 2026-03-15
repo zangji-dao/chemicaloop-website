@@ -120,6 +120,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     });
   }, [pathname]);
 
+  // 认证检查 - 只在 pathname 变化时执行
   useEffect(() => {
     // 登录页面不需要验证
     if (pathname === '/admin/login') {
@@ -132,13 +133,14 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     const userData = getAdminUser();
 
     if (!token || !userData) {
-      router.push('/admin/login');
+      // 使用 window.location 进行跳转，避免 router 对象变化导致的重复执行
+      window.location.href = '/admin/login';
       return;
     }
 
     setUser(userData);
     setLoading(false);
-  }, [router, pathname]);
+  }, [pathname]); // 只依赖 pathname，移除 router
 
   const handleLogout = () => {
     clearAdminAuth();
