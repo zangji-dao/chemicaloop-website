@@ -55,13 +55,17 @@
 
 第一步：搜索页面 (admin/spu/create)
 ┌─────────────────────────────────────────────────────────────────────┐
-│  输入 CAS 号 → 搜索 → 同步 PubChem 数据                               │
-│                    ↓                                                  │
-│              数据预缓存到 sessionStorage                              │
-│                    ↓                                                  │
-│              显示"数据已准备好"提示                                    │
-│                    ↓                                                  │
-│              点击"下一步"进入图片页面                                  │
+│  输入 CAS 号 → 搜索本地数据库                                         │
+│         ↓ (不存在)                                                    │
+│  获取 HS 编码 (AI 匹配)                                               │
+│         ↓                                                             │
+│  同步 PubChem 数据 (preview 模式)                                     │
+│         ↓                                                             │
+│  数据预缓存到 sessionStorage (含 hsCode)                              │
+│         ↓                                                             │
+│  显示"数据已准备好"提示                                                │
+│         ↓                                                             │
+│  点击"下一步"进入图片页面                                              │
 └─────────────────────────────────────────────────────────────────────┘
                                     ↓
 第二步：图片页面 (admin/spu/create/image)
@@ -81,16 +85,16 @@
 ┌─────────────────────────────────────────────────────────────────────┐
 │  从 sessionStorage 读取预览数据                                       │
 │         ↓                                                             │
-│  用原文（英文）填充表单                                               │
+│  用原文（英文）填充表单（含 hsCode）                                   │
 │         ↓                                                             │
 │  用户点击"翻译"按钮                                                   │
 │         ↓                                                             │
 │  ┌─────────────────────────────────────────────┐                     │
 │  │ 翻译遮罩层：                                  │                     │
 │  │  • 禁止滚动和编辑                             │                     │
-│  │  • 并行翻译（Promise.all）                    │                     │
-│  │  • 显示每个字段翻译进度                        │                     │
-│  │  • 翻译字段：name, description, physicalDesc │                     │
+│  │  • 逐个翻译字段（显示当前翻译字段名）          │                     │
+│  │  • 显示翻译进度条                             │                     │
+│  │  • 翻译 15 个字段到 10 种语言                  │                     │
 │  └─────────────────────────────────────────────┘                     │
 │         ↓                                                             │
 │  翻译完成 → 用当前选择语言渲染表单                                     │
@@ -111,6 +115,7 @@ sessionStorage (spu_create_preview_data)
 │   cas: string,                                            │
 │   nameEn: string,           // 英文名称（原文）             │
 │   nameZh: string,           // 中文名称（翻译后）           │
+│   hsCode: string,           // HS 编码（AI 匹配）           │
 │   description: string,      // 描述                       │
 │   physicalDescription: string, // 物理描述                 │
 │   structure2dSvg: string,   // 2D 结构图 SVG              │
@@ -121,6 +126,25 @@ sessionStorage (spu_create_preview_data)
 └───────────────────────────────────────────────────────────┘
 ```
 
+**翻译字段（15个）**：
+| 字段 | 中文名称 |
+|------|----------|
+| name | 名称 |
+| description | 描述 |
+| physicalDescription | 物理描述 |
+| boilingPoint | 沸点 |
+| meltingPoint | 熔点 |
+| flashPoint | 闪点 |
+| hazardClasses | 危险类别 |
+| healthHazards | 健康危害 |
+| ghsClassification | GHS 分类 |
+| firstAid | 急救措施 |
+| storageConditions | 储存条件 |
+| incompatibleMaterials | 不相容物质 |
+| solubility | 溶解度 |
+| vaporPressure | 蒸气压 |
+| refractiveIndex | 折射率 |
+
 **关键 Hook 文件**：
 | 文件 | 职责 |
 |------|------|
@@ -128,11 +152,19 @@ sessionStorage (spu_create_preview_data)
 | `src/hooks/useSPUCreateImage.ts` | 图片页面逻辑 |
 | `src/hooks/useSPUCreateInfo.ts` | 信息页面逻辑 |
 
+**关键 API**：
+| API | 职责 |
+|-----|------|
+| `/api/admin/products/match-hs-code` | AI 匹配 HS 编码 |
+| `/api/admin/spu/sync-pubchem` | 同步 PubChem 数据 |
+| `/api/common/ai/translate` | 多语言翻译 |
+
 **⚠️ 强制规则**：
-- 翻译必须并行执行（`Promise.all`），禁止串行
+- HS 编码在同步 PubChem 前获取
+- 翻译逐个字段执行，显示当前翻译字段名
 - 翻译时必须显示遮罩层，禁止用户操作
 - 保存成功后必须清除 sessionStorage 预览数据
-- 翻译目标语言根据当前 locale 决定
+- 翻译目标语言：10 种（en, zh, ja, ko, es, fr, de, ru, pt, ar）
 
 ### 2.3 两套登录系统
 
@@ -143,7 +175,7 @@ sessionStorage (spu_create_preview_data)
 
 **⚠️ 强制规则**：两套系统独立，Token 不可混用。
 
-### 2.3 权限验证体系
+### 2.4 权限验证体系
 
 | 层级 | 文件 | 职责 |
 |------|------|------|

@@ -136,7 +136,7 @@ function previewToFormData(previewData: Record<string, any>, cas: string): FormD
     description: previewData.description || '',
     synonyms: previewData.synonyms || [],
     applications: previewData.applications || [],
-    hsCode: '',
+    hsCode: previewData.hsCode || '',
     hsCodeExtensions: {},
     status: 'ACTIVE',
   };
@@ -273,14 +273,19 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
 
     setTranslating(true);
     setTranslationProgress({ status: 'translating', current: 0, total: translatableFields.length });
-    setTranslatingFields(new Set(translatableFields.map(f => f.key)));
+    setTranslatingFields(new Set());
     setPendingTranslations({});
 
     const translations: Record<string, Record<string, string>> = {};
 
     try {
-      // 并行翻译所有字段
-      const translationPromises = translatableFields.map(async (field) => {
+      // 逐个翻译字段（显示当前翻译字段）
+      for (let i = 0; i < translatableFields.length; i++) {
+        const field = translatableFields[i];
+        
+        // 设置当前正在翻译的字段
+        setTranslatingFields(new Set([field.key]));
+        
         try {
           const response = await fetch('/api/common/ai/translate', {
             method: 'POST',
@@ -291,32 +296,21 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
             }),
           });
           
-          if (!response.ok) {
+          if (response.ok) {
+            const data = await response.json();
+            if (data.translations) {
+              translations[field.key] = data.translations;
+            }
+          } else {
             console.error(`Failed to translate ${field.key}: HTTP ${response.status}`);
-            return { key: field.key, translations: null };
           }
-          
-          const data = await response.json();
-          
-          // 更新进度
-          setTranslationProgress(prev => ({ ...prev, current: prev.current + 1 }));
-          
-          return { key: field.key, translations: data.translations || null };
         } catch (error) {
           console.error(`Failed to translate ${field.key}:`, error);
-          return { key: field.key, translations: null };
         }
-      });
-
-      // 等待所有翻译完成
-      const results = await Promise.all(translationPromises);
-      
-      // 合并翻译结果
-      results.forEach(({ key, translations: fieldTranslations }) => {
-        if (fieldTranslations) {
-          translations[key] = fieldTranslations;
-        }
-      });
+        
+        // 更新进度
+        setTranslationProgress(prev => ({ ...prev, current: i + 1 }));
+      }
 
       // 应用翻译结果到表单（使用当前语言）
       setPendingTranslations(translations);

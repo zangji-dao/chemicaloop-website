@@ -47,6 +47,7 @@ interface SPUItem {
 
 // PubChem 预览数据接口（与 sync-pubchem preview 返回格式一致）
 interface PubChemPreviewData {
+  cas?: string;
   pubchemCid?: number | null;
   nameZh?: string | null;
   nameEn?: string | null;
@@ -62,6 +63,7 @@ interface PubChemPreviewData {
   inchiKey?: string | null;
   synonyms?: string[];
   applications?: string[];
+  hsCode?: string | null; // HS 编码
   // ... 其他字段
 }
 
@@ -135,9 +137,29 @@ function ProductCreateContent() {
         setExistingSPU(data.data[0]);
         setSearchStatus('found');
       } else {
-        // 本地不存在 → 使用 preview 模式同步PubChem（不写入数据库）
+        // 本地不存在 → 先获取 HS 码，再同步 PubChem
         setSearchStatus('syncing');
         
+        // Step 2: 获取 HS 编码
+        let hsCode: string | null = null;
+        try {
+          const hsResponse = await fetch('/api/admin/products/match-hs-code', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ cas }),
+          });
+          const hsData = await hsResponse.json();
+          if (hsData.success && hsData.hsCode) {
+            hsCode = hsData.hsCode;
+          }
+        } catch (e) {
+          console.warn('Failed to match HS code:', e);
+        }
+        
+        // Step 3: 使用 preview 模式同步PubChem（不写入数据库）
         const syncResponse = await fetch('/api/admin/spu/sync-pubchem', {
           method: 'POST',
           headers: {
@@ -154,6 +176,7 @@ function ProductCreateContent() {
           const data: PubChemPreviewData = {
             cas: cas,
             ...syncData.data,
+            hsCode: hsCode, // 添加 HS 编码
           };
           sessionStorage.setItem(PREVIEW_DATA_KEY, JSON.stringify(data));
           
