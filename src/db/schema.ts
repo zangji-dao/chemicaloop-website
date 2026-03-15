@@ -126,7 +126,7 @@ export const products = pgTable("products", {
 	solubility: text(),                                           // 溶解度
 	vaporPressure: varchar("vapor_pressure", { length: 100 }),   // 蒸气压
 	refractiveIndex: varchar("refractive_index", { length: 100 }), // 折射率（可能包含温度信息）
-	pKa: varchar({ length: 100 }),                                // 解离常数
+	pKa: varchar("pka", { length: 100 }),                            // 解离常数
 	henryLawConstant: varchar("henry_law_constant", { length: 100 }), // 亨利定律常数
 	autoIgnitionTemp: varchar("auto_ignition_temp", { length: 100 }), // 自燃温度
 	decompositionTemp: varchar("decomposition_temp", { length: 100 }), // 分解温度
