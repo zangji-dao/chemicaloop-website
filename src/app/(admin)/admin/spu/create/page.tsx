@@ -80,6 +80,7 @@ function ProductCreateContent() {
   const [searching, setSearching] = useState(false);
   const [searchStatus, setSearchStatus] = useState<SearchStatus>('idle');
   const [existingSPU, setExistingSPU] = useState<SPUItem | null>(null);
+  const [previewData, setPreviewData] = useState<PubChemPreviewData | null>(null);
   const [searchedCas, setSearchedCas] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -150,11 +151,14 @@ function ProductCreateContent() {
         
         if (syncData.success && syncData.data) {
           // 将预览数据存入 sessionStorage，供后续页面使用
-          const previewData: PubChemPreviewData = {
+          const data: PubChemPreviewData = {
             cas: cas,
             ...syncData.data,
           };
-          sessionStorage.setItem(PREVIEW_DATA_KEY, JSON.stringify(previewData));
+          sessionStorage.setItem(PREVIEW_DATA_KEY, JSON.stringify(data));
+          
+          // 保存预览数据到状态，用于显示
+          setPreviewData(data);
           
           // 同步成功 → 可以下一步
           setSearchStatus('synced');
@@ -335,7 +339,7 @@ function ProductCreateContent() {
           )}
 
           {/* 同步成功：可新建（显示下一步） */}
-          {searchStatus === 'synced' && existingSPU && (
+          {searchStatus === 'synced' && previewData && (
             <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-5">
               <div className="flex items-center gap-2 mb-4">
                 <CheckCircle2 className="h-5 w-5 text-emerald-400" />
@@ -343,33 +347,32 @@ function ProductCreateContent() {
                   {t('spu.dataReady')}
                 </span>
               </div>
+              <p className="text-sm text-slate-300 mb-4">
+                {t('spu.dataReadyHint')}
+              </p>
 
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="bg-slate-700/50 rounded-lg p-3">
                   <div className="text-xs text-slate-400 mb-1">CAS Number</div>
-                  <div className="font-mono text-lg font-medium text-blue-400">{existingSPU.cas}</div>
+                  <div className="font-mono text-lg font-medium text-blue-400">{searchedCas}</div>
                 </div>
                 <div className="bg-slate-700/50 rounded-lg p-3">
                   <div className="text-xs text-slate-400 mb-1">{t('spu.nameEn')}</div>
-                  <div className="font-medium text-white">{existingSPU.name_en || existingSPU.name}</div>
+                  <div className="font-medium text-white">{previewData.nameEn || previewData.nameZh || '-'}</div>
                 </div>
-                {existingSPU.formula && (
+                {previewData.formula && (
                   <div className="bg-slate-700/50 rounded-lg p-3">
                     <div className="text-xs text-slate-400 mb-1">{t('spu.formula')}</div>
-                    <div className="font-mono font-medium text-white">{existingSPU.formula}</div>
+                    <div className="font-mono font-medium text-white">{previewData.formula}</div>
                   </div>
                 )}
-                {existingSPU.pubchem_cid && (
+                {previewData.pubchemCid && (
                   <div className="bg-slate-700/50 rounded-lg p-3">
                     <div className="text-xs text-slate-400 mb-1">PubChem CID</div>
-                    <div className="font-medium text-blue-400">{existingSPU.pubchem_cid}</div>
+                    <div className="font-medium text-blue-400">{previewData.pubchemCid}</div>
                   </div>
                 )}
               </div>
-
-              <p className="text-xs text-slate-400">
-                {t('spu.dataReadyHint')}
-              </p>
             </div>
           )}
         </div>
