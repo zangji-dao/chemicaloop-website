@@ -282,6 +282,7 @@
     "addCountryExtensions": "Add Country Extensions",
     "digitCode": "{count}-digit",
     "syncingPubchem": "Syncing from PubChem",
+    "connecting": "Connecting",
     "connectingApi": "Connecting to PubChem",
     "fetchingData": "Fetching chemical data",
     "parsingData": "Parsing data structure",

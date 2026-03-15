@@ -155,6 +155,7 @@
     "deactivate": "非公開",
     "page": "{current} / {total} ページ",
     "syncingPubchem": "PubChemデータを同期中",
+    "connecting": "接続中",
     "connectingApi": "PubChem APIに接続中",
     "fetchingData": "化学データを取得中",
     "parsingData": "データ構造を解析中",

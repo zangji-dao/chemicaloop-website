@@ -282,6 +282,7 @@
     "addCountryExtensions": "添加国家扩展码",
     "digitCode": "{count}位编码",
     "syncingPubchem": "正在同步 PubChem 数据",
+    "connecting": "连接 PubChem",
     "connectingApi": "连接 PubChem API",
     "fetchingData": "获取化学品数据",
     "parsingData": "解析数据结构",

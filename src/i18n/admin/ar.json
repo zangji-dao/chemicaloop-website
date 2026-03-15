@@ -156,6 +156,7 @@
     "deactivate": "إلغاء التفعيل",
     "page": "صفحة {current} / {total}",
     "syncingPubchem": "جاري مزامنة بيانات PubChem",
+    "connecting": "جاري الاتصال",
     "connectingApi": "جاري الاتصال بـ PubChem API",
     "fetchingData": "جاري الحصول على البيانات الكيميائية",
     "parsingData": "جاري تحليل هيكل البيانات",

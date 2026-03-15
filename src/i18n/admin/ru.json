@@ -156,6 +156,7 @@
     "deactivate": "Деактивировать",
     "page": "Страница {current} / {total}",
     "syncingPubchem": "Синхронизация данных PubChem",
+    "connecting": "Подключение",
     "connectingApi": "Подключение к API PubChem",
     "fetchingData": "Получение химических данных",
     "parsingData": "Анализ структуры данных",

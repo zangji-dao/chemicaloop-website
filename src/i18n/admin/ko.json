@@ -156,6 +156,7 @@
     "deactivate": "게시중지",
     "page": "{current} / {total} 페이지",
     "syncingPubchem": "PubChem 데이터 동기화 중",
+    "connecting": "연결 중",
     "connectingApi": "PubChem API 연결 중",
     "fetchingData": "화학 데이터 가져오는 중",
     "parsingData": "데이터 구조 분석 중",

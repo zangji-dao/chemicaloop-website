@@ -156,6 +156,7 @@
     "deactivate": "Desativar",
     "page": "Página {current} / {total}",
     "syncingPubchem": "Sincronizando dados do PubChem",
+    "connecting": "Conectando",
     "connectingApi": "Conectando à API PubChem",
     "fetchingData": "Obtendo dados químicos",
     "parsingData": "Analisando estrutura de dados",
