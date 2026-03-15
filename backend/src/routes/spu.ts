@@ -284,6 +284,10 @@ router.put('/:id', async (req: AuthRequest, res) => {
       translations: 'translations',
       synonyms: 'synonyms',
       applications: 'applications',
+      // 结构数据
+      structureSdf: 'structure_sdf',
+      structureImageKey: 'structure_image_key',
+      structure2dSvg: 'structure_2d_svg',
     };
 
     for (const [key, dbField] of Object.entries(fieldMapping)) {

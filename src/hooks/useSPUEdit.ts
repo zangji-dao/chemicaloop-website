@@ -94,6 +94,13 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
 
   // PubChem 信息
   const [pubchemInfo, setPubchemInfo] = useState<PubChemInfo>({});
+  
+  // 同步时获取的结构数据（用于保存时写入数据库）
+  const [structureData, setStructureData] = useState<{
+    sdf?: string;
+    imageKey?: string;
+    svg?: string;
+  }>({});
 
   // 同步状态
   const [syncingPubChem, setSyncingPubChem] = useState(false);
@@ -329,6 +336,13 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
 
         // 更新 PubChem 信息
         setPubchemInfo({ cid: data.cid, syncedAt: new Date().toISOString() });
+        
+        // 保存结构数据（用于保存时写入数据库）
+        setStructureData({
+          sdf: data.structureSdf,
+          imageKey: data.structureImageKey,
+          svg: data.structure2dSvg,
+        });
 
         // 更新图片
         if (data.structureUrl) {
@@ -668,6 +682,10 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
         synonyms: formData.synonyms || [],
         translations: Object.keys(translations).length > 0 ? translations : undefined,
         pubchemCid: pubchemInfo.cid,
+        // 结构数据（用于重绘产品图）
+        structureSdf: structureData.sdf || null,
+        structureImageKey: structureData.imageKey || null,
+        structure2dSvg: structureData.svg || null,
       };
 
       const response = await fetch('/api/admin/spu/save', {
