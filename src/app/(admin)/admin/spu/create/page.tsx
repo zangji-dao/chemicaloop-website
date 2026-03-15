@@ -108,7 +108,7 @@ function ProductCreateContent() {
       return (
         <button
           onClick={handleNext}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm"
+          className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm"
         >
           {locale === 'zh' ? '下一步' : 'Next'}
           <ArrowRight className="h-4 w-4" />
@@ -119,13 +119,13 @@ function ProductCreateContent() {
       return (
         <button
           onClick={() => router.push('/admin/spu')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm"
+          className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm"
         >
           {locale === 'zh' ? '前往列表' : 'Go to List'}
         </button>
       );
     }
-    return <div className="w-[88px]" />;
+    return null;
   };
 
   return (
@@ -144,7 +144,9 @@ function ProductCreateContent() {
             <h2 className="text-lg font-medium text-white">
               {t('spu.newSpu')}
             </h2>
-            {renderRightButton()}
+            <div className="w-[88px]">
+              {renderRightButton()}
+            </div>
           </div>
         </div>
       </div>
@@ -154,7 +156,7 @@ function ProductCreateContent() {
         {/* 搜索卡片 */}
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-6">
-            <Database className="h-5 w-5 text-blue-400" />
+            <Database className="h-5 w-5 text-slate-400" />
             <h3 className="text-lg font-semibold text-white">{t('spu.selectProduct')}</h3>
           </div>
 
@@ -179,7 +181,7 @@ function ProductCreateContent() {
               <button
                 onClick={handleSearch}
                 disabled={searching}
-                className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 text-sm"
+                className="flex items-center gap-2 px-5 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-500 transition-colors disabled:opacity-50 text-sm"
               >
                 {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 {t('common.search')}
