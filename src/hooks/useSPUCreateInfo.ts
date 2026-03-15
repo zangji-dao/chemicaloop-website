@@ -277,14 +277,13 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
     setPendingTranslations({});
 
     const translations: Record<string, Record<string, string>> = {};
+    let completedCount = 0;
 
     try {
-      // 逐个翻译字段（显示当前翻译字段）
-      for (let i = 0; i < translatableFields.length; i++) {
-        const field = translatableFields[i];
-        
-        // 设置当前正在翻译的字段
-        setTranslatingFields(new Set([field.key]));
+      // 并行翻译所有字段
+      const translationPromises = translatableFields.map(async (field) => {
+        // 标记当前字段正在翻译
+        setTranslatingFields(prev => new Set([...prev, field.key]));
         
         try {
           const response = await fetch('/api/common/ai/translate', {
@@ -306,11 +305,20 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
           }
         } catch (error) {
           console.error(`Failed to translate ${field.key}:`, error);
+        } finally {
+          // 移除当前字段的翻译标记
+          setTranslatingFields(prev => {
+            const next = new Set(prev);
+            next.delete(field.key);
+            return next;
+          });
+          // 更新进度
+          completedCount++;
+          setTranslationProgress(prev => ({ ...prev, current: completedCount }));
         }
-        
-        // 更新进度
-        setTranslationProgress(prev => ({ ...prev, current: i + 1 }));
-      }
+      });
+
+      await Promise.all(translationPromises);
 
       // 应用翻译结果到表单（使用当前语言）
       setPendingTranslations(translations);
