@@ -392,19 +392,30 @@ export async function generateChemicalSVG(
 ): Promise<SVGGenerationResult> {
   try {
     const name = chemical.name;
+    const cas = chemical.cas;
     
-    // 从 PubChem 获取结构
-    console.log(`[ChemicalSVG] Fetching from PubChem: ${name}`);
-    const structure = await getSDFStructure(name);
+    // 优先使用 CAS 查询 PubChem（CAS 是唯一标识符，中文名称可能查不到）
+    // 先尝试用 CAS，再用名称
+    let structure = null;
+    
+    if (cas) {
+      console.log(`[ChemicalSVG] Fetching from PubChem using CAS: ${cas}`);
+      structure = await getSDFStructure(cas);
+    }
+    
+    if (!structure && name) {
+      console.log(`[ChemicalSVG] Fetching from PubChem using name: ${name}`);
+      structure = await getSDFStructure(name);
+    }
     
     if (structure) {
-      const svg = generateBeautifulSVG(chemical.name, structure);
+      const svg = generateBeautifulSVG(chemical.name || cas || 'Unknown', structure);
       return { success: true, svg, formula: structure.formula };
     }
     
     // 使用 LLM 生成
-    console.log(`[ChemicalSVG] PubChem not found, using LLM: ${name}`);
-    return generateWithLLM(name);
+    console.log(`[ChemicalSVG] PubChem not found, using LLM: ${name || cas}`);
+    return generateWithLLM(name || cas || 'Unknown');
     
   } catch (error: any) {
     console.error('Error generating chemical SVG:', error);

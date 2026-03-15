@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     if (spuId) {
       isSpu = true;
       const spuResult = await db.execute(sql`
-        SELECT cas, name, pubchem_cid, product_image_key
+        SELECT cas, name, pubchem_cid, product_image_key, structure_image_key
         FROM products
         WHERE id = ${spuId}
       `);
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       cas = spu.cas;
       name = spu.name;
       
-      // 检查是否已有图片（除非强制重新生成）
+      // 检查是否已有产品图（除非强制重新生成）
       if (spu.product_image_key && !force) {
         const storage = new S3Storage({
           endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
@@ -91,6 +91,29 @@ export async function POST(request: NextRequest) {
           imageKey: spu.product_image_key,
           imageUrl,
           message: '使用已有图片',
+        });
+      }
+      
+      // 如果没有产品图但有 PubChem 结构图，直接使用它
+      if (spu.structure_image_key && !force) {
+        const storage = new S3Storage({
+          endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
+          accessKey: '',
+          secretKey: '',
+          bucketName: process.env.COZE_BUCKET_NAME,
+          region: 'cn-beijing',
+        });
+
+        const imageUrl = await storage.generatePresignedUrl({
+          key: spu.structure_image_key,
+          expireTime: 86400,
+        });
+
+        return NextResponse.json({
+          success: true,
+          imageKey: spu.structure_image_key,
+          imageUrl,
+          message: '使用 PubChem 结构图',
         });
       }
     }
@@ -130,7 +153,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 生成美化版 SVG
-    const svgResult = await generateChemicalSVG({ name: name || 'Unknown', cas });
+    // 优先使用 CAS 查询 PubChem，因为中文名称可能查不到
+    const identifier = cas || name || 'Unknown';
+    const svgResult = await generateChemicalSVG({ 
+      name: identifier,  // 用 CAS 或名称作为标识符
+      cas: cas 
+    });
 
     if (!svgResult.success || !svgResult.svg) {
       return NextResponse.json({
