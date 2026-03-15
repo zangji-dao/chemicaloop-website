@@ -403,7 +403,13 @@
     "fieldOdor": "Odor",
     "fieldHazardClasses": "Hazard Classes",
     "imageGenFailed": "Failed to generate product image: {error}",
-    "hsCodeMatchFailed": "Failed to match HS code: {error}"
+    "hsCodeMatchFailed": "Failed to match HS code: {error}",
+    "casFormatHint": "Enter CAS number, format: 64-17-5",
+    "casAlreadyExists": "This CAS number already exists in the system",
+    "casAvailable": "This CAS number is available for new product",
+    "editProductHint": "To edit this product, click \"Back\" button on the top left.",
+    "notFoundHint": "Not found in database. Click \"Next\" button on the top right to continue.",
+    "searchFailed": "Search failed, please retry"
   },
   "login": {
     "title": "Admin Login",

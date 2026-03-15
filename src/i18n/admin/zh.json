@@ -403,7 +403,13 @@
     "fieldOdor": "气味",
     "fieldHazardClasses": "危险性分类",
     "imageGenFailed": "产品图生成失败: {error}",
-    "hsCodeMatchFailed": "HS编码匹配失败: {error}"
+    "hsCodeMatchFailed": "HS编码匹配失败: {error}",
+    "casFormatHint": "请输入CAS号，格式如：64-17-5",
+    "casAlreadyExists": "该CAS号已存在于系统中",
+    "casAvailable": "该CAS号可新建产品",
+    "editProductHint": "如需修改该产品信息，请点击左上角「返回列表」按钮。",
+    "notFoundHint": "数据库中未找到该CAS号，点击右上角「下一步」按钮继续新建流程。",
+    "searchFailed": "搜索失败，请重试"
   },
   "login": {
     "title": "管理员登录",

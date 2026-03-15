@@ -120,7 +120,7 @@ function ProductCreateContent() {
       }
     } catch (err) {
       console.error('Search error:', err);
-      setError(locale === 'zh' ? '搜索失败，请重试' : 'Search failed, please retry');
+      setError(t('spu.searchFailed'));
       setSearchStatus('idle');
     } finally {
       setSearching(false);
@@ -143,7 +143,7 @@ function ProductCreateContent() {
               className="flex items-center gap-2 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors text-sm"
             >
               <ArrowLeft className="h-4 w-4" />
-              {locale === 'zh' ? '返回列表' : 'Back'}
+              {t('common.backToList')}
             </button>
             <h2 className="text-lg font-medium text-white">
               {t('spu.newSpu')}
@@ -153,7 +153,7 @@ function ProductCreateContent() {
                 onClick={handleNext}
                 className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm whitespace-nowrap"
               >
-                {locale === 'zh' ? '下一步' : 'Next'}
+                {t('spu.next')}
                 <ArrowRight className="h-4 w-4" />
               </button>
             ) : (
@@ -200,7 +200,7 @@ function ProductCreateContent() {
               </button>
             </div>
             <p className="text-xs text-slate-500 mt-2">
-              {locale === 'zh' ? '请输入CAS号，格式如：64-17-5' : 'Enter CAS number, format: 64-17-5'}
+              {t('spu.casFormatHint')}
             </p>
           </div>
 
@@ -218,7 +218,7 @@ function ProductCreateContent() {
               <div className="flex items-center gap-2 mb-4">
                 <AlertCircle className="h-5 w-5 text-amber-400" />
                 <span className="font-semibold text-amber-400">
-                  {locale === 'zh' ? '该CAS号已存在于系统中' : 'This CAS number already exists in the system'}
+                  {t('spu.casAlreadyExists')}
                 </span>
               </div>
 
@@ -244,9 +244,7 @@ function ProductCreateContent() {
               </div>
 
               <p className="text-xs text-slate-400">
-                {locale === 'zh' 
-                  ? '如需修改该产品信息，请点击左上角「返回列表」按钮。' 
-                  : 'To edit this product, click "Back" button on the top left.'}
+                {t('spu.editProductHint')}
               </p>
             </div>
           )}
@@ -257,7 +255,7 @@ function ProductCreateContent() {
               <div className="flex items-center gap-2 mb-4">
                 <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                 <span className="font-semibold text-emerald-400">
-                  {locale === 'zh' ? '该CAS号可新建产品' : 'This CAS number is available for new product'}
+                  {t('spu.casAvailable')}
                 </span>
               </div>
 
@@ -265,9 +263,7 @@ function ProductCreateContent() {
                 <div className="text-xs text-slate-400 mb-1">CAS Number</div>
                 <div className="font-mono text-xl font-medium text-blue-400">{searchedCas}</div>
                 <p className="text-xs text-slate-400 mt-2">
-                  {locale === 'zh' 
-                    ? '数据库中未找到该CAS号，点击右上角「下一步」继续新建流程。' 
-                    : 'Not found in database. Click "Next" button on the top right to continue.'}
+                  {t('spu.notFoundHint')}
                 </p>
               </div>
             </div>
