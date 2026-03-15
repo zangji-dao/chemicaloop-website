@@ -34,7 +34,6 @@ function SPUCreateInfoContent() {
     needTranslate,
     formData,
     setFormData,
-    productImageUrl,
     handleTranslate,
     handleSave,
     handleBack,
@@ -101,36 +100,47 @@ function SPUCreateInfoContent() {
               {t('spu.productInfo')}
             </h1>
 
-            {/* 右侧：翻译 + 保存按钮 */}
+            {/* 右侧：翻译或保存按钮 */}
             <div className="flex items-center gap-3">
-              {needTranslate && !translating && (
+              {needTranslate ? (
+                // 需要翻译时显示翻译按钮
                 <button
                   onClick={handleTranslate}
-                  disabled={saving}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm transition-colors"
+                  disabled={translating || saving}
+                  className="flex items-center gap-2 px-4 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                 >
-                  <Languages className="h-4 w-4" />
-                  <span>{t('spu.translate')}</span>
+                  {translating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>{t('spu.translating')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Languages className="h-4 w-4" />
+                      <span>{t('spu.translate')}</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                // 不需要翻译时显示保存按钮
+                <button
+                  onClick={handleSave}
+                  disabled={saving || translating}
+                  className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>{t('spu.saving')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      <span>{t('spu.save')}</span>
+                    </>
+                  )}
                 </button>
               )}
-
-              <button
-                onClick={handleSave}
-                disabled={saving || translating}
-                className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>{t('spu.saving')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    <span>{t('spu.save')}</span>
-                  </>
-                )}
-              </button>
             </div>
           </div>
         </div>
@@ -138,25 +148,6 @@ function SPUCreateInfoContent() {
 
       {/* 内容区域 */}
       <div className="max-w-4xl mx-auto px-5 pb-20 pt-4">
-        {/* 产品图预览 */}
-        {productImageUrl && (
-          <div className="mb-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
-            <div className="flex items-center gap-4">
-              <div className="w-24 h-24 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
-                <img
-                  src={productImageUrl}
-                  alt="Product"
-                  className="max-w-full max-h-full object-contain"
-                />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm text-slate-400">{t('spu.productImage')}</div>
-                <div className="text-green-400 text-sm mt-1">✓ {t('spu.generated')}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* 基本信息 */}
         <BasicInfoSection
           formData={formData}

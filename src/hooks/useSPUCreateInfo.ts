@@ -79,7 +79,6 @@ interface UseSPUCreateInfoReturn {
   // 数据
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-  productImageUrl: string;
   pendingTranslations: Record<string, any>;
   
   // 方法
@@ -163,7 +162,6 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
   // 数据
   const [formData, setFormData] = useState<FormData>(emptyFormData);
   const [productImageKey, setProductImageKey] = useState<string>('');
-  const [productImageUrl, setProductImageUrl] = useState<string>('');
   const [pendingTranslations, setPendingTranslations] = useState<Record<string, any>>({});
   const [previewData, setPreviewData] = useState<Record<string, any>>({});
   
@@ -210,16 +208,9 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
         // 保存预览数据
         setPreviewData(data);
 
-        // 设置产品图片URL
+        // 保存产品图 key（用于保存时写入数据库）
         if (data.productImageKey) {
           setProductImageKey(data.productImageKey);
-          setProductImageUrl(`/api/storage/file?key=${data.productImageKey}`);
-        } else if (data.structureImageKey) {
-          // 如果没有产品图，使用结构图
-          setProductImageUrl(`/api/storage/file?key=${data.structureImageKey}`);
-        } else if (data.structureUrl) {
-          // 直接使用 PubChem URL
-          setProductImageUrl(data.structureUrl);
         }
 
         // 填充表单数据
@@ -459,7 +450,6 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
     // 数据
     formData,
     setFormData,
-    productImageUrl,
     pendingTranslations,
     
     // 方法
