@@ -144,8 +144,10 @@ function ProductCreateContent() {
             <h2 className="text-lg font-medium text-white">
               {t('spu.newSpu')}
             </h2>
-            <div className="w-[88px]">
-              {renderRightButton()}
+            <div className="min-w-[100px] flex justify-end">
+              <div className="whitespace-nowrap">
+                {renderRightButton()}
+              </div>
             </div>
           </div>
         </div>
