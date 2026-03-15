@@ -81,7 +81,7 @@ function SPUCreateInfoContent() {
         translating={translating}
         translationProgress={translationProgress}
         translatingFields={translatingFields}
-        t={(key: string) => key}
+        t={t}
       />
 
       {/* 顶部导航 */}
@@ -162,42 +162,42 @@ function SPUCreateInfoContent() {
           formData={formData}
           setFormData={setFormData}
           isEditMode={false}
-          t={(key: string) => key}
+          t={t}
         />
 
         {/* 化学信息 */}
         <ChemicalInfoSection
           formData={formData}
           setFormData={setFormData}
-          t={(key: string) => key}
+          t={t}
         />
 
         {/* 物理性质 */}
         <PhysicalPropertiesSection
           formData={formData}
           setFormData={setFormData}
-          t={(key: string) => key}
+          t={t}
         />
 
         {/* 安全与毒性 */}
         <SafetyToxicitySection
           formData={formData}
           setFormData={setFormData}
-          t={(key: string) => key}
+          t={t}
         />
 
         {/* 同义词 */}
         <SynonymsInput
           synonyms={formData.synonyms}
           onChange={(synonyms) => setFormData(prev => ({ ...prev, synonyms }))}
-          t={(key: string) => key}
+          t={t}
         />
 
         {/* 描述 */}
         <DescriptionInput
           description={formData.description}
           onChange={(description) => setFormData(prev => ({ ...prev, description }))}
-          t={(key: string) => key}
+          t={t}
         />
       </div>
 
