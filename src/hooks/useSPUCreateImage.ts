@@ -90,14 +90,15 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
 
       setLoadingProgress({ step: 'loading', message: locale === 'zh' ? `正在查询 ${cas}...` : `Querying ${cas}...` });
 
-      const response = await fetch(`/api/admin/spu/search?q=${encodeURIComponent(cas)}`, {
+      // 使用 cas 参数获取完整产品数据（包含 structure_image_key, pubchem_cid 等）
+      const response = await fetch(`/api/admin/spu/search?cas=${encodeURIComponent(cas)}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
 
       const result = await response.json();
 
-      if (result.success && result.data && result.data.length > 0) {
-        const data = result.data[0];
+      if (result.success && result.data) {
+        const data = result.data;
         
         // 检查是否有结构图
         if (!data.structure_image_key && !data.structure_url) {
