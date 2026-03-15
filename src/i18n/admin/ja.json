@@ -298,7 +298,14 @@
     "fieldOdor": "臭気",
     "fieldHazardClasses": "危険等級",
     "imageGenFailed": "製品画像の生成に失敗しました: {error}",
-    "hsCodeMatchFailed": "HSコードの照合に失敗しました: {error}"
+    "hsCodeMatchFailed": "HSコードの照合に失敗しました: {error}",
+    "casFormatHint": "CAS番号を入力してください（例：64-17-5）",
+    "casAlreadyExists": "このCAS番号は既にシステムに存在します",
+    "casAvailable": "このCAS番号は新製品作成に使用できます",
+    "casCheckDigitError": "CAS番号のチェックディジットが無効です。番号を確認してください",
+    "editProductHint": "この製品を編集するには、左上の「戻る」ボタンをクリックしてください。",
+    "notFoundHint": "データベースに見つかりませんでした。右上の「次へ」ボタンをクリックして続行してください。",
+    "searchFailed": "検索に失敗しました。再試行してください"
   },
   "origins": {
     "china": "中国",

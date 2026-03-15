@@ -299,7 +299,14 @@
     "fieldOdor": "Geruch",
     "fieldHazardClasses": "Gefahrenklassen",
     "imageGenFailed": "Produktbild-Generierung fehlgeschlagen: {error}",
-    "hsCodeMatchFailed": "HS-Code-Zuordnung fehlgeschlagen: {error}"
+    "hsCodeMatchFailed": "HS-Code-Zuordnung fehlgeschlagen: {error}",
+    "casFormatHint": "Geben Sie die CAS-Nummer ein (Beispiel: 64-17-5)",
+    "casAlreadyExists": "Diese CAS-Nummer existiert bereits im System",
+    "casAvailable": "Diese CAS-Nummer ist für ein neues Produkt verfügbar",
+    "casCheckDigitError": "Ungültige CAS-Prüfziffer, bitte überprüfen Sie die Nummer",
+    "editProductHint": "Um dieses Produkt zu bearbeiten, klicken Sie auf die Schaltfläche \"Zurück\" oben links.",
+    "notFoundHint": "Nicht in der Datenbank gefunden. Klicken Sie auf die Schaltfläche \"Weiter\" oben rechts, um fortzufahren.",
+    "searchFailed": "Suche fehlgeschlagen, bitte erneut versuchen"
   },
   "upload": {
     "title": "Produkt hochladen",

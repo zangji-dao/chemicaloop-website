@@ -299,7 +299,14 @@
     "fieldOdor": "الرائحة",
     "fieldHazardClasses": "فئات المخاطر",
     "imageGenFailed": "فشل توليد الصورة: {error}",
-    "hsCodeMatchFailed": "فشل مطابقة رمز HS: {error}"
+    "hsCodeMatchFailed": "فشل مطابقة رمز HS: {error}",
+    "casFormatHint": "أدخل رقم CAS (مثال: 64-17-5)",
+    "casAlreadyExists": "رقم CAS هذا موجود بالفعل في النظام",
+    "casAvailable": "رقم CAS هذا متاح لمنتج جديد",
+    "casCheckDigitError": "رقم التحقق من CAS غير صالح، يرجى التحقق من الرقم",
+    "editProductHint": "لتحرير هذا المنتج، انقر فوق زر \"رجوع\" في الزاوية العلوية اليسرى.",
+    "notFoundHint": "غير موجود في قاعدة البيانات. انقر فوق زر \"التالي\" في الزاوية العلوية اليمنى للمتابعة.",
+    "searchFailed": "فشل البحث، يرجى إعادة المحاولة"
   },
   "upload": {
     "title": "تحميل منتج",

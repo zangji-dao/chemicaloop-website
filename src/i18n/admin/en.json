@@ -407,6 +407,7 @@
     "casFormatHint": "Enter CAS number, format: 64-17-5",
     "casAlreadyExists": "This CAS number already exists in the system",
     "casAvailable": "This CAS number is available for new product",
+    "casCheckDigitError": "Invalid CAS check digit, please verify the number",
     "editProductHint": "To edit this product, click \"Back\" button on the top left.",
     "notFoundHint": "Not found in database. Click \"Next\" button on the top right to continue.",
     "searchFailed": "Search failed, please retry"

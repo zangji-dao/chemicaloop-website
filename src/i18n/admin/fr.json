@@ -299,7 +299,14 @@
     "fieldOdor": "Odeur",
     "fieldHazardClasses": "Classes de danger",
     "imageGenFailed": "Échec de la génération d'image: {error}",
-    "hsCodeMatchFailed": "Échec de l'association du code HS: {error}"
+    "hsCodeMatchFailed": "Échec de l'association du code HS: {error}",
+    "casFormatHint": "Entrez le numéro CAS (exemple: 64-17-5)",
+    "casAlreadyExists": "Ce numéro CAS existe déjà dans le système",
+    "casAvailable": "Ce numéro CAS est disponible pour un nouveau produit",
+    "casCheckDigitError": "Chiffre de vérification CAS invalide, veuillez vérifier le numéro",
+    "editProductHint": "Pour modifier ce produit, cliquez sur le bouton \"Retour\" en haut à gauche.",
+    "notFoundHint": "Non trouvé dans la base de données. Cliquez sur le bouton \"Suivant\" en haut à droite pour continuer.",
+    "searchFailed": "Échec de la recherche, veuillez réessayer"
   },
   "upload": {
     "title": "Télécharger un produit",

@@ -91,7 +91,7 @@ function ProductCreateContent() {
 
     // Step 2: 验证CAS校验位
     if (!validateCASCheckDigit(cas)) {
-      setError(locale === 'zh' ? 'CAS号校验位错误，请检查是否输入正确' : 'Invalid CAS check digit, please verify the number');
+      setError(t('spu.casCheckDigitError'));
       return;
     }
 
