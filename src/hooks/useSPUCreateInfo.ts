@@ -269,6 +269,12 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: field.value, targetLanguage: locale === 'en' ? 'zh' : locale }),
           });
+          
+          if (!response.ok) {
+            console.error(`Failed to translate ${field.key}: HTTP ${response.status}`);
+            return { key: field.key, translatedText: '' };
+          }
+          
           const data = await response.json();
           
           // 更新进度
