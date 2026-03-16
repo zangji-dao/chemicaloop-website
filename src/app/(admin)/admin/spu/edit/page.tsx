@@ -126,7 +126,7 @@ function SPUEditContent() {
       />
 
       {/* 顶部导航 - 使用负边距占满整个内容区域，增加高度覆盖与header的间隙 */}
-      <div className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 -mx-6 -mt-6 px-6 py-5 sticky top-0 z-20">
+      <div className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 -mx-6 -mt-6 px-6 pt-9 pb-4 sticky top-0 z-20">
         <div className="flex items-center justify-between relative">
           {/* 左侧：返回 + 同步按钮 */}
           <div className="flex items-center gap-4 flex-shrink-0">
