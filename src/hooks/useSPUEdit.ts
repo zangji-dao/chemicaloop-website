@@ -222,6 +222,9 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
       setSyncProgress({ step: 'connecting', message: locale === 'zh' ? '正在连接 PubChem...' : 'Connecting to PubChem...' });
 
       const connectionResponse = await fetch('/api/admin/spu/create/check-pubchem-connection', {
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
         signal: abortController.signal,
       });
       const connectionData = await connectionResponse.json();

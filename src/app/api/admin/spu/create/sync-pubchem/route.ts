@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql, eq } from 'drizzle-orm';
 import * as schema from '@/db';
+import { withAdminAuth } from '@/lib/withAuth';
 
 import { PubChemData } from '@/services/pubchem/types';
 import { fetchPubChemData } from '@/services/pubchem/api';
@@ -23,7 +24,7 @@ import { pubchemDataToUpdateFields, buildPreviewResponse } from '@/services/pubc
 /**
  * POST /api/admin/spu/create/sync-pubchem
  */
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request) => {
   try {
     const body = await request.json().catch(() => ({}));
     const { preview = false, cas, forceUpdate = false, limit = 10, casList, createIfNotExist = false } = body;
@@ -53,13 +54,13 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET /api/admin/spu/create/sync-pubchem
  * 获取同步统计信息
  */
-export async function GET() {
+export const GET = withAdminAuth(async () => {
   try {
     const db = await getDb(schema);
     
@@ -92,7 +93,7 @@ export async function GET() {
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error?.message }, { status: 500 });
   }
-}
+});
 
 // ========== 处理函数 ==========
 
