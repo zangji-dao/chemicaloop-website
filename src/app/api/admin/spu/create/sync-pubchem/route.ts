@@ -17,84 +17,33 @@ import * as schema from '@/db';
 import { PubChemData } from '@/services/pubchem/types';
 import { fetchPubChemData } from '@/services/pubchem/api';
 import { getCachedPreview, setCachedPreview } from '@/services/pubchem/cache';
-import { extractChineseName, safeString, safeNumber } from '@/services/pubchem/utils';
+import { extractChineseName } from '@/services/pubchem/utils';
+import { pubchemDataToUpdateFields, buildPreviewResponse } from '@/services/pubchem/mapping';
 
 /**
  * POST /api/admin/spu/create/sync-pubchem
- * 
- * 参数：
- * - preview: boolean - 预览模式，只获取数据不写入数据库
- * - cas: string - 单个 CAS 号
- * - forceUpdate: boolean - 强制更新已有数据的 SPU
- * - limit: number - 批量模式下限制数量
- * - casList: string[] - 批量模式下指定 CAS 列表
- * - createIfNotExist: boolean - 产品不存在时是否创建
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
+    const { preview = false, cas, forceUpdate = false, limit = 10, casList, createIfNotExist = false } = body;
     
-    const { 
-      preview = false,
-      cas,
-      forceUpdate = false,
-      limit = 10,
-      casList = null,
-      createIfNotExist = false,
-    } = body;
-    
-    // ========== 预览模式：只获取数据，不写入数据库 ==========
+    // 预览模式
     if (preview && cas) {
-      const trimmedCas = cas.trim();
-      console.log(`[Sync-PubChem] Preview mode for CAS: ${trimmedCas}`);
-      
-      // 检查缓存
-      const cachedData = getCachedPreview(trimmedCas);
-      if (cachedData) {
-        return NextResponse.json({
-          success: true,
-          source: 'cache',
-          data: cachedData,
-        });
-      }
-      
-      const pubchemData = await fetchPubChemData(trimmedCas);
-      
-      if (!pubchemData) {
-        return NextResponse.json({
-          success: false,
-          error: 'PUBCHEM_NOT_FOUND',
-          message: 'This CAS number does not exist in PubChem',
-        });
-      }
-      
-      // 提取中文名称
-      const nameZh = pubchemData.synonyms ? extractChineseName(pubchemData.synonyms) : null;
-      
-      // 构建返回数据
-      const responseData = buildPreviewResponse(pubchemData, nameZh);
-      
-      // 缓存结果
-      setCachedPreview(trimmedCas, responseData);
-      
-      return NextResponse.json({
-        success: true,
-        source: 'pubchem',
-        data: responseData,
-      });
+      return handlePreview(cas);
     }
     
-    // ========== 单个CAS同步模式 ==========
+    // 单个 CAS 同步
     if (cas && !preview && !casList) {
       return handleSingleSync(cas, createIfNotExist);
     }
     
-    // ========== 批量同步模式 ==========
+    // 批量同步（指定列表）
     if (casList && Array.isArray(casList)) {
       return handleBatchSync(casList);
     }
     
-    // ========== 默认批量同步：同步所有需要更新的 SPU ==========
+    // 默认批量同步
     return handleDefaultSync(forceUpdate, limit);
     
   } catch (error: any) {
@@ -108,13 +57,13 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/admin/spu/create/sync-pubchem
- * 获取 SPU 同步状态统计
+ * 获取同步统计信息
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const db = await getDb(schema);
     
-    const statsResult = await db.execute(sql`
+    const stats = await db.execute(sql`
       SELECT 
         COUNT(*) as total_spu,
         COUNT(pubchem_cid) as with_pubchem,
@@ -126,529 +75,197 @@ export async function GET(request: NextRequest) {
       FROM products
     `);
     
-    const stats = statsResult.rows[0] as any;
+    const s = stats.rows[0] as any;
     
     return NextResponse.json({
       success: true,
       data: {
-        totalSpu: parseInt(stats.total_spu || '0'),
-        withPubchem: parseInt(stats.with_pubchem || '0'),
-        needSync: parseInt(stats.need_sync || '0'),
-        withPhysicalDesc: parseInt(stats.with_physical_desc || '0'),
-        withHazard: parseInt(stats.with_hazard || '0'),
-        withGhs: parseInt(stats.with_ghs || '0'),
-        withFirstAid: parseInt(stats.with_first_aid || '0'),
+        totalSpu: parseInt(s.total_spu || '0'),
+        withPubchem: parseInt(s.with_pubchem || '0'),
+        needSync: parseInt(s.need_sync || '0'),
+        withPhysicalDesc: parseInt(s.with_physical_desc || '0'),
+        withHazard: parseInt(s.with_hazard || '0'),
+        withGhs: parseInt(s.with_ghs || '0'),
+        withFirstAid: parseInt(s.with_first_aid || '0'),
       },
     });
-    
   } catch (error: any) {
-    console.error('Error getting sync stats:', error);
-    return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to get sync stats' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: error?.message }, { status: 500 });
   }
 }
 
-// ========== 辅助函数 ==========
+// ========== 处理函数 ==========
 
-/**
- * 构建预览响应数据
- */
-function buildPreviewResponse(pubchemData: PubChemData, nameZh: string | null) {
-  return {
-    pubchemCid: pubchemData.cid,
-    pubchemSyncedAt: new Date().toISOString(),
-    nameZh,
-    nameEn: pubchemData.synonyms?.[0] || null,
-    formula: pubchemData.formula,
-    molecularWeight: pubchemData.molecularWeight,
-    exactMass: pubchemData.exactMass,
-    smiles: pubchemData.smiles,
-    smilesCanonical: pubchemData.smilesCanonical,
-    smilesIsomeric: pubchemData.smilesIsomeric,
-    inchi: pubchemData.inchi,
-    inchiKey: pubchemData.inchiKey,
-    xlogp: pubchemData.xlogp,
-    tpsa: pubchemData.tpsa,
-    complexity: pubchemData.complexity,
-    hBondDonorCount: pubchemData.hBondDonorCount,
-    hBondAcceptorCount: pubchemData.hBondAcceptorCount,
-    rotatableBondCount: pubchemData.rotatableBondCount,
-    heavyAtomCount: pubchemData.heavyAtomCount,
-    formalCharge: pubchemData.formalCharge,
-    description: pubchemData.description,
-    physicalDescription: pubchemData.physicalDescription,
-    colorForm: pubchemData.colorForm,
-    odor: pubchemData.odor,
-    boilingPoint: pubchemData.boilingPoint,
-    meltingPoint: pubchemData.meltingPoint,
-    flashPoint: pubchemData.flashPoint,
-    density: pubchemData.density,
-    solubility: pubchemData.solubility,
-    vaporPressure: pubchemData.vaporPressure,
-    refractiveIndex: pubchemData.refractiveIndex,
-    hazardClasses: pubchemData.hazardClasses,
-    healthHazards: pubchemData.healthHazards,
-    ghsClassification: pubchemData.ghsClassification,
-    toxicitySummary: pubchemData.toxicitySummary,
-    carcinogenicity: pubchemData.carcinogenicity,
-    firstAid: pubchemData.firstAid,
-    storageConditions: pubchemData.storageConditions,
-    incompatibleMaterials: pubchemData.incompatibleMaterials,
-    synonyms: pubchemData.synonyms,
-    applications: pubchemData.applications,
-    structureUrl: pubchemData.structureUrl,
-    structureImageKey: pubchemData.structureImageKey,
-    structureSdf: pubchemData.structureSdf,
-    structure2dSvg: pubchemData.structure2dSvg,
-  };
+/** 预览模式 */
+async function handlePreview(cas: string) {
+  const trimmedCas = cas.trim();
+  
+  // 检查缓存
+  const cached = getCachedPreview(trimmedCas);
+  if (cached) {
+    return NextResponse.json({ success: true, source: 'cache', data: cached });
+  }
+  
+  const pubchemData = await fetchPubChemData(trimmedCas);
+  if (!pubchemData) {
+    return NextResponse.json({ success: false, error: 'PUBCHEM_NOT_FOUND', message: 'CAS号在 PubChem 中不存在' });
+  }
+  
+  const nameZh = pubchemData.synonyms ? extractChineseName(pubchemData.synonyms) : null;
+  const responseData = buildPreviewResponse(pubchemData, nameZh);
+  
+  setCachedPreview(trimmedCas, responseData);
+  
+  return NextResponse.json({ success: true, source: 'pubchem', data: responseData });
 }
 
-/**
- * 处理单个 CAS 同步
- */
+/** 单个 CAS 同步 */
 async function handleSingleSync(cas: string, createIfNotExist: boolean) {
-  const trimmedCas = cas.trim();
-  console.log(`[Sync-PubChem] Single CAS sync mode for: ${trimmedCas}`);
-  
   const db = await getDb(schema);
-  
-  // 从 PubChem 获取数据
-  const pubchemData = await fetchPubChemData(trimmedCas);
+  const pubchemData = await fetchPubChemData(cas.trim());
   
   if (!pubchemData) {
-    return NextResponse.json({
-      success: false,
-      error: 'PUBCHEM_NOT_FOUND',
-      message: 'This CAS number does not exist in PubChem',
-    });
+    return NextResponse.json({ success: false, error: 'PUBCHEM_NOT_FOUND', message: 'CAS号在 PubChem 中不存在' });
   }
   
-  // 查询产品是否存在
-  const existingProduct = await db.execute(sql`
-    SELECT id, cas, name, status FROM products WHERE cas = ${trimmedCas}
-  `);
+  const existing = await db.execute(sql`SELECT id, name FROM products WHERE cas = ${cas.trim()}`);
   
-  if (existingProduct.rows.length === 0) {
-    // 产品不存在
-    if (createIfNotExist) {
-      return createNewProduct(db, trimmedCas, pubchemData);
-    } else {
+  if (existing.rows.length === 0) {
+    if (!createIfNotExist) {
+      const nameZh = pubchemData.synonyms ? extractChineseName(pubchemData.synonyms) : null;
       return NextResponse.json({
         success: false,
         error: 'PRODUCT_NOT_FOUND',
-        message: 'Product not found. Use createIfNotExist=true to create a new product.',
-        pubchemData: buildPreviewResponse(pubchemData, 
-          pubchemData.synonyms ? extractChineseName(pubchemData.synonyms) : null),
+        message: '产品不存在，使用 createIfNotExist=true 创建新产品',
+        pubchemData: buildPreviewResponse(pubchemData, nameZh),
       });
     }
+    return createProduct(db, cas.trim(), pubchemData);
   }
   
-  // 更新现有产品
-  const product = existingProduct.rows[0] as any;
-  return updateProduct(db, product.id, pubchemData);
+  return updateProduct(db, (existing.rows[0] as any).id, pubchemData);
 }
 
-/**
- * 创建新产品
- */
-async function createNewProduct(db: any, cas: string, pubchemData: PubChemData) {
-  console.log(`[Sync-PubChem] Creating new product for CAS: ${cas}`);
-  
-  const nameZh = pubchemData.synonyms ? extractChineseName(pubchemData.synonyms) : null;
-  
-  const insertResult = await db.execute(sql`
-    INSERT INTO products (
-      cas, name, name_en, formula, description,
-      pubchem_cid, pubchem_data_source, status,
-      molecular_weight, exact_mass, smiles, smiles_canonical, smiles_isomeric,
-      inchi, inchi_key, xlogp, tpsa, complexity,
-      h_bond_donor_count, h_bond_acceptor_count, rotatable_bond_count,
-      heavy_atom_count, formal_charge,
-      physical_description, color_form, odor,
-      boiling_point, melting_point, flash_point, density, solubility,
-      vapor_pressure, refractive_index,
-      hazard_classes, health_hazards, ghs_classification,
-      toxicity_summary, carcinogenicity, first_aid,
-      storage_conditions, incompatible_materials,
-      structure_url, structure_image_key, structure_sdf, structure_2d_svg,
-      synonyms, applications,
-      pubchem_synced_at, created_at, updated_at
-    ) VALUES (
-      ${cas},
-      ${nameZh || pubchemData.synonyms?.[0] || cas},
-      ${pubchemData.synonyms?.[0] || null},
-      ${safeString(pubchemData.formula)},
-      ${safeString(pubchemData.description)},
-      ${pubchemData.cid || null},
-      'pubchem',
-      'DRAFT',
-      ${safeString(pubchemData.molecularWeight)},
-      ${safeString(pubchemData.exactMass)},
-      ${safeString(pubchemData.smiles)},
-      ${safeString(pubchemData.smilesCanonical)},
-      ${safeString(pubchemData.smilesIsomeric)},
-      ${safeString(pubchemData.inchi)},
-      ${safeString(pubchemData.inchiKey)},
-      ${safeString(pubchemData.xlogp)},
-      ${safeString(pubchemData.tpsa)},
-      ${safeNumber(pubchemData.complexity)},
-      ${safeNumber(pubchemData.hBondDonorCount)},
-      ${safeNumber(pubchemData.hBondAcceptorCount)},
-      ${safeNumber(pubchemData.rotatableBondCount)},
-      ${safeNumber(pubchemData.heavyAtomCount)},
-      ${safeNumber(pubchemData.formalCharge)},
-      ${safeString(pubchemData.physicalDescription)},
-      ${safeString(pubchemData.colorForm)},
-      ${safeString(pubchemData.odor)},
-      ${safeString(pubchemData.boilingPoint)},
-      ${safeString(pubchemData.meltingPoint)},
-      ${safeString(pubchemData.flashPoint)},
-      ${safeString(pubchemData.density)},
-      ${safeString(pubchemData.solubility)},
-      ${safeString(pubchemData.vaporPressure)},
-      ${safeString(pubchemData.refractiveIndex)},
-      ${safeString(pubchemData.hazardClasses)},
-      ${safeString(pubchemData.healthHazards)},
-      ${safeString(pubchemData.ghsClassification)},
-      ${safeString(pubchemData.toxicitySummary)},
-      ${safeString(pubchemData.carcinogenicity)},
-      ${safeString(pubchemData.firstAid)},
-      ${safeString(pubchemData.storageConditions)},
-      ${safeString(pubchemData.incompatibleMaterials)},
-      ${safeString(pubchemData.structureUrl)},
-      ${safeString(pubchemData.structureImageKey)},
-      ${safeString(pubchemData.structureSdf)},
-      ${safeString(pubchemData.structure2dSvg)},
-      ${pubchemData.synonyms && pubchemData.synonyms.length > 0 ? JSON.stringify(pubchemData.synonyms) : null},
-      ${pubchemData.applications && pubchemData.applications.length > 0 ? JSON.stringify(pubchemData.applications) : null},
-      NOW(),
-      NOW(),
-      NOW()
-    )
-    RETURNING id
-  `);
-  
-  const newId = (insertResult.rows[0] as any)?.id;
-  
-  return NextResponse.json({
-    success: true,
-    message: 'Product created successfully',
-    action: 'created',
-    id: newId,
-    cid: pubchemData.cid,
-    nameZh,
-  });
-}
-
-/**
- * 更新现有产品
- */
-async function updateProduct(db: any, productId: string, pubchemData: PubChemData) {
-  await db.update(schema.products)
-    .set({
-      pubchemCid: pubchemData.cid || null,
-      pubchemDataSource: 'pubchem',
-      description: safeString(pubchemData.description),
-      formula: safeString(pubchemData.formula),
-      molecularWeight: safeString(pubchemData.molecularWeight),
-      exactMass: safeString(pubchemData.exactMass),
-      smiles: safeString(pubchemData.smiles),
-      smilesCanonical: safeString(pubchemData.smilesCanonical),
-      smilesIsomeric: safeString(pubchemData.smilesIsomeric),
-      inchi: safeString(pubchemData.inchi),
-      inchiKey: safeString(pubchemData.inchiKey),
-      xlogp: safeString(pubchemData.xlogp),
-      tpsa: safeString(pubchemData.tpsa),
-      complexity: safeNumber(pubchemData.complexity),
-      hBondDonorCount: safeNumber(pubchemData.hBondDonorCount),
-      hBondAcceptorCount: safeNumber(pubchemData.hBondAcceptorCount),
-      rotatableBondCount: safeNumber(pubchemData.rotatableBondCount),
-      heavyAtomCount: safeNumber(pubchemData.heavyAtomCount),
-      formalCharge: safeNumber(pubchemData.formalCharge),
-      physicalDescription: safeString(pubchemData.physicalDescription),
-      colorForm: safeString(pubchemData.colorForm),
-      odor: safeString(pubchemData.odor),
-      boilingPoint: safeString(pubchemData.boilingPoint),
-      meltingPoint: safeString(pubchemData.meltingPoint),
-      flashPoint: safeString(pubchemData.flashPoint),
-      density: safeString(pubchemData.density),
-      solubility: safeString(pubchemData.solubility),
-      vaporPressure: safeString(pubchemData.vaporPressure),
-      refractiveIndex: safeString(pubchemData.refractiveIndex),
-      hazardClasses: safeString(pubchemData.hazardClasses),
-      healthHazards: safeString(pubchemData.healthHazards),
-      ghsClassification: safeString(pubchemData.ghsClassification),
-      toxicitySummary: safeString(pubchemData.toxicitySummary),
-      carcinogenicity: safeString(pubchemData.carcinogenicity),
-      firstAid: safeString(pubchemData.firstAid),
-      storageConditions: safeString(pubchemData.storageConditions),
-      incompatibleMaterials: safeString(pubchemData.incompatibleMaterials),
-      structureUrl: safeString(pubchemData.structureUrl),
-      structureImageKey: safeString(pubchemData.structureImageKey),
-      structureSdf: safeString(pubchemData.structureSdf),
-      structure2dSvg: safeString(pubchemData.structure2dSvg),
-      synonyms: pubchemData.synonyms && pubchemData.synonyms.length > 0 ? pubchemData.synonyms : null,
-      applications: pubchemData.applications && pubchemData.applications.length > 0 ? pubchemData.applications : null,
-      translations: sql`(
-        SELECT jsonb_object_agg(key, value)
-        FROM jsonb_each(COALESCE(translations, '{}'::jsonb))
-        WHERE key NOT IN (
-          'description', 'applications', 'boilingPoint', 'meltingPoint', 'flashPoint', 'hazardClasses', 
-          'healthHazards', 'ghsClassification', 'firstAid', 'storageConditions', 
-          'incompatibleMaterials', 'solubility', 'vaporPressure', 'refractiveIndex',
-          'physicalDescription'
-        )
-      )::jsonb`,
-      pubchemSyncedAt: sql`NOW()`,
-      updatedAt: sql`NOW()`,
-    })
-    .where(eq(schema.products.id, productId));
-  
-  return NextResponse.json({
-    success: true,
-    message: 'Product updated successfully',
-    action: 'updated',
-    id: productId,
-    cid: pubchemData.cid,
-  });
-}
-
-/**
- * 处理批量同步
- */
+/** 批量同步 */
 async function handleBatchSync(casList: string[]) {
   const db = await getDb(schema);
   const results = { updated: [] as any[], failed: [] as any[] };
   
   for (const cas of casList) {
     const trimmedCas = cas.trim();
-    console.log(`[Sync] Processing CAS: ${trimmedCas}`);
-    
     try {
       const pubchemData = await fetchPubChemData(trimmedCas);
-      
       if (!pubchemData) {
-        results.failed.push({ cas: trimmedCas, reason: 'PubChem data not found' });
+        results.failed.push({ cas: trimmedCas, reason: 'PubChem 无数据' });
         continue;
       }
       
-      // 查询产品
-      const existingProduct = await db.execute(sql`
-        SELECT id, name FROM products WHERE cas = ${trimmedCas}
-      `);
-      
-      if (existingProduct.rows.length === 0) {
-        results.failed.push({ cas: trimmedCas, reason: 'Product not found' });
+      const existing = await db.execute(sql`SELECT id, name FROM products WHERE cas = ${trimmedCas}`);
+      if (existing.rows.length === 0) {
+        results.failed.push({ cas: trimmedCas, reason: '产品不存在' });
         continue;
       }
       
-      const product = existingProduct.rows[0] as any;
-      
-      // 更新产品
       await db.update(schema.products)
-        .set({
-          pubchemCid: pubchemData.cid || null,
-          pubchemDataSource: 'pubchem',
-          description: safeString(pubchemData.description),
-          formula: safeString(pubchemData.formula),
-          molecularWeight: safeString(pubchemData.molecularWeight),
-          exactMass: safeString(pubchemData.exactMass),
-          smiles: safeString(pubchemData.smiles),
-          smilesCanonical: safeString(pubchemData.smilesCanonical),
-          smilesIsomeric: safeString(pubchemData.smilesIsomeric),
-          inchi: safeString(pubchemData.inchi),
-          inchiKey: safeString(pubchemData.inchiKey),
-          xlogp: safeString(pubchemData.xlogp),
-          tpsa: safeString(pubchemData.tpsa),
-          complexity: safeNumber(pubchemData.complexity),
-          hBondDonorCount: safeNumber(pubchemData.hBondDonorCount),
-          hBondAcceptorCount: safeNumber(pubchemData.hBondAcceptorCount),
-          rotatableBondCount: safeNumber(pubchemData.rotatableBondCount),
-          heavyAtomCount: safeNumber(pubchemData.heavyAtomCount),
-          formalCharge: safeNumber(pubchemData.formalCharge),
-          physicalDescription: safeString(pubchemData.physicalDescription),
-          colorForm: safeString(pubchemData.colorForm),
-          odor: safeString(pubchemData.odor),
-          boilingPoint: safeString(pubchemData.boilingPoint),
-          meltingPoint: safeString(pubchemData.meltingPoint),
-          flashPoint: safeString(pubchemData.flashPoint),
-          density: safeString(pubchemData.density),
-          solubility: safeString(pubchemData.solubility),
-          vaporPressure: safeString(pubchemData.vaporPressure),
-          refractiveIndex: safeString(pubchemData.refractiveIndex),
-          hazardClasses: safeString(pubchemData.hazardClasses),
-          healthHazards: safeString(pubchemData.healthHazards),
-          ghsClassification: safeString(pubchemData.ghsClassification),
-          toxicitySummary: safeString(pubchemData.toxicitySummary),
-          carcinogenicity: safeString(pubchemData.carcinogenicity),
-          firstAid: safeString(pubchemData.firstAid),
-          storageConditions: safeString(pubchemData.storageConditions),
-          incompatibleMaterials: safeString(pubchemData.incompatibleMaterials),
-          structureUrl: safeString(pubchemData.structureUrl),
-          structureImageKey: safeString(pubchemData.structureImageKey),
-          structureSdf: safeString(pubchemData.structureSdf),
-          structure2dSvg: safeString(pubchemData.structure2dSvg),
-          synonyms: pubchemData.synonyms && pubchemData.synonyms.length > 0 ? pubchemData.synonyms : null,
-          applications: pubchemData.applications && pubchemData.applications.length > 0 ? pubchemData.applications : null,
-          pubchemSyncedAt: sql`NOW()`,
-          updatedAt: sql`NOW()`,
-        })
-        .where(eq(schema.products.id, product.id));
+        .set(pubchemDataToUpdateFields(pubchemData))
+        .where(eq(schema.products.id, (existing.rows[0] as any).id));
       
-      results.updated.push({ cas: trimmedCas, name: product.name, cid: pubchemData.cid });
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-    } catch (error: any) {
-      console.error(`[Sync] Error updating ${trimmedCas}:`, error?.message);
-      results.failed.push({ cas: trimmedCas, reason: error?.message || 'Unknown error' });
+      results.updated.push({ cas: trimmedCas, name: (existing.rows[0] as any).name, cid: pubchemData.cid });
+      await new Promise(r => setTimeout(r, 500));
+    } catch (e: any) {
+      results.failed.push({ cas: trimmedCas, reason: e?.message });
     }
   }
   
-  return NextResponse.json({
-    success: true,
-    message: `Synced ${results.updated.length} products, ${results.failed.length} failed`,
-    updated: results.updated.length,
-    failed: results.failed.length,
-    details: results,
-  });
+  return NextResponse.json({ success: true, ...results, updated: results.updated.length, failed: results.failed.length });
 }
 
-/**
- * 处理默认同步（同步所有需要更新的 SPU）
- */
+/** 默认同步 */
 async function handleDefaultSync(forceUpdate: boolean, limit: number) {
   const db = await getDb(schema);
   
-  // 构建查询
-  let query = sql`
-    SELECT id, cas, name 
-    FROM products 
-    WHERE 1=1
-  `;
+  const query = forceUpdate
+    ? sql`SELECT id, cas, name FROM products ORDER BY updated_at DESC LIMIT ${limit}`
+    : sql`SELECT id, cas, name FROM products WHERE pubchem_cid IS NULL OR pubchem_synced_at < NOW() - INTERVAL '30 days' ORDER BY updated_at DESC LIMIT ${limit}`;
   
-  if (!forceUpdate) {
-    query = sql`
-      SELECT id, cas, name 
-      FROM products 
-      WHERE pubchem_cid IS NULL 
-         OR pubchem_synced_at < NOW() - INTERVAL '30 days'
-      ORDER BY updated_at DESC
-      LIMIT ${limit}
-    `;
-  } else {
-    query = sql`
-      SELECT id, cas, name 
-      FROM products 
-      ORDER BY updated_at DESC
-      LIMIT ${limit}
-    `;
-  }
-  
-  const spuResult = await db.execute(query);
-  const spuList = spuResult.rows;
+  const spuList = (await db.execute(query)).rows;
   
   if (spuList.length === 0) {
-    return NextResponse.json({
-      success: true,
-      message: 'No SPU need to be updated',
-      updated: 0,
-      failed: 0,
-    });
+    return NextResponse.json({ success: true, message: '无需要更新的 SPU', updated: 0, failed: 0 });
   }
   
   const results = { updated: [] as any[], failed: [] as any[] };
   
   for (const spu of spuList) {
     const { id, cas, name } = spu as any;
-    
-    console.log(`[Sync] Processing SPU CAS: ${cas}`);
-    
     try {
       const pubchemData = await fetchPubChemData(cas);
-      
       if (!pubchemData) {
-        results.failed.push({ cas, name, reason: 'PubChem data not found' });
+        results.failed.push({ cas, name, reason: 'PubChem 无数据' });
         continue;
       }
       
       await db.update(schema.products)
-        .set({
-          pubchemCid: pubchemData.cid || null,
-          pubchemDataSource: 'pubchem',
-          description: safeString(pubchemData.description),
-          formula: safeString(pubchemData.formula),
-          molecularWeight: safeString(pubchemData.molecularWeight),
-          exactMass: safeString(pubchemData.exactMass),
-          smiles: safeString(pubchemData.smiles),
-          smilesCanonical: safeString(pubchemData.smilesCanonical),
-          smilesIsomeric: safeString(pubchemData.smilesIsomeric),
-          inchi: safeString(pubchemData.inchi),
-          inchiKey: safeString(pubchemData.inchiKey),
-          xlogp: safeString(pubchemData.xlogp),
-          tpsa: safeString(pubchemData.tpsa),
-          complexity: safeNumber(pubchemData.complexity),
-          hBondDonorCount: safeNumber(pubchemData.hBondDonorCount),
-          hBondAcceptorCount: safeNumber(pubchemData.hBondAcceptorCount),
-          rotatableBondCount: safeNumber(pubchemData.rotatableBondCount),
-          heavyAtomCount: safeNumber(pubchemData.heavyAtomCount),
-          formalCharge: safeNumber(pubchemData.formalCharge),
-          physicalDescription: safeString(pubchemData.physicalDescription),
-          colorForm: safeString(pubchemData.colorForm),
-          odor: safeString(pubchemData.odor),
-          boilingPoint: safeString(pubchemData.boilingPoint),
-          meltingPoint: safeString(pubchemData.meltingPoint),
-          flashPoint: safeString(pubchemData.flashPoint),
-          density: safeString(pubchemData.density),
-          solubility: safeString(pubchemData.solubility),
-          vaporPressure: safeString(pubchemData.vaporPressure),
-          refractiveIndex: safeString(pubchemData.refractiveIndex),
-          hazardClasses: safeString(pubchemData.hazardClasses),
-          healthHazards: safeString(pubchemData.healthHazards),
-          ghsClassification: safeString(pubchemData.ghsClassification),
-          toxicitySummary: safeString(pubchemData.toxicitySummary),
-          carcinogenicity: safeString(pubchemData.carcinogenicity),
-          firstAid: safeString(pubchemData.firstAid),
-          storageConditions: safeString(pubchemData.storageConditions),
-          incompatibleMaterials: safeString(pubchemData.incompatibleMaterials),
-          structureUrl: safeString(pubchemData.structureUrl),
-          structureImageKey: safeString(pubchemData.structureImageKey),
-          structureSdf: safeString(pubchemData.structureSdf),
-          structure2dSvg: safeString(pubchemData.structure2dSvg),
-          synonyms: pubchemData.synonyms && pubchemData.synonyms.length > 0 ? pubchemData.synonyms : null,
-          applications: pubchemData.applications && pubchemData.applications.length > 0 ? pubchemData.applications : null,
-          translations: sql`(
-            SELECT jsonb_object_agg(key, value)
-            FROM jsonb_each(COALESCE(translations, '{}'::jsonb))
-            WHERE key NOT IN (
-              'description', 'applications', 'boilingPoint', 'meltingPoint', 'flashPoint', 'hazardClasses', 
-              'healthHazards', 'ghsClassification', 'firstAid', 'storageConditions', 
-              'incompatibleMaterials', 'solubility', 'vaporPressure', 'refractiveIndex',
-              'physicalDescription'
-            )
-          )::jsonb`,
-          pubchemSyncedAt: sql`NOW()`,
-          updatedAt: sql`NOW()`,
-        })
-        .where(eq(schema.products.id, id as string));
+        .set(pubchemDataToUpdateFields(pubchemData))
+        .where(eq(schema.products.id, id));
       
       results.updated.push({ cas, name, cid: pubchemData.cid });
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-    } catch (error: any) {
-      console.error(`[Sync] Error updating ${cas}:`, error?.message);
-      results.failed.push({ cas, name, reason: error?.message || 'Unknown error' });
+      await new Promise(r => setTimeout(r, 500));
+    } catch (e: any) {
+      results.failed.push({ cas, name, reason: e?.message });
     }
   }
   
-  return NextResponse.json({
-    success: true,
-    message: `Synced ${results.updated.length} SPU, ${results.failed.length} failed`,
-    updated: results.updated.length,
-    failed: results.failed.length,
-    details: results,
-  });
+  return NextResponse.json({ success: true, ...results, updated: results.updated.length, failed: results.failed.length });
+}
+
+/** 创建产品 */
+async function createProduct(db: any, cas: string, pubchemData: PubChemData) {
+  const nameZh = pubchemData.synonyms ? extractChineseName(pubchemData.synonyms) : null;
+  
+  const result = await db.execute(sql`
+    INSERT INTO products (
+      cas, name, name_en, formula, description, pubchem_cid, pubchem_data_source, status,
+      molecular_weight, exact_mass, smiles, smiles_canonical, smiles_isomeric, inchi, inchi_key,
+      xlogp, tpsa, complexity, h_bond_donor_count, h_bond_acceptor_count, rotatable_bond_count,
+      heavy_atom_count, formal_charge, physical_description, color_form, odor,
+      boiling_point, melting_point, flash_point, density, solubility, vapor_pressure, refractive_index,
+      hazard_classes, health_hazards, ghs_classification, toxicity_summary, carcinogenicity,
+      first_aid, storage_conditions, incompatible_materials,
+      structure_url, structure_image_key, structure_sdf, structure_2d_svg, synonyms, applications,
+      pubchem_synced_at, created_at, updated_at
+    ) VALUES (
+      ${cas}, ${nameZh || pubchemData.synonyms?.[0] || cas}, ${pubchemData.synonyms?.[0] || null},
+      ${pubchemData.formula || null}, ${pubchemData.description || null},
+      ${pubchemData.cid || null}, 'pubchem', 'DRAFT',
+      ${pubchemData.molecularWeight || null}, ${pubchemData.exactMass || null},
+      ${pubchemData.smiles || null}, ${pubchemData.smilesCanonical || null}, ${pubchemData.smilesIsomeric || null},
+      ${pubchemData.inchi || null}, ${pubchemData.inchiKey || null},
+      ${pubchemData.xlogp || null}, ${pubchemData.tpsa || null}, ${pubchemData.complexity || null},
+      ${pubchemData.hBondDonorCount || null}, ${pubchemData.hBondAcceptorCount || null}, ${pubchemData.rotatableBondCount || null},
+      ${pubchemData.heavyAtomCount || null}, ${pubchemData.formalCharge || null},
+      ${pubchemData.physicalDescription || null}, ${pubchemData.colorForm || null}, ${pubchemData.odor || null},
+      ${pubchemData.boilingPoint || null}, ${pubchemData.meltingPoint || null}, ${pubchemData.flashPoint || null},
+      ${pubchemData.density || null}, ${pubchemData.solubility || null}, ${pubchemData.vaporPressure || null}, ${pubchemData.refractiveIndex || null},
+      ${pubchemData.hazardClasses || null}, ${pubchemData.healthHazards || null}, ${pubchemData.ghsClassification || null},
+      ${pubchemData.toxicitySummary || null}, ${pubchemData.carcinogenicity || null},
+      ${pubchemData.firstAid || null}, ${pubchemData.storageConditions || null}, ${pubchemData.incompatibleMaterials || null},
+      ${pubchemData.structureUrl || null}, ${pubchemData.structureImageKey || null},
+      ${pubchemData.structureSdf || null}, ${pubchemData.structure2dSvg || null},
+      ${pubchemData.synonyms ? JSON.stringify(pubchemData.synonyms) : null},
+      ${pubchemData.applications ? JSON.stringify(pubchemData.applications) : null},
+      NOW(), NOW(), NOW()
+    ) RETURNING id
+  `);
+  
+  return NextResponse.json({ success: true, message: '产品创建成功', action: 'created', id: (result.rows[0] as any)?.id, cid: pubchemData.cid, nameZh });
+}
+
+/** 更新产品 */
+async function updateProduct(db: any, productId: string, pubchemData: PubChemData) {
+  await db.update(schema.products)
+    .set(pubchemDataToUpdateFields(pubchemData))
+    .where(eq(schema.products.id, productId));
+  
+  return NextResponse.json({ success: true, message: '产品更新成功', action: 'updated', id: productId, cid: pubchemData.cid });
 }
