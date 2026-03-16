@@ -7,16 +7,52 @@ COZE_WORKSPACE_PATH="${COZE_WORKSPACE_PATH:-$(pwd)}"
 
 cd "${COZE_WORKSPACE_PATH}"
 
-# 快速清理端口
+# 强力清理端口 - 使用多种方法确保端口被释放
 kill_ports() {
-    for port in "$@"; do
-        pids=$(ss -H -lntp 2>/dev/null | awk -v port="${port}" '$4 ~ ":"port"$"' | grep -o 'pid=[0-9]*' | cut -d= -f2 | paste -sd' ' - || true)
+    local ports=("$@")
+    
+    for port in "${ports[@]}"; do
+        echo "Cleaning port ${port}..."
+        
+        # 方法1: 使用 ss 查找并杀死进程
+        local pids=$(ss -H -lntp 2>/dev/null | awk -v port="${port}" '$4 ~ ":"port"$"' | grep -o 'pid=[0-9]*' | cut -d= -f2 | tr '\n' ' ' || true)
         if [[ -n "${pids}" ]]; then
-            echo "Killing processes on port ${port}: ${pids}"
-            echo "${pids}" | xargs -r kill -9 2>/dev/null || true
+            echo "  Killing processes via ss: ${pids}"
+            for pid in ${pids}; do
+                kill -9 ${pid} 2>/dev/null || true
+            done
+        fi
+        
+        # 方法2: 使用 fuser (更可靠)
+        if command -v fuser &> /dev/null; then
+            echo "  Using fuser to kill port ${port}"
+            fuser -k -9 ${port}/tcp 2>/dev/null || true
+        fi
+        
+        # 方法3: 使用 lsof 作为备用
+        if command -v lsof &> /dev/null; then
+            local lsof_pids=$(lsof -ti:${port} 2>/dev/null || true)
+            if [[ -n "${lsof_pids}" ]]; then
+                echo "  Killing processes via lsof: ${lsof_pids}"
+                echo "${lsof_pids}" | xargs -r kill -9 2>/dev/null || true
+            fi
         fi
     done
-    sleep 0.5
+    
+    # 等待端口完全释放
+    echo "Waiting for ports to be released..."
+    sleep 2
+    
+    # 验证端口是否已释放
+    for port in "${ports[@]}"; do
+        if ss -lntp 2>/dev/null | grep -q ":${port} "; then
+            echo "WARNING: Port ${port} still in use, forcing cleanup..."
+            fuser -k -9 ${port}/tcp 2>/dev/null || true
+            sleep 1
+        else
+            echo "Port ${port} is free"
+        fi
+    done
 }
 
 echo "=== Starting Dev ==="

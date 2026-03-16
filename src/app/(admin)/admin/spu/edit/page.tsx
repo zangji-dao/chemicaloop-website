@@ -128,77 +128,74 @@ function SPUEditContent() {
       {/* 顶部导航 - 使用负边距占满整个内容区域，增加高度覆盖与header的间隙 */}
       <div className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 -mx-6 -mt-6 px-6 py-5 sticky top-0 z-20">
         <div className="flex items-center justify-between relative">
-            {/* 左侧：返回 + 同步按钮 */}
-            <div className="flex items-center gap-4 flex-shrink-0">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span className="text-sm">{locale === 'zh' ? '返回' : 'Back'}</span>
-              </button>
+          {/* 左侧：返回 + 同步按钮 */}
+          <div className="flex items-center gap-4 flex-shrink-0">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-sm">{locale === 'zh' ? '返回' : 'Back'}</span>
+            </button>
 
-              <div className="w-px h-5 bg-slate-600" />
+            <div className="w-px h-5 bg-slate-600" />
 
+            <button
+              type="button"
+              onClick={handleSyncPubChem}
+              disabled={syncingPubChem || saving || translating}
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-sm transition-colors disabled:opacity-50"
+            >
+              {syncingPubChem ? (
+                <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+              ) : (
+                <RefreshCw className="w-4 h-4 text-purple-400" />
+              )}
+              <span>{t('spu.syncPubchem')}</span>
+            </button>
+
+            {pubchemInfo.syncedAt && (
+              <span className="text-xs text-slate-500 hidden sm:inline">
+                {t('spu.lastSync')}: {new Date(pubchemInfo.syncedAt).toLocaleString()}
+              </span>
+            )}
+          </div>
+
+          {/* 中间：标题 */}
+          <h2 className="text-lg font-semibold text-white absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
+            {isNewMode ? t('spu.newSpu') : t('spu.editSpu')}
+          </h2>
+
+          {/* 右侧：翻译按钮或保存按钮 */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {needTranslate ? (
               <button
                 type="button"
-                onClick={handleSyncPubChem}
-                disabled={syncingPubChem || saving || translating}
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-sm transition-colors disabled:opacity-50"
+                onClick={handleTranslate}
+                disabled={translating || saving || syncingPubChem}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded text-sm transition-colors disabled:opacity-50"
               >
-                {syncingPubChem ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                {translating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <RefreshCw className="w-4 h-4 text-purple-400" />
+                  <Languages className="w-4 h-4" />
                 )}
-                <span>{t('spu.syncPubchem')}</span>
+                <span>{t('spu.translate')}</span>
               </button>
-
-              {pubchemInfo.syncedAt && (
-                <span className="text-xs text-slate-500 hidden sm:inline">
-                  {t('spu.lastSync')}: {new Date(pubchemInfo.syncedAt).toLocaleString()}
-                </span>
-              )}
-            </div>
-
-            {/* 中间：标题 */}
-            <h2 className="text-lg font-semibold text-white absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
-              {isNewMode ? t('spu.newSpu') : t('spu.editSpu')}
-            </h2>
-
-            {/* 右侧：翻译按钮或保存按钮 */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-              {needTranslate ? (
-                // 橘色翻译按钮
-                <button
-                  type="button"
-                  onClick={handleTranslate}
-                  disabled={translating || saving || syncingPubChem}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded text-sm transition-colors disabled:opacity-50"
-                >
-                  {translating ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Languages className="w-4 h-4" />
-                  )}
-                  <span>{t('spu.translate')}</span>
-                </button>
-              ) : (
-                // 蓝色保存按钮
-                <button
-                  onClick={handleSave}
-                  disabled={saving || translating || syncingPubChem}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors disabled:opacity-50"
-                >
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  <span>{t('spu.save')}</span>
-                </button>
-              )}
-            </div>
+            ) : (
+              <button
+                onClick={handleSave}
+                disabled={saving || translating || syncingPubChem}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors disabled:opacity-50"
+              >
+                {saving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                <span>{t('spu.save')}</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
