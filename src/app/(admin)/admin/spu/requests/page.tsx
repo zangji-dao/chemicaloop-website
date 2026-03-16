@@ -256,7 +256,7 @@ export default function AdminSPURequestsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white pt-6 p-6">
       <div className="max-w-7xl mx-auto">
         {/* 页面标题 */}
         <div className="mb-6">

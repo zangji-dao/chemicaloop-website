@@ -239,7 +239,7 @@ function ProductCreateContent() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full">
+    <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full pt-6">
       {/* 顶部导航 */}
       <div className="bg-slate-800/50 border-b border-slate-700/50 px-5 py-3 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto">

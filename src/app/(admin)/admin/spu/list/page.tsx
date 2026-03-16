@@ -191,7 +191,7 @@ export default function AdminSPUPage() {
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-full">
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto pt-6 p-6">
         {/* 页面标题 */}
         <div className="mb-6 flex items-center justify-between">
           <div>

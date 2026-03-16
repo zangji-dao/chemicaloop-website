@@ -95,7 +95,7 @@ export default function InquiryAdminPage() {
   const repliedInquiries = inquiries.filter(i => i.status === 'replied' || i.status === 'completed');
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 pt-6 p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Inquiry Management</h1>
 
