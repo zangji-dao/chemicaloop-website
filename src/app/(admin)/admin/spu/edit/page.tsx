@@ -193,7 +193,7 @@ function SPUEditContent() {
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                <span>{t('spu.save')}</span>
+                <span>{t('common.save')}</span>
               </button>
             )}
           </div>

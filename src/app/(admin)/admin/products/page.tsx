@@ -736,7 +736,7 @@ export default function AdminProductsPage() {
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('products.specInfo')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('products.agent')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('products.price')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('products.status')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('common.status')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('products.submitTime')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('products.actions')}</th>
                 </tr>

@@ -121,7 +121,7 @@ function SPUCreateImageContent() {
           onClick={handleNext}
           className="flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-medium transition-colors"
         >
-          <span>{t('spu.next')}</span>
+          <span>{t('common.next')}</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       );
@@ -142,7 +142,7 @@ function SPUCreateImageContent() {
               className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">{t('spu.previous')}</span>
+              <span className="text-sm">{t('common.previous')}</span>
             </button>
 
             <h1 className="text-lg font-medium">
@@ -179,7 +179,7 @@ function SPUCreateImageContent() {
               className="mt-6 flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              {t('spu.previous')}
+              {t('common.previous')}
             </button>
           </div>
         )}
@@ -238,7 +238,7 @@ function SPUCreateImageContent() {
                     />
                   ) : (
                     <div className="text-slate-500 text-xs text-center px-3">
-                      {t('spu.loading')}
+                      {t('common.loading')}
                     </div>
                   )}
                 </div>

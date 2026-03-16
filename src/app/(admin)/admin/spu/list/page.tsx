@@ -262,7 +262,7 @@ export default function AdminSPUPage() {
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.mw')}</th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.hsCode')}</th>
                   <th className="px-4 py-3 text-center text-sm font-medium text-slate-400">{t('spu.skuCount')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('spu.status')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-400">{t('common.status')}</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-slate-400">{t('common.actions')}</th>
                 </tr>
               </thead>

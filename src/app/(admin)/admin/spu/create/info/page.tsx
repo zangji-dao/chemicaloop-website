@@ -136,7 +136,7 @@ function SPUCreateInfoContent() {
                   ) : (
                     <>
                       <Save className="h-4 w-4" />
-                      <span>{t('spu.save')}</span>
+                      <span>{t('common.save')}</span>
                     </>
                   )}
                 </button>

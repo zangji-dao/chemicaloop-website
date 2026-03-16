@@ -237,7 +237,7 @@ function ProductCreateContent() {
           onClick={handleNext}
           className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm whitespace-nowrap"
         >
-          {t('spu.next')}
+          {t('common.next')}
           <ArrowRight className="h-4 w-4" />
         </button>
       );

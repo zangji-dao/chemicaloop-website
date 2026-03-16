@@ -44,7 +44,7 @@ export function BasicInfoSection({ formData, setFormData, isEditMode, t }: Basic
         </div>
         {/* 状态 */}
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1">{t('spu.status')}</label>
+          <label className="block text-xs font-medium text-slate-300 mb-1">{t('common.status')}</label>
           <select
             value={formData.status}
             onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
