@@ -5,43 +5,44 @@ import * as schema from '@/db';
 
 /**
  * GET /api/admin/spu/list/stats
- * 获取 SPU 统计数据
+ * 获取产品统计数据
  */
 export async function GET(request: NextRequest) {
   try {
     const db = await getDb(schema);
 
-    // 按状态统计 SPU (products 表)
-    const spuStatsResult = await db.execute(sql`
+    // 按状态统计
+    const statsResult = await db.execute(sql`
       SELECT 
         status,
         COUNT(*) as count
-      FROM products
+      FROM agent_products
       GROUP BY status
     `);
 
     // 转换为对象格式
-    const spuStats: Record<string, number> = {};
-    let totalSpu = 0;
+    const stats: Record<string, number> = {};
+    let total = 0;
     
-    for (const row of spuStatsResult.rows) {
+    for (const row of statsResult.rows) {
       const { status, count } = row as any;
-      spuStats[status] = parseInt(count);
-      totalSpu += parseInt(count);
+      stats[status] = parseInt(count);
+      total += parseInt(count);
     }
 
     return NextResponse.json({
       success: true,
       stats: {
-        total: totalSpu,
-        active: spuStats['ACTIVE'] || 0,
-        inactive: spuStats['INACTIVE'] || 0,
-        pending: spuStats['PENDING'] || 0,
-        rejected: spuStats['REJECTED'] || 0,
+        total,
+        pending: stats['pending'] || 0,
+        approved: stats['approved'] || 0,
+        rejected: stats['rejected'] || 0,
+        active: stats['active'] || 0,
+        inactive: stats['inactive'] || 0,
       },
     });
   } catch (error) {
-    console.error('Get SPU stats error:', error);
+    console.error('Get product stats error:', error);
     return NextResponse.json({ success: false, error: '服务器错误' }, { status: 500 });
   }
 }
