@@ -69,9 +69,9 @@ export async function GET(
       const productData = {
         ...product,
         // 结构图 URL（通过签名 URL API 获取）
-        structureImageUrl: product.structureImageKey ? `/api/admin/spu/create/image-url?key=${encodeURIComponent(product.structureImageKey)}` : null,
+        structureImageUrl: product.structureImageKey ? `/api/common/image-url?key=${encodeURIComponent(product.structureImageKey)}` : null,
         // 产品图 URL（通过签名 URL API 获取）
-        productImageUrl: product.productImageKey ? `/api/admin/spu/create/image-url?key=${encodeURIComponent(product.productImageKey)}` : null,
+        productImageUrl: product.productImageKey ? `/api/common/image-url?key=${encodeURIComponent(product.productImageKey)}` : null,
       };
 
       return NextResponse.json({
@@ -130,9 +130,9 @@ export async function GET(
       const productData = {
         ...product,
         // 结构图 URL（通过签名 URL API 获取）
-        structureImageUrl: product.structureImageKey ? `/api/admin/spu/create/image-url?key=${encodeURIComponent(product.structureImageKey)}` : null,
+        structureImageUrl: product.structureImageKey ? `/api/common/image-url?key=${encodeURIComponent(product.structureImageKey)}` : null,
         // 产品图 URL（通过签名 URL API 获取）
-        productImageUrl: product.productImageKey ? `/api/admin/spu/create/image-url?key=${encodeURIComponent(product.productImageKey)}` : null,
+        productImageUrl: product.productImageKey ? `/api/common/image-url?key=${encodeURIComponent(product.productImageKey)}` : null,
         nameEn: product.name,
         nameZh: product.translations?.name?.zh || product.name,
         referencePrice: suppliers.length > 0 ? suppliers[0].price : null,

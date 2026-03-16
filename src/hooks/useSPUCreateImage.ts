@@ -129,7 +129,7 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
       if (data.structureImageKey) {
         // 从对象存储获取图片 URL（使用 redirect=false 获取 JSON 响应）
         const token = getAdminToken();
-        const imageUrlResponse = await fetch(`/api/admin/spu/create/image-url?key=${encodeURIComponent(data.structureImageKey)}&redirect=false`, {
+        const imageUrlResponse = await fetch(`/api/common/image-url?key=${encodeURIComponent(data.structureImageKey)}&redirect=false`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         });
         const imageUrlData = await imageUrlResponse.json();

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, S3Storage } from 'coze-coding-dev-sdk';
+import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
+import { getSignedImageUrls } from '@/lib/s3-utils';
 
 /**
  * GET /api/products/[cas]
@@ -106,15 +107,6 @@ export async function GET(
       .map((row: any) => row.image_key)
       .filter((key: string | null) => key);
 
-    let signedUrls: Record<string, string> = {};
-    const storage = new S3Storage({
-      endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
-      accessKey: '',
-      secretKey: '',
-      bucketName: process.env.COZE_BUCKET_NAME,
-      region: 'cn-beijing',
-    });
-
     // 收集所有需要签名的 keys
     const keysToSign = [...imageKeys];
     if (spu.image_url && !spu.image_url.startsWith('http')) {
@@ -127,17 +119,8 @@ export async function GET(
       keysToSign.push(spu.product_image_key);
     }
 
-    if (keysToSign.length > 0) {
-      signedUrls = await Promise.all(
-        keysToSign.map(async (key: string) => {
-          const url = await storage.generatePresignedUrl({
-            key,
-            expireTime: 86400,
-          });
-          return { key, url };
-        })
-      ).then(results => Object.fromEntries(results.map(r => [r.key, r.url])));
-    }
+    // 使用工具函数批量获取签名 URL
+    const signedUrls = await getSignedImageUrls(keysToSign);
 
     const suppliers = suppliersResult.rows.map((row: any) => ({
       id: row.id,

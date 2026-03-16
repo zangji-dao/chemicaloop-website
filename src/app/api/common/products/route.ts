@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, S3Storage } from 'coze-coding-dev-sdk';
+import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
+import { getSignedImageUrls } from '@/lib/s3-utils';
 
 /**
  * GET /api/products
@@ -71,27 +72,8 @@ export async function GET(request: NextRequest) {
       .map((row: any) => row.image_key || row.product_image_key)
       .filter((key: string | null) => key);
 
-    // 批量生成签名 URL（并行）
-    let signedUrls: Record<string, string> = {};
-    if (imageKeys.length > 0) {
-      const storage = new S3Storage({
-        endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
-        accessKey: '',
-        secretKey: '',
-        bucketName: process.env.COZE_BUCKET_NAME,
-        region: 'cn-beijing',
-      });
-
-      signedUrls = await Promise.all(
-        imageKeys.map(async (key: string) => {
-          const url = await storage.generatePresignedUrl({
-            key,
-            expireTime: 86400,
-          });
-          return { key, url };
-        })
-      ).then(results => Object.fromEntries(results.map(r => [r.key, r.url])));
-    }
+    // 使用工具函数批量获取签名 URL
+    const signedUrls = await getSignedImageUrls(imageKeys);
 
     // 过滤 translations 字段，只保留当前语言
     const filterTranslations = (translations: any) => {
