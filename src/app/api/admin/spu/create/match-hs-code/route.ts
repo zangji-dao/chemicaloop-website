@@ -3,7 +3,7 @@ import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
-import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
+import { withAdminAuth } from '@/lib/withAuth';
 
 // 常见化学品 HS 编码参考表
 const HS_CODE_REFERENCE: Record<string, { code: string; description: string }> = {
@@ -80,15 +80,8 @@ interface MatchRequest {
  * 
  * 基于 AI 智能匹配 6 位 HS 编码
  */
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request) => {
   try {
-    const auth = verifyAdmin(request);
-    if (!auth.success) {
-      return auth.status === 401 
-        ? unauthorizedResponse(auth.error)
-        : forbiddenResponse(auth.error);
-    }
-
     const body = await request.json() as MatchRequest;
     const { cas, name, nameEn, formula, description, applications } = body;
 
@@ -235,4 +228,4 @@ Return the 6-digit HS code.`;
       error: error.message || 'HS 编码匹配失败',
     }, { status: 500 });
   }
-}
+});

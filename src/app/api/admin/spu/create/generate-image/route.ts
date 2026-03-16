@@ -4,7 +4,7 @@ import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 import { generateChemicalSVG, validateSVG } from '@/services/chemical-svg-generator';
-import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
+import { withAdminAuth } from '@/lib/withAuth';
 
 /**
  * 生成产品图片 API
@@ -18,15 +18,8 @@ import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth
  * 
  * 生成美化版化学结构 SVG 图
  */
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request) => {
   try {
-    const auth = verifyAdmin(request);
-    if (!auth.success) {
-      return auth.status === 401 
-        ? unauthorizedResponse(auth.error)
-        : forbiddenResponse(auth.error);
-    }
-
     const body = await request.json();
     const { productId, spuId, cas: inputCas, name: inputName, force } = body;
 
@@ -209,4 +202,4 @@ export async function POST(request: NextRequest) {
       details: error.message,
     }, { status: 500 });
   }
-}
+});
