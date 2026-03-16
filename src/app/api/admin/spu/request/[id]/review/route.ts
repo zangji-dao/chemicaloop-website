@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Storage, getDb } from 'coze-coding-dev-sdk';
+import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 import { syncProductWithTranslations } from '@/services/productSyncService';
 import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
 
 /**
- * 预审产品 - 快速返回产品信息，检查 SPU 状态
+ * 获取 SPU 申请详情
  * GET /api/admin/spu/request/[id]/review
  */
 export async function GET(
@@ -24,79 +24,43 @@ export async function GET(
     const { id } = await params;
     const db = await getDb(schema);
 
-    // 获取代理商产品信息
-    const productResult = await db.execute(sql`
+    // 获取 SPU 申请详情
+    const result = await db.execute(sql`
       SELECT 
-        ap.id, ap.cas, ap.name, ap.purity, ap.package_spec, ap.price,
-        ap.min_order, ap.stock, ap.stock_public, ap.origin, ap.status, ap.remark,
-        ap.spu_id, ap.image_key,
-        u.name as agent_name, u.email as agent_email
-      FROM agent_products ap
-      JOIN users u ON ap.agent_id = u.id
-      WHERE ap.id = ${id}
+        p.*,
+        u.name as submitter_name, u.email as submitter_email,
+        reviewer.name as reviewer_name
+      FROM products p
+      LEFT JOIN users u ON p.submitted_by = u.id
+      LEFT JOIN users reviewer ON p.reviewed_by = reviewer.id
+      WHERE p.id = ${id}
     `);
 
-    if (productResult.rows.length === 0) {
-      return NextResponse.json({ error: '产品不存在' }, { status: 404 });
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: 'SPU 申请不存在' }, { status: 404 });
     }
 
-    const product = productResult.rows[0] as any;
-
-    // 检查 SPU (products 表) 是否已存在该 CAS 码
-    const spuResult = await db.execute(sql`
-      SELECT 
-        id, name, name_en, description, translations, image_url,
-        pubchem_cid, synonyms, applications
-      FROM products 
-      WHERE cas = ${product.cas}
-    `);
-
-    const existingSpu = spuResult.rows[0] as any;
-
-    // 如果 SPU 已存在且有图片
-    if (existingSpu && existingSpu.image_url) {
-      return NextResponse.json({
-        success: true,
-        product,
-        spu: {
-          id: existingSpu.id,
-          exists: true,
-          hasImage: true,
-          imageUrl: existingSpu.image_url,
-          hasTranslations: existingSpu.translations && Object.keys(existingSpu.translations).length > 0,
-          name: existingSpu.name,
-          nameEn: existingSpu.name_en,
-          pubchemCid: existingSpu.pubchem_cid,
-        },
-      });
-    }
-
-    // 新 CAS 码，返回需要同步 PubChem 的标记
     return NextResponse.json({
       success: true,
-      product,
-      spu: {
-        id: existingSpu?.id || null,
-        exists: !!existingSpu,
-        hasImage: false,
-        needsSync: true, // 标记需要同步 PubChem
-        needsTranslation: !existingSpu?.translations || Object.keys(existingSpu.translations || {}).length === 0,
-      },
+      data: result.rows[0],
     });
   } catch (error: any) {
-    console.error('Review product error:', error);
+    console.error('Get SPU request detail error:', error);
     return NextResponse.json({
       success: false,
-      error: '审核失败',
-      details: error.message,
+      error: error.message || '获取详情失败',
     }, { status: 500 });
   }
 }
 
 /**
- * 审核产品 - 通过/拒绝，自动同步 PubChem 和翻译
+ * 审核 SPU 申请 - 通过/拒绝
  * POST /api/admin/spu/request/[id]/review
- * Body: { status: 'approved' | 'rejected', review_note?: string }
+ * 
+ * Body: 
+ * - status: 'ACTIVE' | 'REJECTED'
+ * - review_note?: string
+ * - syncPubchem?: boolean (默认 true，通过时自动同步 PubChem 数据)
  */
 export async function POST(
   request: NextRequest,
@@ -112,68 +76,69 @@ export async function POST(
 
     const { id } = await params;
     const body = await request.json();
-    const { status, review_note, skipSync } = body;
+    const { status, review_note, syncPubchem = true } = body;
 
-    const validStatuses = ['approved', 'rejected'];
+    const validStatuses = ['ACTIVE', 'REJECTED'];
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: '无效的状态' }, { status: 400 });
     }
 
     const db = await getDb(schema);
 
-    // 获取代理商产品信息
-    const productResult = await db.execute(sql`
-      SELECT id, cas, name, agent_id FROM agent_products WHERE id = ${id}
+    // 获取 SPU 申请信息
+    const spuResult = await db.execute(sql`
+      SELECT id, cas, name, status FROM products WHERE id = ${id}
     `);
 
-    if (productResult.rows.length === 0) {
-      return NextResponse.json({ error: '产品不存在' }, { status: 404 });
+    if (spuResult.rows.length === 0) {
+      return NextResponse.json({ error: 'SPU 申请不存在' }, { status: 404 });
     }
 
-    const agentProduct = productResult.rows[0] as any;
-    let spuId: string | null = null;
+    const spu = spuResult.rows[0] as any;
+
+    // 如果当前状态不是 PENDING，不允许审核
+    if (spu.status !== 'PENDING') {
+      return NextResponse.json({ error: '该申请已被审核' }, { status: 400 });
+    }
+
     let syncResult: any = null;
 
-    // 审核通过时，同步 SPU 和翻译
-    if (status === 'approved' && !skipSync) {
-      console.log(`[Review] Syncing SPU for CAS: ${agentProduct.cas}`);
+    // 审核通过时，可选择同步 PubChem 数据
+    if (status === 'ACTIVE' && syncPubchem) {
+      console.log(`[SPU Review] Syncing PubChem for CAS: ${spu.cas}`);
       
-      syncResult = await syncProductWithTranslations(
-        agentProduct.cas,
-        agentProduct.name
-      );
+      syncResult = await syncProductWithTranslations(spu.cas, spu.name);
       
-      if (syncResult.success && syncResult.productId) {
-        spuId = syncResult.productId;
-        console.log(`[Review] SPU synced: ${spuId}`);
-      } else {
-        console.log(`[Review] SPU sync failed: ${syncResult.error}`);
+      if (!syncResult.success) {
+        console.log(`[SPU Review] PubChem sync failed: ${syncResult.error}`);
+        // 即使同步失败，仍然通过审核，只是记录日志
       }
     }
 
-    // 更新代理商产品状态
+    // 更新 SPU 状态
     await db.execute(sql`
-      UPDATE agent_products 
-      SET status = ${status}, 
-          review_note = ${review_note || null}, 
-          reviewed_at = NOW(), 
+      UPDATE products 
+      SET status = ${status},
+          review_note = ${review_note || null},
           reviewed_by = ${auth.userId},
-          spu_id = ${spuId},
+          reviewed_at = NOW(),
           updated_at = NOW()
       WHERE id = ${id}
     `);
 
     return NextResponse.json({
       success: true,
-      message: status === 'approved' ? '审核通过' : '已拒绝',
-      spuId,
-      translations: syncResult?.translations,
+      message: status === 'ACTIVE' ? '审核通过，SPU 已激活' : '已拒绝',
+      syncResult: syncResult ? {
+        success: syncResult.success,
+        translations: syncResult.translations,
+      } : null,
     });
   } catch (error: any) {
-    console.error('Update product status error:', error);
+    console.error('Review SPU request error:', error);
     return NextResponse.json({
       success: false,
-      error: '审核失败',
+      error: error.message || '审核失败',
     }, { status: 500 });
   }
 }

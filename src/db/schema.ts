@@ -86,7 +86,13 @@ export const products = pgTable("products", {
 	formula: varchar({ length: 100 }),                          // 分子式
 	description: text(),                                        // 产品描述
 	imageUrl: text("image_url"),                                // 产品图片 URL
-	status: varchar({ length: 20 }).default('ACTIVE'),          // 状态
+	status: varchar({ length: 20 }).default('ACTIVE'),          // 状态: PENDING | ACTIVE | INACTIVE | REJECTED
+	
+	// ========== 审核信息（SPU 申请时使用）==========
+	submittedBy: uuid("submitted_by"),                           // 提交人 ID（用户申请时）
+	reviewedBy: uuid("reviewed_by"),                             // 审核人 ID
+	reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: 'string' }),
+	reviewNote: text("review_note"),                             // 审核备注
 	
 	// ========== PubChem 基础信息 ==========
 	pubchemCid: integer("pubchem_cid"),                         // PubChem Compound ID
@@ -178,6 +184,18 @@ export const products = pgTable("products", {
 	index("idx_products_pubchem_cid").using("btree", table.pubchemCid.asc().nullsLast().op("int4_ops")),
 	index("idx_products_hs_code").using("btree", table.hsCode.asc().nullsLast().op("text_ops")),
 	index("idx_products_name_en").using("btree", table.nameEn.asc().nullsLast().op("text_ops")),
+	index("idx_products_status").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	index("idx_products_submitted_by").using("btree", table.submittedBy.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.submittedBy],
+		foreignColumns: [users.id],
+		name: "products_submitted_by_fkey"
+	}).onDelete("set null"),
+	foreignKey({
+		columns: [table.reviewedBy],
+		foreignColumns: [users.id],
+		name: "products_reviewed_by_fkey"
+	}).onDelete("set null"),
 ]);
 
 export const agentLinks = pgTable("agent_links", {

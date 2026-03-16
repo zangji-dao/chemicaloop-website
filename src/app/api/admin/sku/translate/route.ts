@@ -12,8 +12,8 @@ interface TranslationRequest {
 }
 
 /**
- * 翻译产品信息并存储到数据库
- * POST /api/admin/spu/request/translate
+ * 翻译 SKU 产品信息并存储到数据库
+ * POST /api/admin/sku/translate
  * 
  * 仅支持 agent_products 表，翻译 name, remark, origin 字段
  */
