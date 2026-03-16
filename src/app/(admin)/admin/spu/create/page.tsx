@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Search,
   Database,
@@ -75,6 +75,7 @@ type SearchStatus = 'idle' | 'searching' | 'syncing' | 'found' | 'synced' | 'not
 
 function ProductCreateContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { locale, t } = useAdminLocale();
 
   // ========== 状态 ==========
@@ -85,6 +86,20 @@ function ProductCreateContent() {
   const [previewData, setPreviewData] = useState<PubChemPreviewData | null>(null);
   const [searchedCas, setSearchedCas] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [initialSearchDone, setInitialSearchDone] = useState(false);
+
+  // ========== 从 URL 读取 CAS 参数并自动搜索 ==========
+  useEffect(() => {
+    const casFromUrl = searchParams.get('cas');
+    if (casFromUrl && !initialSearchDone && !searching) {
+      setCasInput(casFromUrl);
+      setInitialSearchDone(true);
+      // 延迟触发搜索，确保状态已更新
+      setTimeout(() => {
+        handleSearchWithCas(casFromUrl);
+      }, 100);
+    }
+  }, [searchParams, initialSearchDone, searching]);
 
   // ========== CAS 格式验证 ==========
   const validateCAS = (cas: string): boolean => {
@@ -99,6 +114,16 @@ function ProductCreateContent() {
   // ========== 搜索功能 ==========
   const handleSearch = async () => {
     const cas = casInput.trim();
+    await doSearch(cas);
+  };
+
+  // 带参数的搜索（用于 URL 参数自动触发）
+  const handleSearchWithCas = async (cas: string) => {
+    await doSearch(cas.trim());
+  };
+
+  // 实际搜索逻辑
+  const doSearch = async (cas: string) => {
     
     // 验证CAS格式
     if (!cas) {
