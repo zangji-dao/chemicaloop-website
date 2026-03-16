@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
+import { withAdminAuth } from '@/lib/withAuth';
 
 /**
  * 验证 UUID 格式的工具函数
@@ -37,10 +38,10 @@ function toCamelCase(obj: Record<string, any>): Record<string, any> {
  * 获取 SPU 产品详情
  * 支持通过 UUID 或 CAS 号查询 products 表
  */
-export async function GET(
-  request: NextRequest,
+export const GET = withAdminAuth(async (
+  request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
     const db = await getDb(schema);
     const { id } = await params;
@@ -156,16 +157,16 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * DELETE /api/admin/spu/list/[id]
  * 删除 SPU 产品
  */
-export async function DELETE(
-  request: NextRequest,
+export const DELETE = withAdminAuth(async (
+  request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
     const db = await getDb(schema);
     const { id } = await params;
@@ -206,4 +207,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+});

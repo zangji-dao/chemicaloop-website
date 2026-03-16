@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
+import { withAdminAuth } from '@/lib/withAuth';
 
 /**
  * GET /api/admin/products
  * 获取产品列表（SKU列表，包含SPU信息）
  */
-export async function GET(request: NextRequest) {
+export const GET = withAdminAuth(async (request) => {
   try {
     const db = await getDb(schema);
     const { searchParams } = new URL(request.url);
@@ -83,13 +84,13 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * POST /api/admin/products
  * 创建新产品（先创建/更新SPU，再创建SKU）
  */
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request) => {
   try {
     const db = await getDb(schema);
     const body = await request.json();
@@ -185,4 +186,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

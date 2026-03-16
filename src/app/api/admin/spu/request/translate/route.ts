@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
-import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
+import { withAdminAuth } from '@/lib/withAuth';
 import { translateText } from '@/services/productSyncService';
 
 interface TranslationRequest {
@@ -17,15 +17,8 @@ interface TranslationRequest {
  * 
  * 仅支持 agent_products 表，翻译 name, remark, origin 字段
  */
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request) => {
   try {
-    const auth = verifyAdmin(request);
-    if (!auth.success) {
-      return auth.status === 401 
-        ? unauthorizedResponse(auth.error)
-        : forbiddenResponse(auth.error);
-    }
-
     const { productId, targetLanguage, fields = ['name', 'remark', 'origin'] } = await request.json() as TranslationRequest;
 
     if (!productId || !targetLanguage) {
@@ -115,4 +108,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

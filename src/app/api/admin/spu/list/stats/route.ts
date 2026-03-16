@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
+import { withAdminAuth } from '@/lib/withAuth';
 
 /**
  * GET /api/admin/spu/list/stats
  * 获取产品统计数据
  */
-export async function GET(request: NextRequest) {
+export const GET = withAdminAuth(async (request) => {
   try {
     const db = await getDb(schema);
 
@@ -45,4 +46,4 @@ export async function GET(request: NextRequest) {
     console.error('Get product stats error:', error);
     return NextResponse.json({ success: false, error: '服务器错误' }, { status: 500 });
   }
-}
+});

@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
+import { withAdminAuth } from '@/lib/withAuth';
 
 /**
  * POST /api/admin/spu/list/cleanup
  * 清理重复数据
  */
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request) => {
   try {
     const db = await getDb(schema);
     const body = await request.json();
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * 去重文本中的重复项（支持多种分隔符）

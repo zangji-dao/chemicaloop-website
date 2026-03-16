@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { API_CONFIG } from '@/lib/config';
 import { getToken } from '@/lib/auth';
+import { withAdminAuth } from '@/lib/withAuth';
 
 // Get all users
-export async function GET(request: NextRequest) {
+export const GET = withAdminAuth(async (request) => {
   try {
     const token = getToken(request);
 
@@ -38,4 +39,4 @@ export async function GET(request: NextRequest) {
     console.error('Get users error:', error);
     return NextResponse.json({ error: '服务器错误' }, { status: 500 });
   }
-}
+});

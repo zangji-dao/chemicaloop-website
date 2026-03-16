@@ -3,24 +3,17 @@ import { S3Storage, getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 import { syncProductWithTranslations } from '@/services/productSyncService';
-import { verifyAdmin, unauthorizedResponse, forbiddenResponse } from '@/lib/auth';
+import { withAdminAuth } from '@/lib/withAuth';
 
 /**
  * 预审产品 - 快速返回产品信息，检查 SPU 状态
  * GET /api/admin/spu/request/[id]/review
  */
-export async function GET(
-  request: NextRequest,
+export const GET = withAdminAuth(async (
+  request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
-    const auth = verifyAdmin(request);
-    if (!auth.success) {
-      return auth.status === 401 
-        ? unauthorizedResponse(auth.error)
-        : forbiddenResponse(auth.error);
-    }
-
     const { id } = await params;
     const db = await getDb(schema);
 
@@ -91,25 +84,19 @@ export async function GET(
       details: error.message,
     }, { status: 500 });
   }
-}
+});
 
 /**
  * 审核产品 - 通过/拒绝，自动同步 PubChem 和翻译
  * POST /api/admin/spu/request/[id]/review
  * Body: { status: 'approved' | 'rejected', review_note?: string }
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const POST = withAdminAuth(async (
+  request,
+  { params }: { params: Promise<{ id: string }> },
+  auth
+) => {
   try {
-    const auth = verifyAdmin(request);
-    if (!auth.success) {
-      return auth.status === 401 
-        ? unauthorizedResponse(auth.error)
-        : forbiddenResponse(auth.error);
-    }
-
     const { id } = await params;
     const body = await request.json();
     const { status, review_note, skipSync } = body;
@@ -176,4 +163,4 @@ export async function POST(
       error: '审核失败',
     }, { status: 500 });
   }
-}
+});

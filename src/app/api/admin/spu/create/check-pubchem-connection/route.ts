@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { existsSync, readFileSync, unlinkSync } from 'fs';
+import { withAdminAuth } from '@/lib/withAuth';
 
 const execAsync = promisify(exec);
 
@@ -43,7 +44,7 @@ async function fetchWithCurl(url: string, timeoutMs: number = 15000): Promise<{ 
  * GET /api/admin/spu/create/check-pubchem-connection
  * 检测 PubChem API 是否可达
  */
-export async function GET(request: NextRequest) {
+export const GET = withAdminAuth(async (request) => {
   const startTime = Date.now();
   const url = `${PUBCHEM_BASE_URL}/compound/name/methanol/cids/JSON`;
   
@@ -122,4 +123,4 @@ export async function GET(request: NextRequest) {
       error: error?.message || 'Unknown error',
     });
   }
-}
+});

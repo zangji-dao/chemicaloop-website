@@ -4,12 +4,13 @@ import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 import { generateChemicalSVG, validateSVG } from '@/services/chemical-svg-generator';
 import { API_CONFIG } from '@/lib/config';
+import { withAdminAuth } from '@/lib/withAuth';
 
 /**
  * GET /api/spu-requests
  * 获取 SPU 申请列表（管理员）
  */
-export async function GET(request: NextRequest) {
+export const GET = withAdminAuth(async (request) => {
   try {
     const db = await getDb(schema);
     const { searchParams } = new URL(request.url);
@@ -78,13 +79,13 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * POST /api/spu-requests
  * 用户提交 SPU 申请
  */
-export async function POST(request: NextRequest) {
+export const POST = withAdminAuth(async (request) => {
   try {
     const db = await getDb(schema);
     const body = await request.json();
@@ -203,13 +204,13 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * PUT /api/spu-requests
  * 管理员审核 SPU 申请
  */
-export async function PUT(request: NextRequest) {
+export const PUT = withAdminAuth(async (request) => {
   try {
     const db = await getDb(schema);
     const body = await request.json();
@@ -470,13 +471,13 @@ export async function PUT(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * DELETE /api/spu-requests
  * 用户取消自己的申请
  */
-export async function DELETE(request: NextRequest) {
+export const DELETE = withAdminAuth(async (request) => {
   try {
     const db = await getDb(schema);
     const { searchParams } = new URL(request.url);
@@ -515,4 +516,4 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

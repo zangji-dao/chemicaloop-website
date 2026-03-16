@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from 'coze-coding-dev-sdk';
 import * as schema from '@/db';
 import { sql, desc, eq, and, inArray } from 'drizzle-orm';
+import { withAdminAuth } from '@/lib/withAuth';
 
 /**
  * GET /api/customs-data
@@ -15,7 +16,7 @@ import { sql, desc, eq, and, inArray } from 'drizzle-orm';
  * - search: 搜索关键词
  * - year: 年份
  */
-export async function GET(request: NextRequest) {
+export const GET = withAdminAuth(async (request) => {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'stats';
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
     console.error('Customs data API error:', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
-}
+});
 
 /**
  * 获取统计信息
