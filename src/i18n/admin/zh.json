@@ -346,7 +346,6 @@
     "parsingDataMsg": "正在解析数据...",
     "updatingFormMsg": "正在更新表单...",
     "syncFailedMsg": "PubChem 连接失败",
-    "upload": "SPU上架",
     "uploadSubtitle": "从SPU库选择或手动录入SPU信息",
     "selectProduct": "选择SPU",
     "confirmData": "确认数据",

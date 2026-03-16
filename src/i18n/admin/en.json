@@ -347,7 +347,6 @@
     "parsingDataMsg": "Parsing data...",
     "updatingFormMsg": "Updating form...",
     "syncFailedMsg": "PubChem connection failed",
-    "upload": "Upload SPU",
     "uploadSubtitle": "Select from SPU library or enter manually",
     "selectProduct": "Select SPU",
     "confirmData": "Confirm Data",
