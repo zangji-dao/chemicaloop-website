@@ -79,7 +79,7 @@ async function main() {
       console.log(`  检测到纯英文，需要翻译中文...`);
       
       // 翻译成中文作为 name
-      const translatedZh = await translateText(p.name, 'zh', BASE_URL);
+      const translatedZh = await translateText(p.name, 'zh');
       if (translatedZh) {
         cleanName = translatedZh;
         console.log(`  翻译中文: ${translatedZh}`);
@@ -90,14 +90,14 @@ async function main() {
       // 日文或韩文，翻译成中文和英文
       console.log(`  检测到${nameLang === 'ja' ? '日文' : '韩文'}，翻译中英文...`);
       
-      const translatedZh = await translateText(p.name, 'zh', BASE_URL);
+      const translatedZh = await translateText(p.name, 'zh');
       if (translatedZh) {
         cleanName = translatedZh;
         console.log(`  翻译中文: ${translatedZh}`);
       }
       await sleep(200);
       
-      const translatedEn = await translateText(p.name, 'en', BASE_URL);
+      const translatedEn = await translateText(p.name, 'en');
       if (translatedEn) {
         cleanNameEn = translatedEn;
         console.log(`  翻译英文: ${translatedEn}`);
@@ -148,7 +148,7 @@ async function main() {
     for (const lang of SUPPORTED_LANGUAGES) {
       if (lang === 'en' || lang === 'zh') continue;
       
-      const translated = await translateText(cleanNameEn || cleanName, lang, BASE_URL);
+      const translated = await translateText(cleanNameEn || cleanName, lang);
       if (translated) {
         newTranslations.name[lang] = translated;
         console.log(`    ${lang}: ${translated}`);

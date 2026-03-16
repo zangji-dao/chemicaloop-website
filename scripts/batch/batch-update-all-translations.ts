@@ -80,7 +80,7 @@ async function main() {
               continue;
             }
             
-            const translated = await translateText(nameToTranslate, lang, BASE_URL);
+            const translated = await translateText(nameToTranslate, lang);
             if (translated) {
               translations.name[lang] = translated;
               console.log(`    ✅ ${lang}: ${translated}`);
@@ -104,7 +104,7 @@ async function main() {
           if (!translations.description) translations.description = {};
           
           for (const lang of missingDescLangs) {
-            const translated = await translateText(product.description, lang, BASE_URL);
+            const translated = await translateText(product.description, lang);
             if (translated) {
               translations.description[lang] = translated;
             }
@@ -132,7 +132,7 @@ async function main() {
             if (!translations.applications[lang]) translations.applications[lang] = [];
             
             for (const app of apps) {
-              const translated = await translateText(app, lang, BASE_URL);
+              const translated = await translateText(app, lang);
               translations.applications[lang].push(translated || app);
               await sleep(200);
             }

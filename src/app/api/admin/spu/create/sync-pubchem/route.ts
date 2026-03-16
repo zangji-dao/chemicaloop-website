@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb, S3Storage } from 'coze-coding-dev-sdk';
 import { sql, eq } from 'drizzle-orm';
 import * as schema from '@/db';
-import { API_CONFIG } from '@/lib/config';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { translateText as translateTextBase } from '@/services/productSyncService';
 
 const execAsync = promisify(exec);
 
@@ -54,92 +52,6 @@ function extractChineseName(synonyms: string[]): string | null {
     }
   }
   return null;
-}
-
-/**
- * 翻译文本（调用内部翻译 API）
- * 包装 productSyncService 的 translateText，失败时返回原文本
- */
-async function translateText(text: string, targetLang: string): Promise<string> {
-  const result = await translateTextBase(text, targetLang);
-  return result || text;
-}
-
-/**
- * 翻译内容到多语言
- */
-async function translateContent(
-  description: string | null,
-  applications: string[] | null,
-  physicalDescription: string | null,
-  hazardClasses: string | null,
-  healthHazards: string | null = null,
-  ghsClassification: string | null = null
-): Promise<{
-  descriptionZh: string | null;
-  applicationsZh: string[] | null;
-  physicalDescriptionZh: string | null;
-  hazardClassesZh: string | null;
-  healthHazardsZh: string | null;
-  ghsClassificationZh: string | null;
-}> {
-  const result = {
-    descriptionZh: null as string | null,
-    applicationsZh: null as string[] | null,
-    physicalDescriptionZh: null as string | null,
-    hazardClassesZh: null as string | null,
-    healthHazardsZh: null as string | null,
-    ghsClassificationZh: null as string | null,
-  };
-  
-  try {
-    // 翻译描述
-    if (description) {
-      result.descriptionZh = await translateText(description, 'zh');
-      await new Promise(resolve => setTimeout(resolve, 300));
-    }
-    
-    // 翻译应用（只翻译前5个）
-    if (applications && applications.length > 0) {
-      const toTranslate = applications.slice(0, 5);
-      const translated: string[] = [];
-      
-      for (const app of toTranslate) {
-        const translatedApp = await translateText(app, 'zh');
-        translated.push(translatedApp);
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
-      
-      result.applicationsZh = translated;
-    }
-    
-    // 翻译物理描述
-    if (physicalDescription) {
-      result.physicalDescriptionZh = await translateText(physicalDescription, 'zh');
-      await new Promise(resolve => setTimeout(resolve, 300));
-    }
-    
-    // 翻译危险分类
-    if (hazardClasses) {
-      result.hazardClassesZh = await translateText(hazardClasses, 'zh');
-      await new Promise(resolve => setTimeout(resolve, 300));
-    }
-    
-    // 翻译健康危害
-    if (healthHazards) {
-      result.healthHazardsZh = await translateText(healthHazards, 'zh');
-      await new Promise(resolve => setTimeout(resolve, 300));
-    }
-    
-    // 翻译 GHS 分类
-    if (ghsClassification) {
-      result.ghsClassificationZh = await translateText(ghsClassification, 'zh');
-    }
-  } catch (error) {
-    console.error('[Translate] Error translating content:', error);
-  }
-  
-  return result;
 }
 
 /**
