@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getAdminToken } from '@/services/adminAuthService';
 import { FormData, TranslationProgress } from '@/types/spu';
 import { translateFields as translateFieldsUtil, SUPPORTED_LANGUAGES } from '@/lib/translate-utils';
+import { spuApi } from '@/services/api';
 
 // sessionStorage key for preview data
 const PREVIEW_DATA_KEY = 'spu_create_preview_data';
@@ -395,16 +396,7 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
         status: 'ACTIVE',
       };
 
-      const response = await fetch('/api/admin/spu/create/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(saveData),
-      });
-
-      const result = await response.json();
+      const result = await spuApi.saveSpu(saveData);
 
       if (result.success) {
         // 清除 sessionStorage 中的预览数据

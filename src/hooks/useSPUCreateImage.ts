@@ -10,7 +10,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getAdminToken } from '@/services/adminAuthService';
+import { spuApi } from '@/services/api';
 
 // sessionStorage key for preview data
 const PREVIEW_DATA_KEY = 'spu_create_preview_data';
@@ -128,10 +128,7 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
       // 设置结构图 URL
       if (data.structureImageKey) {
         // 从对象存储获取图片 URL（使用 redirect=false 获取 JSON 响应）
-        const token = getAdminToken();
-        const imageUrlResponse = await fetch(`/api/common/image-url?key=${encodeURIComponent(data.structureImageKey)}&redirect=false`, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        });
+        const imageUrlResponse = await fetch(`/api/common/image-url?key=${encodeURIComponent(data.structureImageKey)}&redirect=false`);
         const imageUrlData = await imageUrlResponse.json();
         if (imageUrlData.success && imageUrlData.url) {
           setStructureImageUrl(imageUrlData.url);
@@ -194,21 +191,11 @@ export function useSPUCreateImage(locale: string): UseSPUCreateImageReturn {
 
     setGeneratingImage(true);
     try {
-      const token = getAdminToken();
-      const response = await fetch('/api/admin/spu/create/generate-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          cas,
-          name: previewData.nameEn || previewData.nameZh || cas,
-          sdf: previewData.structureSdf,
-        }),
+      const data = await spuApi.generateImage({
+        cas,
+        name: previewData.nameEn || previewData.nameZh || cas,
+        sdf: previewData.structureSdf || undefined,
       });
-
-      const data = await response.json();
       if (data.success) {
         setProductImageUrl(data.imageUrl);
         setProductImageKey(data.imageKey);

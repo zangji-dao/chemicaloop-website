@@ -19,6 +19,7 @@ import {
   validateFormData,
   initFormDataFromSPUData,
 } from '@/lib/spu-form-utils';
+import { spuApi } from '@/services/api';
 
 interface UseSPUEditOptions {
   spuId: string | null;
@@ -154,11 +155,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
   const fetchSPUData = async (id: string) => {
     setLoading(true);
     try {
-      const token = getAdminToken();
-      const response = await fetch(`/api/admin/spu/list/${id}`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-      });
-      const data = await response.json();
+      const data = await spuApi.getSpuById(id);
 
       if (data.success && data.data) {
         const spuData = data.data;
@@ -221,13 +218,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
       // 步骤1：检测连接
       setSyncProgress({ step: 'connecting', message: locale === 'zh' ? '正在连接 PubChem...' : 'Connecting to PubChem...' });
 
-      const connectionResponse = await fetch('/api/admin/spu/create/check-pubchem-connection', {
-        headers: {
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        signal: abortController.signal,
-      });
-      const connectionData = await connectionResponse.json();
+      const connectionData = await spuApi.checkPubChemConnection();
 
       if (!connectionData.connected) {
         setSyncingPubChem(false);
@@ -244,17 +235,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
       // 步骤2：获取数据
       setSyncProgress({ step: 'fetching', message: locale === 'zh' ? `正在获取 ${formData.cas} 数据...` : `Fetching data for ${formData.cas}...` });
 
-      const response = await fetch('/api/admin/spu/create/sync-pubchem', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ preview: true, cas: formData.cas }),
-        signal: abortController.signal,
-      });
-
-      const result = await response.json();
+      const result = await spuApi.syncPubChem(formData.cas, true);
 
       if (result.success && result.data) {
         const data = result.data;
@@ -503,22 +484,13 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
 
     setGeneratingImage(true);
     try {
-      const token = getAdminToken();
-      const response = await fetch('/api/admin/spu/create/generate-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          spuId: spuId,
-          cas: formData.cas,
-          name: formData.name || formData.nameEn,
-          force,
-        }),
+      const data = await spuApi.generateImage({
+        spuId: spuId,
+        cas: formData.cas,
+        name: formData.name || formData.nameEn,
+        force,
       });
 
-      const data = await response.json();
       if (data.success) {
         // 如果是重绘（force=true）且已有图片，显示对比弹窗
         if (force && productImageUrl && data.imageUrl !== productImageUrl) {
@@ -607,45 +579,7 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
         pendingTranslations,
       });
 
-      const response = await fetch('/api/admin/spu/create/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(spuData),
-      });
-
-      // 检查 HTTP 状态码
-      if (response.status === 401) {
-        setDialogConfig({
-          type: 'error',
-          title: locale === 'zh' ? '登录已过期' : 'Session Expired',
-          message: locale === 'zh' ? '登录已过期，请重新登录' : 'Your session has expired. Please log in again.',
-          onConfirm: () => router.push('/admin/login'),
-        });
-        return;
-      }
-
-      if (!response.ok) {
-        // 尝试解析错误信息
-        let errorMessage = `HTTP ${response.status}`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          // 无法解析响应，使用状态文本
-          errorMessage = response.statusText || errorMessage;
-        }
-        setDialogConfig({
-          type: 'error',
-          title: locale === 'zh' ? '保存失败' : 'Save Failed',
-          message: `${locale === 'zh' ? '保存失败' : 'Save failed'}: ${errorMessage}`,
-        });
-        return;
-      }
-
-      const result = await response.json();
+      const result = await spuApi.saveSpu(spuData);
 
       if (result.success) {
         setDialogConfig({
