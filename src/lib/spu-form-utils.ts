@@ -60,6 +60,8 @@ export const TRANSLATABLE_FIELDS = [
   'name',
   'description',
   'physicalDescription',
+  'colorForm',        // 颜色形态
+  'odor',             // 气味
   'boilingPoint',
   'meltingPoint',
   'flashPoint',
@@ -84,6 +86,8 @@ export function getTranslatableFields(formData: FormData): Array<{ key: string; 
     { key: 'name', value: formData.nameEn },
     { key: 'description', value: formData.description },
     { key: 'physicalDescription', value: formData.physicalDescription },
+    { key: 'colorForm', value: formData.colorForm },
+    { key: 'odor', value: formData.odor },
     { key: 'boilingPoint', value: formData.boilingPoint },
     { key: 'meltingPoint', value: formData.meltingPoint },
     { key: 'flashPoint', value: formData.flashPoint },

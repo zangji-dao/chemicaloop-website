@@ -245,6 +245,8 @@ export function useSPUCreateInfo({ locale, t }: UseSPUCreateInfoOptions): UseSPU
       { key: 'name', value: formData.nameEn },
       { key: 'description', value: formData.description },
       { key: 'physicalDescription', value: formData.physicalDescription },
+      { key: 'colorForm', value: formData.colorForm },
+      { key: 'odor', value: formData.odor },
       { key: 'boilingPoint', value: formData.boilingPoint },
       { key: 'meltingPoint', value: formData.meltingPoint },
       { key: 'flashPoint', value: formData.flashPoint },

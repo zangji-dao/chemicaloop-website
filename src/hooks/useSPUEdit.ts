@@ -328,6 +328,8 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
           { key: 'name', value: data.nameEn },
           { key: 'description', value: data.description },
           { key: 'physicalDescription', value: data.physicalDescription },
+          { key: 'colorForm', value: data.colorForm },
+          { key: 'odor', value: data.odor },
           { key: 'boilingPoint', value: data.boilingPoint },
           { key: 'meltingPoint', value: data.meltingPoint },
           { key: 'flashPoint', value: data.flashPoint },
