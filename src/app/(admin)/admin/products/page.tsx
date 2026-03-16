@@ -239,7 +239,7 @@ export default function AdminProductsPage() {
       
       for (const product of toTranslate) {
         try {
-          await fetch('/api/admin/spu/request/translate', {
+          await fetch('/api/admin/sku/review/translate', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -321,7 +321,7 @@ export default function AdminProductsPage() {
       const token = getAdminToken();
       
       // 快速获取产品信息
-      const response = await fetch(`/api/admin/spu/request/${productId}/review`, {
+      const response = await fetch(`/api/admin/sku/review/${productId}/review`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -406,7 +406,7 @@ export default function AdminProductsPage() {
     setUpdating(true);
     try {
       const token = getAdminToken();
-      const response = await fetch(`/api/admin/spu/request/${reviewDetail.product.id}/review`, {
+      const response = await fetch(`/api/admin/sku/review/${reviewDetail.product.id}/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -499,7 +499,7 @@ export default function AdminProductsPage() {
     setUpdating(true);
     try {
       const token = getAdminToken();
-      const response = await fetch(`/api/admin/spu/request/${id}/status`, {
+      const response = await fetch(`/api/admin/sku/review/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -533,7 +533,7 @@ export default function AdminProductsPage() {
     setUpdating(true);
     try {
       const token = getAdminToken();
-      const response = await fetch('/api/admin/spu/request/batch-status', {
+      const response = await fetch('/api/admin/sku/review/batch-status', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

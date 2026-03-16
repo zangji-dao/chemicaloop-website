@@ -4,7 +4,7 @@ import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 
 /**
- * PUT /api/admin/spu/request/[id]/status
+ * PUT /api/admin/sku/review/[id]/status
  * 更新产品状态
  */
 export async function PUT(

@@ -110,7 +110,7 @@ export default function AdminSPURequestsPage() {
         status: statusFilter,
       });
 
-      const response = await fetch(`/api/admin/spu-requests?${params}`, {
+      const response = await fetch(`/api/admin/spu/user-requests?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -155,7 +155,7 @@ export default function AdminSPURequestsPage() {
         return;
       }
       
-      const response = await fetch('/api/admin/spu-requests', {
+      const response = await fetch('/api/admin/spu/user-requests', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +213,7 @@ export default function AdminSPURequestsPage() {
         return;
       }
       
-      const response = await fetch('/api/admin/spu-requests', {
+      const response = await fetch('/api/admin/spu/user-requests', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

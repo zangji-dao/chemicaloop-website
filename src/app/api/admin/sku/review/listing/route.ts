@@ -4,7 +4,7 @@ import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 
 /**
- * POST /api/admin/spu/request/listing
+ * POST /api/admin/sku/review/listing
  * 创建产品上架记录（SKU）
  * 前置条件：SPU 已保存
  */

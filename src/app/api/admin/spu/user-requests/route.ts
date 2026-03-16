@@ -7,8 +7,8 @@ import { API_CONFIG } from '@/lib/config';
 import { withAdminAuth } from '@/lib/withAuth';
 
 /**
- * GET /api/spu-requests
- * 获取 SPU 申请列表（管理员）
+ * GET /api/admin/spu/user-requests
+ * 获取用户 SPU 申请列表（管理员）
  */
 export const GET = withAdminAuth(async (request) => {
   try {
@@ -82,7 +82,7 @@ export const GET = withAdminAuth(async (request) => {
 });
 
 /**
- * POST /api/spu-requests
+ * POST /api/admin/spu/user-requests
  * 用户提交 SPU 申请
  */
 export const POST = withAdminAuth(async (request) => {
@@ -207,7 +207,7 @@ export const POST = withAdminAuth(async (request) => {
 });
 
 /**
- * PUT /api/spu-requests
+ * PUT /api/admin/spu/user-requests
  * 管理员审核 SPU 申请
  */
 export const PUT = withAdminAuth(async (request) => {
@@ -474,7 +474,7 @@ export const PUT = withAdminAuth(async (request) => {
 });
 
 /**
- * DELETE /api/spu-requests
+ * DELETE /api/admin/spu/user-requests
  * 用户取消自己的申请
  */
 export const DELETE = withAdminAuth(async (request) => {

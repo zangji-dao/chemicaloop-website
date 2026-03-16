@@ -7,7 +7,7 @@ import { withAdminAuth } from '@/lib/withAuth';
 
 /**
  * 预审产品 - 快速返回产品信息，检查 SPU 状态
- * GET /api/admin/spu/request/[id]/review
+ * GET /api/admin/sku/review/[id]/review
  */
 export const GET = withAdminAuth(async (
   request,
@@ -88,7 +88,7 @@ export const GET = withAdminAuth(async (
 
 /**
  * 审核产品 - 通过/拒绝，自动同步 PubChem 和翻译
- * POST /api/admin/spu/request/[id]/review
+ * POST /api/admin/sku/review/[id]/review
  * Body: { status: 'approved' | 'rejected', review_note?: string }
  */
 export const POST = withAdminAuth(async (
