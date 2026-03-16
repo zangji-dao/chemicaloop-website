@@ -126,18 +126,18 @@ function SPUEditContent() {
       />
 
       {/* 顶部导航 */}
-      <div className="bg-slate-900 border-b border-slate-700/50 px-5 py-3 sticky -top-6 z-10 pt-9 -mx-6 px-11">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between">
-              {/* 左侧：返回 + 同步按钮 */}
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={handleBack}
-                  className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span className="text-sm">{locale === 'zh' ? '返回' : 'Back'}</span>
-                </button>
+      <div className="bg-slate-900/95 backdrop-blur-sm border-b border-slate-700/50 px-6 py-3 sticky top-0 z-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between relative">
+            {/* 左侧：返回 + 同步按钮 */}
+            <div className="flex items-center gap-4 flex-shrink-0">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="text-sm">{locale === 'zh' ? '返回' : 'Back'}</span>
+              </button>
 
               <div className="w-px h-5 bg-slate-600" />
 
@@ -156,20 +156,19 @@ function SPUEditContent() {
               </button>
 
               {pubchemInfo.syncedAt && (
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-slate-500 hidden sm:inline">
                   {t('spu.lastSync')}: {new Date(pubchemInfo.syncedAt).toLocaleString()}
                 </span>
               )}
             </div>
 
             {/* 中间：标题 */}
-            <h2 className="text-lg font-semibold text-white absolute left-1/2 -translate-x-1/2">
+            <h2 className="text-lg font-semibold text-white absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
               {isNewMode ? t('spu.newSpu') : t('spu.editSpu')}
-              {spu && <span className="ml-2 text-sm text-slate-500 font-mono">CAS: {spu.cas}</span>}
             </h2>
 
             {/* 右侧：翻译按钮或保存按钮 */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-shrink-0">
               {needTranslate ? (
                 // 橘色翻译按钮
                 <button
