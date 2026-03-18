@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
         spu.synonyms,
         spu.translations,
         spu.product_image_key,
+        spu.created_at,
         COUNT(sku.id) FILTER (WHERE sku.status = 'active') as supplier_count,
         MIN(CAST(sku.price AS DECIMAL)) FILTER (WHERE sku.status = 'active') as price_min,
         MAX(CAST(sku.price AS DECIMAL)) FILTER (WHERE sku.status = 'active') as price_max,
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
         LEFT JOIN agent_products sku ON sku.spu_id = spu.id
       WHERE spu.status = 'ACTIVE'
         ${searchPattern ? `AND (spu.cas ILIKE '${searchPattern}' OR spu.name ILIKE '${searchPattern}' OR spu.name_en ILIKE '${searchPattern}')` : ''}
-      GROUP BY spu.id
+      GROUP BY spu.id, spu.cas, spu.name, spu.name_en, spu.formula, spu.hs_code, spu.hs_code_extensions, spu.synonyms, spu.translations, spu.product_image_key, spu.created_at
       ORDER BY supplier_count DESC, spu.created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `;
