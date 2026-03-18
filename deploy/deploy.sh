@@ -76,7 +76,8 @@ log_info "当前提交: $(git log -1 --oneline)"
 log_info "[3/8] 配置环境变量..."
 if [ ! -f ".env.local" ]; then
   cat > .env.local << ENVEOF
-# 数据库配置
+# 数据库配置 (SDK 使用的变量名)
+PGDATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}
 DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@localhost:5432/${DB_NAME}
 
 # 后端端口
