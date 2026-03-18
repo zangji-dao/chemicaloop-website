@@ -6,23 +6,16 @@ const router = Router();
 
 // Get all products
 router.get('/', async (req, res) => {
-  const { category, search, page = 1, limit = 20 } = req.query;
+  const { search, page = 1, limit = 20 } = req.query;
 
   try {
     let query = `
-      SELECT p.*, c.name as category_name, c.name_en as category_name_en
+      SELECT p.id, p.cas, p.name, p.name_en, p.formula, p.description, p.image_url, p.status, p.hs_code
       FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.status = 'ACTIVE'
     `;
     const params: any[] = [];
     let paramCount = 0;
-
-    if (category) {
-      paramCount++;
-      query += ` AND c.name = $${paramCount}`;
-      params.push(category);
-    }
 
     if (search) {
       paramCount++;
@@ -140,9 +133,9 @@ router.get('/:id', async (req, res) => {
   try {
     // Get product
     const productResult = await pool.query(
-      `SELECT p.*, c.name as category_name, c.name_en as category_name_en
+      `SELECT p.id, p.cas, p.name, p.name_en, p.formula, p.description, p.image_url, p.status, p.hs_code,
+              p.molecular_weight, p.boiling_point, p.melting_point, p.density, p.hazard_classes, p.applications
        FROM products p
-       LEFT JOIN categories c ON p.category_id = c.id
        WHERE p.id = $1`,
       [id]
     );
@@ -153,13 +146,16 @@ router.get('/:id', async (req, res) => {
 
     const product = productResult.rows[0];
 
-    // Get suppliers (only for agents)
+    // Get suppliers from agent_products
     const suppliersResult = await pool.query(
-      `SELECT s.*, u.name as agent_name, u.company as agent_company
-       FROM suppliers s
-       LEFT JOIN users u ON s.user_id = u.id
-       WHERE s.product_id = $1 AND s.status = 'ACTIVE'`,
-      [id]
+      `SELECT ap.id, ap.cas, ap.name, ap.purity, ap.package_spec, ap.price, ap.min_order, ap.stock, ap.origin,
+              u.id as agent_id, u.name as agent_name
+       FROM agent_products ap
+       JOIN users u ON ap.agent_id = u.id
+       WHERE ap.cas = $1 AND ap.status = 'active'
+       ORDER BY ap.price ASC NULLS LAST
+       LIMIT 10`,
+      [product.cas]
     );
 
     product.suppliers = suppliersResult.rows;
@@ -174,24 +170,21 @@ router.get('/:id', async (req, res) => {
 // Create product (agent only)
 router.post('/', authMiddleware, agentOnlyMiddleware, async (req: AuthRequest, res) => {
   const {
-    category_id,
     name,
     name_en,
     cas,
     formula,
     description,
-    specifications,
-    application,
     image_url,
-    reference_price,
+    hs_code,
   } = req.body;
 
   try {
     const result = await pool.query(
-      `INSERT INTO products (category_id, name, name_en, cas, formula, description, specifications, application, image_url, reference_price)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING *`,
-      [category_id, name, name_en, cas, formula, description, specifications, application, image_url, reference_price]
+      `INSERT INTO products (name, name_en, cas, formula, description, image_url, hs_code, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE')
+       RETURNING id, cas, name, name_en`,
+      [name, name_en, cas, formula, description, image_url, hs_code]
     );
 
     res.json({ success: true, data: result.rows[0] });
