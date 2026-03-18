@@ -47,10 +47,10 @@ export const bannerConfig = {
   // 单张 banner 图片（如果只有一张）
   singleBannerUrl: "",
 
-  // 多张轮播 banner 图片（如果有多张）
+  // 多张轮播 banner 图片（腾讯云 COS）
   carouselBanners: [
-    "https://coze-coding-project.tos.coze.site/coze_storage_7603409097601417250/home-banner1.jpg?sign=1801896543-ad6492474a-0-243f95e6ce20efadbd2a3aa0dd05100ad5035f4fcdd4e2c8d69c2be65826f1b8",
-    "https://coze-coding-project.tos.coze.site/coze_storage_7603409097601417250/home-banner2.jpg?sign=1801896543-54e9a0537d-0-0b6a734c3863f25c98d7c15b0ee38dfc566e2537d99b8ae7fc31ae8d125759a7",
+    "https://tianzhi-1314611801.cos.ap-beijing.myqcloud.com/chemicaloop/banners/home-banner1.jpg",
+    "https://tianzhi-1314611801.cos.ap-beijing.myqcloud.com/chemicaloop/banners/home-banner2.jpg",
   ],
 
   // 轮播配置
