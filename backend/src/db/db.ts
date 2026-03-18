@@ -50,7 +50,7 @@ setInterval(() => {
  * 带重试的数据库查询
  * 在连接超时或临时错误时自动重试
  */
-export async function queryWithRetry<T = any>(
+export async function queryWithRetry<T extends pg.QueryResultRow = any>(
   queryText: string,
   values: any[] = [],
   maxRetries: number = 3,
