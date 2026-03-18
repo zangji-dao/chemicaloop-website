@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Header from '@/components/layout/Header';
@@ -79,7 +79,7 @@ import {
 import { SOCIAL_CONTACT_TYPES, formatSocialContact, openSocialChat, canOpenInBrowser, setToastCallback } from '@/services/socialContactService';
 import { useDialog } from '@/components/ui/DialogContext';
 
-export default function MessagesPage() {
+function MessagesContent() {
   const t = useTranslations('messages');
   const tCommon = useTranslations('common');
   const { toast, confirm: confirmDialog } = useDialog();
@@ -3529,5 +3529,26 @@ export default function MessagesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function MessagesLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-purple-500 border-t-transparent" />
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main export with Suspense boundary
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<MessagesLoading />}>
+      <MessagesContent />
+    </Suspense>
   );
 }
