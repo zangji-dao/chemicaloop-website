@@ -4,11 +4,23 @@
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { S3Storage } from 'coze-coding-dev-sdk';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { PUBCHEM_CONFIG, PubChemData } from './types';
 import { extractPubChemProperties } from './parser';
+import { STORAGE_CONFIG, COS_CREDENTIALS } from '@/lib/env';
 
 const execAsync = promisify(exec);
+
+// 腾讯云 COS 客户端
+const cosClient = new S3Client({
+  region: STORAGE_CONFIG.region,
+  endpoint: `https://cos.${STORAGE_CONFIG.region}.myqcloud.com`,
+  credentials: {
+    accessKeyId: COS_CREDENTIALS.accessKeyId,
+    secretAccessKey: COS_CREDENTIALS.secretAccessKey,
+  },
+  forcePathStyle: false,
+});
 
 /**
  * 使用 curl 作为备选的 fetch 方法（解决 Node.js 网络限制）
@@ -98,23 +110,18 @@ export async function fetchWithRetry(
  */
 async function uploadStructureImage(cid: number, pngBuffer: Buffer): Promise<string | null> {
   try {
-    const storage = new S3Storage({
-      endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
-      accessKey: '',
-      secretKey: '',
-      bucketName: process.env.COZE_BUCKET_NAME,
-      region: 'cn-beijing',
-    });
-    
     const fileName = `structure-images/${cid}_${Date.now()}.png`;
-    const imageKey = await storage.uploadFile({
-      fileContent: pngBuffer,
-      fileName,
-      contentType: 'image/png',
+    const command = new PutObjectCommand({
+      Bucket: STORAGE_CONFIG.bucket,
+      Key: fileName,
+      Body: pngBuffer,
+      ContentType: 'image/png',
     });
     
-    console.log(`[PubChem] Uploaded structure image for CID ${cid}: ${imageKey}`);
-    return imageKey;
+    await cosClient.send(command);
+    
+    console.log(`[PubChem] Uploaded structure image for CID ${cid}: ${fileName}`);
+    return fileName;
   } catch (error) {
     console.error(`[PubChem] Failed to upload structure image for CID ${cid}:`, error);
     return null;
