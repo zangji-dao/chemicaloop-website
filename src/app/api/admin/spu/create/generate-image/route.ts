@@ -1,10 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Storage } from 'coze-coding-dev-sdk';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 import { generateChemicalSVG, validateSVG } from '@/services/chemical-svg-generator';
 import { withAdminAuth } from '@/lib/withAuth';
+import { STORAGE_CONFIG } from '@/lib/env';
+
+// 腾讯云 COS 客户端（虚拟样式域名）
+const cosClient = new S3Client({
+  region: STORAGE_CONFIG.region,
+  endpoint: `https://${STORAGE_CONFIG.bucket}.cos.${STORAGE_CONFIG.region}.myqcloud.com`,
+  credentials: {
+    accessKeyId: process.env.COS_SECRET_ID || '',
+    secretAccessKey: process.env.COS_SECRET_KEY || '',
+  },
+  forcePathStyle: false, // 使用虚拟样式域名
+});
+
+// 上传文件到 COS
+async function uploadToCos(key: string, content: Buffer, contentType: string): Promise<string> {
+  const command = new PutObjectCommand({
+    Bucket: STORAGE_CONFIG.bucket,
+    Key: key,
+    Body: content,
+    ContentType: contentType,
+  });
+  await cosClient.send(command);
+  return key;
+}
+
+// 生成签名 URL
+async function getSignedCosUrl(key: string, expireTime: number = 86400): Promise<string> {
+  const command = new GetObjectCommand({
+    Bucket: STORAGE_CONFIG.bucket,
+    Key: key,
+  });
+  // @ts-ignore - 版本兼容问题
+  return getSignedUrl(cosClient, command, { expiresIn: expireTime });
+}
 
 /**
  * 生成产品图片 API
@@ -67,19 +103,7 @@ export const POST = withAdminAuth(async (request) => {
       
       // 检查是否已有产品图（除非强制重新生成）
       if (spu.product_image_key && !force) {
-        const storage = new S3Storage({
-          endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
-          accessKey: '',
-          secretKey: '',
-          bucketName: process.env.COZE_BUCKET_NAME,
-          region: 'cn-beijing',
-        });
-
-        const imageUrl = await storage.generatePresignedUrl({
-          key: spu.product_image_key,
-          expireTime: 86400,
-        });
-
+        const imageUrl = await getSignedCosUrl(spu.product_image_key);
         return NextResponse.json({
           success: true,
           imageKey: spu.product_image_key,
@@ -100,20 +124,8 @@ export const POST = withAdminAuth(async (request) => {
       `);
       
       if (existingResult.rows.length > 0) {
-        const storage = new S3Storage({
-          endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
-          accessKey: '',
-          secretKey: '',
-          bucketName: process.env.COZE_BUCKET_NAME,
-          region: 'cn-beijing',
-        });
-
         const imageKey = (existingResult.rows[0] as any).image_key;
-        const imageUrl = await storage.generatePresignedUrl({
-          key: imageKey,
-          expireTime: 86400,
-        });
-
+        const imageUrl = await getSignedCosUrl(imageKey);
         return NextResponse.json({
           success: true,
           imageKey,
@@ -146,28 +158,12 @@ export const POST = withAdminAuth(async (request) => {
       }, { status: 500 });
     }
 
-    // 上传到对象存储
-    const storage = new S3Storage({
-      endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
-      accessKey: '',
-      secretKey: '',
-      bucketName: process.env.COZE_BUCKET_NAME,
-      region: 'cn-beijing',
-    });
-
-    const fileName = `chemical-svg/${cas.replace(/-/g, '_')}_${Date.now()}.svg`;
-    
-    const imageKey = await storage.uploadFile({
-      fileContent: Buffer.from(svgResult.svg, 'utf-8'),
-      fileName,
-      contentType: 'image/svg+xml',
-    });
+    // 上传到腾讯云 COS
+    const imageKey = `chemical-svg/${cas.replace(/-/g, '_')}_${Date.now()}.svg`;
+    await uploadToCos(imageKey, Buffer.from(svgResult.svg, 'utf-8'), 'image/svg+xml');
 
     // 生成签名 URL
-    const signedUrl = await storage.generatePresignedUrl({
-      key: imageKey,
-      expireTime: 86400,
-    });
+    const signedUrl = await getSignedCosUrl(imageKey);
 
     // 更新产品图片
     if (productId) {
