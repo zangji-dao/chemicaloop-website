@@ -64,6 +64,15 @@ export const STORAGE_CONFIG = {
 };
 
 /**
+ * 腾讯云 COS 密钥
+ * 用于上传文件到 COS
+ */
+export const COS_CREDENTIALS = {
+  accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+};
+
+/**
  * 生成 COS 图片完整 URL
  */
 export function getCosImageUrl(key: string): string {

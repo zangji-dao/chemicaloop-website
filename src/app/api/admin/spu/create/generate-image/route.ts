@@ -7,15 +7,15 @@ import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 import { generateChemicalSVG, validateSVG } from '@/services/chemical-svg-generator';
 import { withAdminAuth } from '@/lib/withAuth';
-import { STORAGE_CONFIG } from '@/lib/env';
+import { STORAGE_CONFIG, COS_CREDENTIALS } from '@/lib/env';
 
 // 腾讯云 COS 客户端（虚拟样式域名）
 const cosClient = new S3Client({
   region: STORAGE_CONFIG.region,
   endpoint: `https://${STORAGE_CONFIG.bucket}.cos.${STORAGE_CONFIG.region}.myqcloud.com`,
   credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID || process.env.COS_SECRET_ID || '',
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || process.env.COS_SECRET_KEY || '',
+    accessKeyId: COS_CREDENTIALS.accessKeyId,
+    secretAccessKey: COS_CREDENTIALS.secretAccessKey,
   },
   forcePathStyle: false, // 使用虚拟样式域名
 });
