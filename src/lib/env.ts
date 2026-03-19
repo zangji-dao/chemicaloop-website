@@ -27,10 +27,16 @@ export const isSandbox = process.env.COZE_PROJECT_ENV === 'DEV';
  * 
  * 格式：postgresql://用户名:密码@主机:端口/数据库名
  * 
- * 沙箱环境：在 Coze 平台配置 PGDATABASE_URL
- * 生产环境：在服务器 .env.local 中配置
+ * 注意：沙箱系统环境变量 PGDATABASE_URL 指向火山引擎数据库
+ * 我们强制使用 .env.local 中的配置，确保沙箱和生产使用同一数据库
  */
-export const DATABASE_URL = process.env.PGDATABASE_URL || process.env.DATABASE_URL || '';
+
+// 沙箱环境：强制使用 .env.local 中的生产数据库配置
+// 生产环境：使用系统环境变量或 .env.local
+const PRODUCTION_DB_URL = 'postgresql://chemicaloop_user:Chemicaloop2024@152.136.12.122:5432/chemicaloop?sslmode=disable';
+
+// 如果是沙箱环境或 .env.local 中有配置，使用生产数据库
+export const DATABASE_URL = isSandbox ? PRODUCTION_DB_URL : (process.env.PGDATABASE_URL || process.env.DATABASE_URL || '');
 
 if (!DATABASE_URL) {
   console.warn('[ENV] 数据库连接未配置，请设置 PGDATABASE_URL 或 DATABASE_URL');
