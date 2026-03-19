@@ -4,56 +4,43 @@
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Storage } from 'coze-coding-dev-sdk';
 import { PUBCHEM_CONFIG, PubChemData } from './types';
 import { extractPubChemProperties } from './parser';
-import { STORAGE_CONFIG, STORAGE_CREDENTIALS, COS_CONFIG, COS_CREDENTIALS, isSandbox } from '@/lib/env';
+import { isSandbox, COS_CONFIG, COS_CREDENTIALS } from '@/lib/env';
 
 const execAsync = promisify(exec);
 
 /**
  * 对象存储客户端
  * 
- * 沙箱环境：使用系统提供的对象存储
- * 生产环境：使用腾讯云 COS
+ * 沙箱环境：使用 coze-coding-dev-sdk 的 S3Storage（封装了沙箱代理服务）
+ * 生产环境：使用腾讯云 COS（也通过 S3Storage 配置）
  */
-const createStorageClient = () => {
-  if (isSandbox && STORAGE_CREDENTIALS.accessKeyId) {
-    // 沙箱环境：使用系统对象存储
-    return new S3Client({
-      region: STORAGE_CONFIG.region || 'auto',
-      endpoint: STORAGE_CONFIG.endpointUrl,
-      credentials: {
-        accessKeyId: STORAGE_CREDENTIALS.accessKeyId,
-        secretAccessKey: STORAGE_CREDENTIALS.secretAccessKey,
-        ...(STORAGE_CREDENTIALS.sessionToken && { sessionToken: STORAGE_CREDENTIALS.sessionToken }),
-      },
-      forcePathStyle: true,
+const createStorage = (): S3Storage | null => {
+  if (isSandbox) {
+    // 沙箱环境：使用系统对象存储（通过环境变量自动配置）
+    return new S3Storage({
+      endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
+      bucketName: process.env.COZE_BUCKET_NAME,
+      accessKey: '',
+      secretKey: '',
+      region: 'cn-beijing',
     });
   } else if (COS_CREDENTIALS.accessKeyId) {
     // 生产环境：使用腾讯云 COS
-    return new S3Client({
+    return new S3Storage({
+      endpointUrl: `https://cos.${COS_CONFIG.region}.myqcloud.com`,
+      bucketName: COS_CONFIG.bucket,
+      accessKey: COS_CREDENTIALS.accessKeyId,
+      secretKey: COS_CREDENTIALS.secretAccessKey,
       region: COS_CONFIG.region,
-      endpoint: `https://cos.${COS_CONFIG.region}.myqcloud.com`,
-      credentials: {
-        accessKeyId: COS_CREDENTIALS.accessKeyId,
-        secretAccessKey: COS_CREDENTIALS.secretAccessKey,
-      },
-      forcePathStyle: false,
     });
   }
   return null;
 };
 
-const storageClient = createStorageClient();
-
-// 获取当前使用的 bucket
-const getBucketName = () => {
-  if (isSandbox && STORAGE_CONFIG.bucket) {
-    return STORAGE_CONFIG.bucket;
-  }
-  return COS_CONFIG.bucket;
-};
+const storage = createStorage();
 
 /**
  * 使用 curl 作为备选的 fetch 方法（解决 Node.js 网络限制）
@@ -158,28 +145,28 @@ export async function fetchWithRetry(
 
 /**
  * 上传结构图到对象存储
+ * 
+ * 注意：S3Storage.uploadFile 返回的 key 与传入的 fileName 不同（SDK 会添加 UUID 前缀）
+ * 必须使用返回的 key 进行后续操作
  */
 async function uploadStructureImage(cid: number, pngBuffer: Buffer): Promise<string | null> {
   try {
-    if (!storageClient) {
-      console.warn('[PubChem] Storage client not configured, skipping image upload');
+    if (!storage) {
+      console.warn('[PubChem] Storage not configured, skipping image upload');
       return null;
     }
     
     const fileName = `structure-images/${cid}_${Date.now()}.png`;
-    const bucket = getBucketName();
     
-    const command = new PutObjectCommand({
-      Bucket: bucket,
-      Key: fileName,
-      Body: pngBuffer,
-      ContentType: 'image/png',
+    // 使用 S3Storage.uploadFile，返回的是实际的 key（包含 UUID 前缀）
+    const actualKey = await storage.uploadFile({
+      fileContent: pngBuffer,
+      fileName: fileName,
+      contentType: 'image/png',
     });
     
-    await storageClient.send(command);
-    
-    console.log(`[PubChem] Uploaded structure image for CID ${cid}: ${fileName}`);
-    return fileName;
+    console.log(`[PubChem] Uploaded structure image for CID ${cid}: ${actualKey}`);
+    return actualKey;
   } catch (error) {
     console.error(`[PubChem] Failed to upload structure image for CID ${cid}:`, error);
     return null;

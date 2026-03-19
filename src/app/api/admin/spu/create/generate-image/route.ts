@@ -1,88 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { S3Storage } from 'coze-coding-dev-sdk';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 import { generateChemicalSVG, validateSVG } from '@/services/chemical-svg-generator';
 import { withAdminAuth } from '@/lib/withAuth';
-import { STORAGE_CONFIG, STORAGE_CREDENTIALS, COS_CONFIG, COS_CREDENTIALS, isSandbox, getStorageImageUrl } from '@/lib/env';
+import { COS_CONFIG, COS_CREDENTIALS, isSandbox } from '@/lib/env';
 
 /**
  * 对象存储客户端
  * 
- * 沙箱环境：使用系统提供的对象存储
- * 生产环境：使用腾讯云 COS
+ * 沙箱环境：使用 coze-coding-dev-sdk 的 S3Storage（封装了沙箱代理服务）
+ * 生产环境：使用腾讯云 COS（也通过 S3Storage 配置）
  */
-const createStorageClient = () => {
-  if (isSandbox && STORAGE_CREDENTIALS.accessKeyId) {
-    // 沙箱环境：使用系统对象存储
-    return new S3Client({
-      region: STORAGE_CONFIG.region || 'auto',
-      endpoint: STORAGE_CONFIG.endpointUrl,
-      credentials: {
-        accessKeyId: STORAGE_CREDENTIALS.accessKeyId,
-        secretAccessKey: STORAGE_CREDENTIALS.secretAccessKey,
-        ...(STORAGE_CREDENTIALS.sessionToken && { sessionToken: STORAGE_CREDENTIALS.sessionToken }),
-      },
-      forcePathStyle: true,
+const createStorage = (): S3Storage | null => {
+  if (isSandbox) {
+    // 沙箱环境：使用系统对象存储（通过环境变量自动配置）
+    return new S3Storage({
+      endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
+      bucketName: process.env.COZE_BUCKET_NAME,
+      accessKey: '',
+      secretKey: '',
+      region: 'cn-beijing',
     });
   } else if (COS_CREDENTIALS.accessKeyId) {
     // 生产环境：使用腾讯云 COS
-    return new S3Client({
+    return new S3Storage({
+      endpointUrl: `https://cos.${COS_CONFIG.region}.myqcloud.com`,
+      bucketName: COS_CONFIG.bucket,
+      accessKey: COS_CREDENTIALS.accessKeyId,
+      secretKey: COS_CREDENTIALS.secretAccessKey,
       region: COS_CONFIG.region,
-      endpoint: `https://cos.${COS_CONFIG.region}.myqcloud.com`,
-      credentials: {
-        accessKeyId: COS_CREDENTIALS.accessKeyId,
-        secretAccessKey: COS_CREDENTIALS.secretAccessKey,
-      },
-      forcePathStyle: false,
     });
   }
   return null;
 };
 
-const storageClient = createStorageClient();
+const storage = createStorage();
 
-// 获取当前使用的 bucket
-const getBucketName = () => {
-  if (isSandbox && STORAGE_CONFIG.bucket) {
-    return STORAGE_CONFIG.bucket;
-  }
-  return COS_CONFIG.bucket;
-};
-
-// 上传文件到对象存储
-async function uploadToStorage(key: string, content: Buffer, contentType: string): Promise<string> {
-  if (!storageClient) {
-    throw new Error('Storage client not configured');
+/**
+ * 上传文件到对象存储
+ * 
+ * 注意：S3Storage.uploadFile 返回的 key 与传入的 fileName 不同（SDK 会添加 UUID 前缀）
+ * 必须使用返回的 key 进行后续操作
+ */
+async function uploadToStorage(fileName: string, content: Buffer, contentType: string): Promise<string> {
+  if (!storage) {
+    throw new Error('Storage not configured');
   }
   
-  const bucket = getBucketName();
-  const command = new PutObjectCommand({
-    Bucket: bucket,
-    Key: key,
-    Body: content,
-    ContentType: contentType,
+  // 使用 S3Storage.uploadFile，返回的是实际的 key（包含 UUID 前缀）
+  const actualKey = await storage.uploadFile({
+    fileContent: content,
+    fileName: fileName,
+    contentType: contentType,
   });
-  await storageClient.send(command);
-  return key;
+  
+  return actualKey;
 }
 
-// 生成签名 URL
+/**
+ * 生成签名 URL
+ * 使用 S3Storage.generatePresignedUrl 方法
+ */
 async function getSignedStorageUrl(key: string, expireTime: number = 86400): Promise<string> {
-  if (!storageClient) {
-    // 返回公共 URL
-    return getStorageImageUrl(key);
+  if (!storage) {
+    throw new Error('Storage not configured');
   }
   
-  const bucket = getBucketName();
-  const command = new GetObjectCommand({
-    Bucket: bucket,
-    Key: key,
+  return storage.generatePresignedUrl({
+    key: key,
+    expireTime: expireTime,
   });
-  // @ts-ignore - 版本兼容问题
-  return getSignedUrl(storageClient, command, { expiresIn: expireTime });
 }
 
 /**
@@ -201,24 +190,25 @@ export const POST = withAdminAuth(async (request) => {
       }, { status: 500 });
     }
 
-    // 上传到腾讯云 COS
-    const imageKey = `chemical-svg/${cas.replace(/-/g, '_')}_${Date.now()}.svg`;
-    await uploadToStorage(imageKey, Buffer.from(svgResult.svg, 'utf-8'), 'image/svg+xml');
+    // 上传到对象存储
+    // 注意：uploadToStorage 返回的是实际的 key（包含 UUID 前缀），而非传入的 fileName
+    const suggestedFileName = `chemical-svg/${cas.replace(/-/g, '_')}_${Date.now()}.svg`;
+    const actualImageKey = await uploadToStorage(suggestedFileName, Buffer.from(svgResult.svg, 'utf-8'), 'image/svg+xml');
 
     // 生成签名 URL
-    const signedUrl = await getSignedStorageUrl(imageKey);
+    const signedUrl = await getSignedStorageUrl(actualImageKey);
 
     // 更新产品图片
     if (productId) {
       await db.execute(sql`
         UPDATE agent_products 
-        SET image_key = ${imageKey}, updated_at = NOW()
+        SET image_key = ${actualImageKey}, updated_at = NOW()
         WHERE id = ${productId}
       `);
     } else if (spuId) {
       await db.execute(sql`
         UPDATE products 
-        SET product_image_key = ${imageKey}, 
+        SET product_image_key = ${actualImageKey}, 
             product_image_generated_at = NOW(),
             updated_at = NOW()
         WHERE id = ${spuId}
@@ -227,7 +217,7 @@ export const POST = withAdminAuth(async (request) => {
 
     return NextResponse.json({
       success: true,
-      imageKey,
+      imageKey: actualImageKey,
       imageUrl: signedUrl,
       formula: svgResult.formula,
       isNew: true,
