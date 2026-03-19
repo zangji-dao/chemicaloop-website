@@ -150,6 +150,21 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
+          {/* 测试快捷登录 */}
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-xs text-amber-700 mb-2">🧪 测试环境快捷登录</p>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin@chemicaloop.com');
+                setPassword('admin123');
+              }}
+              className="w-full h-8 bg-amber-100 text-amber-700 text-sm font-medium rounded hover:bg-amber-200 transition-colors"
+            >
+              填充测试账号
+            </button>
+          </div>
+
           {/* 返回链接 */}
           <div className="mt-6 pt-5 border-t border-slate-100">
             <a
