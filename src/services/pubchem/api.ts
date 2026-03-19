@@ -7,20 +7,53 @@ import { promisify } from 'util';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { PUBCHEM_CONFIG, PubChemData } from './types';
 import { extractPubChemProperties } from './parser';
-import { STORAGE_CONFIG, COS_CREDENTIALS } from '@/lib/env';
+import { STORAGE_CONFIG, STORAGE_CREDENTIALS, COS_CONFIG, COS_CREDENTIALS, isSandbox } from '@/lib/env';
 
 const execAsync = promisify(exec);
 
-// 腾讯云 COS 客户端
-const cosClient = new S3Client({
-  region: STORAGE_CONFIG.region,
-  endpoint: `https://cos.${STORAGE_CONFIG.region}.myqcloud.com`,
-  credentials: {
-    accessKeyId: COS_CREDENTIALS.accessKeyId,
-    secretAccessKey: COS_CREDENTIALS.secretAccessKey,
-  },
-  forcePathStyle: false,
-});
+/**
+ * 对象存储客户端
+ * 
+ * 沙箱环境：使用系统提供的对象存储
+ * 生产环境：使用腾讯云 COS
+ */
+const createStorageClient = () => {
+  if (isSandbox && STORAGE_CREDENTIALS.accessKeyId) {
+    // 沙箱环境：使用系统对象存储
+    return new S3Client({
+      region: STORAGE_CONFIG.region || 'auto',
+      endpoint: STORAGE_CONFIG.endpointUrl,
+      credentials: {
+        accessKeyId: STORAGE_CREDENTIALS.accessKeyId,
+        secretAccessKey: STORAGE_CREDENTIALS.secretAccessKey,
+        ...(STORAGE_CREDENTIALS.sessionToken && { sessionToken: STORAGE_CREDENTIALS.sessionToken }),
+      },
+      forcePathStyle: true,
+    });
+  } else if (COS_CREDENTIALS.accessKeyId) {
+    // 生产环境：使用腾讯云 COS
+    return new S3Client({
+      region: COS_CONFIG.region,
+      endpoint: `https://cos.${COS_CONFIG.region}.myqcloud.com`,
+      credentials: {
+        accessKeyId: COS_CREDENTIALS.accessKeyId,
+        secretAccessKey: COS_CREDENTIALS.secretAccessKey,
+      },
+      forcePathStyle: false,
+    });
+  }
+  return null;
+};
+
+const storageClient = createStorageClient();
+
+// 获取当前使用的 bucket
+const getBucketName = () => {
+  if (isSandbox && STORAGE_CONFIG.bucket) {
+    return STORAGE_CONFIG.bucket;
+  }
+  return COS_CONFIG.bucket;
+};
 
 /**
  * 使用 curl 作为备选的 fetch 方法（解决 Node.js 网络限制）
@@ -128,15 +161,22 @@ export async function fetchWithRetry(
  */
 async function uploadStructureImage(cid: number, pngBuffer: Buffer): Promise<string | null> {
   try {
+    if (!storageClient) {
+      console.warn('[PubChem] Storage client not configured, skipping image upload');
+      return null;
+    }
+    
     const fileName = `structure-images/${cid}_${Date.now()}.png`;
+    const bucket = getBucketName();
+    
     const command = new PutObjectCommand({
-      Bucket: STORAGE_CONFIG.bucket,
+      Bucket: bucket,
       Key: fileName,
       Body: pngBuffer,
       ContentType: 'image/png',
     });
     
-    await cosClient.send(command);
+    await storageClient.send(command);
     
     console.log(`[PubChem] Uploaded structure image for CID ${cid}: ${fileName}`);
     return fileName;

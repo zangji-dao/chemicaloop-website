@@ -1,45 +1,88 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getDb } from 'coze-coding-dev-sdk';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/db';
 import { generateChemicalSVG, validateSVG } from '@/services/chemical-svg-generator';
 import { withAdminAuth } from '@/lib/withAuth';
-import { STORAGE_CONFIG, COS_CREDENTIALS } from '@/lib/env';
+import { STORAGE_CONFIG, STORAGE_CREDENTIALS, COS_CONFIG, COS_CREDENTIALS, isSandbox, getStorageImageUrl } from '@/lib/env';
 
-// 腾讯云 COS 客户端（虚拟样式域名）
-const cosClient = new S3Client({
-  region: STORAGE_CONFIG.region,
-  endpoint: `https://cos.${STORAGE_CONFIG.region}.myqcloud.com`,
-  credentials: {
-    accessKeyId: COS_CREDENTIALS.accessKeyId,
-    secretAccessKey: COS_CREDENTIALS.secretAccessKey,
-  },
-  forcePathStyle: false, // 使用虚拟样式域名
-});
+/**
+ * 对象存储客户端
+ * 
+ * 沙箱环境：使用系统提供的对象存储
+ * 生产环境：使用腾讯云 COS
+ */
+const createStorageClient = () => {
+  if (isSandbox && STORAGE_CREDENTIALS.accessKeyId) {
+    // 沙箱环境：使用系统对象存储
+    return new S3Client({
+      region: STORAGE_CONFIG.region || 'auto',
+      endpoint: STORAGE_CONFIG.endpointUrl,
+      credentials: {
+        accessKeyId: STORAGE_CREDENTIALS.accessKeyId,
+        secretAccessKey: STORAGE_CREDENTIALS.secretAccessKey,
+        ...(STORAGE_CREDENTIALS.sessionToken && { sessionToken: STORAGE_CREDENTIALS.sessionToken }),
+      },
+      forcePathStyle: true,
+    });
+  } else if (COS_CREDENTIALS.accessKeyId) {
+    // 生产环境：使用腾讯云 COS
+    return new S3Client({
+      region: COS_CONFIG.region,
+      endpoint: `https://cos.${COS_CONFIG.region}.myqcloud.com`,
+      credentials: {
+        accessKeyId: COS_CREDENTIALS.accessKeyId,
+        secretAccessKey: COS_CREDENTIALS.secretAccessKey,
+      },
+      forcePathStyle: false,
+    });
+  }
+  return null;
+};
 
-// 上传文件到 COS
-async function uploadToCos(key: string, content: Buffer, contentType: string): Promise<string> {
+const storageClient = createStorageClient();
+
+// 获取当前使用的 bucket
+const getBucketName = () => {
+  if (isSandbox && STORAGE_CONFIG.bucket) {
+    return STORAGE_CONFIG.bucket;
+  }
+  return COS_CONFIG.bucket;
+};
+
+// 上传文件到对象存储
+async function uploadToStorage(key: string, content: Buffer, contentType: string): Promise<string> {
+  if (!storageClient) {
+    throw new Error('Storage client not configured');
+  }
+  
+  const bucket = getBucketName();
   const command = new PutObjectCommand({
-    Bucket: STORAGE_CONFIG.bucket,
+    Bucket: bucket,
     Key: key,
     Body: content,
     ContentType: contentType,
   });
-  await cosClient.send(command);
+  await storageClient.send(command);
   return key;
 }
 
 // 生成签名 URL
-async function getSignedCosUrl(key: string, expireTime: number = 86400): Promise<string> {
+async function getSignedStorageUrl(key: string, expireTime: number = 86400): Promise<string> {
+  if (!storageClient) {
+    // 返回公共 URL
+    return getStorageImageUrl(key);
+  }
+  
+  const bucket = getBucketName();
   const command = new GetObjectCommand({
-    Bucket: STORAGE_CONFIG.bucket,
+    Bucket: bucket,
     Key: key,
   });
   // @ts-ignore - 版本兼容问题
-  return getSignedUrl(cosClient, command, { expiresIn: expireTime });
+  return getSignedUrl(storageClient, command, { expiresIn: expireTime });
 }
 
 /**
@@ -103,7 +146,7 @@ export const POST = withAdminAuth(async (request) => {
       
       // 检查是否已有产品图（除非强制重新生成）
       if (spu.product_image_key && !force) {
-        const imageUrl = await getSignedCosUrl(spu.product_image_key);
+        const imageUrl = await getSignedStorageUrl(spu.product_image_key);
         return NextResponse.json({
           success: true,
           imageKey: spu.product_image_key,
@@ -125,7 +168,7 @@ export const POST = withAdminAuth(async (request) => {
       
       if (existingResult.rows.length > 0) {
         const imageKey = (existingResult.rows[0] as any).image_key;
-        const imageUrl = await getSignedCosUrl(imageKey);
+        const imageUrl = await getSignedStorageUrl(imageKey);
         return NextResponse.json({
           success: true,
           imageKey,
@@ -160,10 +203,10 @@ export const POST = withAdminAuth(async (request) => {
 
     // 上传到腾讯云 COS
     const imageKey = `chemical-svg/${cas.replace(/-/g, '_')}_${Date.now()}.svg`;
-    await uploadToCos(imageKey, Buffer.from(svgResult.svg, 'utf-8'), 'image/svg+xml');
+    await uploadToStorage(imageKey, Buffer.from(svgResult.svg, 'utf-8'), 'image/svg+xml');
 
     // 生成签名 URL
-    const signedUrl = await getSignedCosUrl(imageKey);
+    const signedUrl = await getSignedStorageUrl(imageKey);
 
     // 更新产品图片
     if (productId) {
