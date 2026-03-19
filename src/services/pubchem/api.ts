@@ -24,6 +24,7 @@ const cosClient = new S3Client({
 
 /**
  * 使用 curl 作为备选的 fetch 方法（解决 Node.js 网络限制）
+ * 支持 JSON、文本（SDF/SVG）和二进制（PNG）响应
  */
 async function fetchWithCurl(url: string, timeoutMs: number = 30000): Promise<any> {
   try {
@@ -31,7 +32,7 @@ async function fetchWithCurl(url: string, timeoutMs: number = 30000): Promise<an
     const timeoutSeconds = Math.floor(timeoutMs / 1000);
     
     // 使用临时文件存储响应（避免 stdout buffer 限制）
-    const tempFile = `/tmp/pubchem_${Date.now()}.json`;
+    const tempFile = `/tmp/pubchem_${Date.now()}`;
     const command = `curl -s --connect-timeout 15 --max-time ${timeoutSeconds} '${url}' -o ${tempFile}`;
     
     await execAsync(command, { timeout: timeoutMs + 15000 });
@@ -39,18 +40,35 @@ async function fetchWithCurl(url: string, timeoutMs: number = 30000): Promise<an
     // 读取文件内容
     const fs = require('fs');
     if (fs.existsSync(tempFile)) {
-      const content = fs.readFileSync(tempFile, 'utf-8');
+      const content = fs.readFileSync(tempFile);
       fs.unlinkSync(tempFile); // 清理临时文件
       
-      if (content && content.trim()) {
-        try {
-          const result = JSON.parse(content);
-          console.log(`[PubChem] Curl success, got ${content.length} bytes`);
-          return { ok: true, json: () => Promise.resolve(result) };
-        } catch (parseError) {
-          console.error(`[PubChem] Curl JSON parse error`);
-          return null;
+      if (content && content.length > 0) {
+        const contentStr = content.toString('utf-8');
+        
+        // 检测是否为 JSON
+        if (contentStr.trim().startsWith('{') || contentStr.trim().startsWith('[')) {
+          try {
+            const result = JSON.parse(contentStr);
+            console.log(`[PubChem] Curl JSON success, got ${content.length} bytes`);
+            return { ok: true, json: () => Promise.resolve(result) };
+          } catch (parseError) {
+            // 不是有效 JSON，当作文本处理
+          }
         }
+        
+        // 检测是否为 PNG（二进制）
+        if (content[0] === 0x89 && content[1] === 0x50 && content[2] === 0x4E && content[3] === 0x47) {
+          console.log(`[PubChem] Curl PNG success, got ${content.length} bytes`);
+          return { 
+            ok: true, 
+            arrayBuffer: () => Promise.resolve(content.buffer.slice(content.byteOffset, content.byteOffset + content.byteLength))
+          };
+        }
+        
+        // 其他情况当作文本处理（SDF、SVG 等）
+        console.log(`[PubChem] Curl text success, got ${content.length} bytes`);
+        return { ok: true, text: () => Promise.resolve(contentStr) };
       }
     }
     return null;
