@@ -302,8 +302,10 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
           svg: data.structure2dSvg,
         });
 
-        // 更新图片
-        if (data.structureUrl) {
+        // 更新图片 - 优先使用 COS 上传的图片，其次使用 PubChem 原始 URL
+        if (data.structureImageKey) {
+          setStructureImageUrl(`/api/common/image-url?key=${encodeURIComponent(data.structureImageKey)}`);
+        } else if (data.structureUrl) {
           setStructureImageUrl(data.structureUrl);
         }
 
