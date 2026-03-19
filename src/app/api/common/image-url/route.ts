@@ -50,17 +50,29 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const url = await getSignedImageUrl(key);
+    try {
+      const url = await getSignedImageUrl(key);
 
-    // 默认直接重定向，用于 <img src="...">
-    if (redirect) {
-      return NextResponse.redirect(url);
+      // 默认直接重定向，用于 <img src="...">
+      if (redirect) {
+        return NextResponse.redirect(url);
+      }
+
+      return NextResponse.json({
+        success: true,
+        url,
+      });
+    } catch (imageError: any) {
+      // 图片不存在于沙箱存储，返回 404 或占位图
+      console.warn('[image-url] Image not found:', key, imageError?.message);
+      
+      // 返回 404，让前端显示占位图
+      return NextResponse.json({
+        success: false,
+        error: 'Image not found',
+        key,
+      }, { status: 404 });
     }
-
-    return NextResponse.json({
-      success: true,
-      url,
-    });
   } catch (error: any) {
     console.error('Get image URL error:', error);
     return NextResponse.json({

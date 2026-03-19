@@ -210,13 +210,18 @@ export async function GET(
       incompatibleMaterials: spu.incompatible_materials,
       
       // PubChem 结构图片
+      // structure_image_key: 存储的原始 key
+      // structureImageKey: 签名后的 URL（如果文件存在）
+      // structureUrl: PubChem 原始 URL（作为备选）
       structureUrl: spu.structure_url,
-      structureImageKey: spu.structure_image_key ? signedUrls[spu.structure_image_key] : null,
+      structureImageKey: spu.structure_image_key,
+      structureImageUrl: spu.structure_image_key ? signedUrls[spu.structure_image_key] : null,
       structure2dSvg: spu.structure_2d_svg,
       structure3dUrl: spu.structure_3d_url,
       
       // 产品图
-      productImageKey: spu.product_image_key ? signedUrls[spu.product_image_key] : null,
+      productImageKey: spu.product_image_key,
+      productImageUrl: spu.product_image_key ? signedUrls[spu.product_image_key] : null,
       productImageGeneratedAt: spu.product_image_generated_at,
       
       // 同义词与应用

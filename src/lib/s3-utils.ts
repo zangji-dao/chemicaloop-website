@@ -110,30 +110,34 @@ export async function getSignedImageUrl(
   if (storage) {
     try {
       return await storage.generatePresignedUrl({ key, expireTime });
-    } catch (error) {
-      console.error('[S3Utils] Failed to generate signed URL:', error);
-      // fallback: 返回 API 路径
-      return `/api/common/image-url?key=${encodeURIComponent(key)}`;
+    } catch (error: any) {
+      console.warn('[S3Utils] Failed to generate signed URL for key:', key, error?.message || error);
+      // 文件不存在于沙箱存储，返回空字符串表示找不到
+      // 调用方应该处理这种情况（显示占位图或使用其他 URL）
+      throw new Error(`Image not found in sandbox storage: ${key}`);
     }
   }
 
-  return `/api/common/image-url?key=${encodeURIComponent(key)}`;
+  throw new Error('Storage not configured');
 }
 
 /**
  * 批量生成图片签名 URL
+ * 
+ * 注意：对于沙箱环境中不存在的图片，返回 null
+ * 调用方需要处理 null 的情况（显示占位图或跳过）
  */
 export async function getSignedImageUrls(
   keys: string[],
   expireTime: number = 86400
-): Promise<Record<string, string>> {
+): Promise<Record<string, string | null>> {
   if (!keys || keys.length === 0) {
     return {};
   }
 
   // 生产环境：直接拼接 URL
   if (!isSandbox) {
-    const result: Record<string, string> = {};
+    const result: Record<string, string | null> = {};
     for (const key of keys) {
       if (key) {
         if (key.startsWith('http://') || key.startsWith('https://')) {
@@ -148,7 +152,7 @@ export async function getSignedImageUrls(
 
   // 沙箱环境：使用 S3Storage 生成签名 URL
   if (storage) {
-    const result: Record<string, string> = {};
+    const result: Record<string, string | null> = {};
     for (const key of keys) {
       if (key) {
         // 已经是完整 URL，直接返回
@@ -160,21 +164,20 @@ export async function getSignedImageUrls(
         try {
           result[key] = await storage.generatePresignedUrl({ key, expireTime });
         } catch (error: any) {
-          // 404 表示文件不存在，返回 API 路径让前端通过其他方式处理
-          // 其他错误也返回 API 路径作为 fallback
-          console.warn(`[S3Utils] Failed to generate signed URL for ${key}:`, error?.message || error);
-          result[key] = `/api/common/image-url?key=${encodeURIComponent(key)}`;
+          // 文件不存在于沙箱存储，返回 null
+          console.warn(`[S3Utils] Image not found in sandbox storage: ${key}`);
+          result[key] = null;
         }
       }
     }
     return result;
   }
 
-  // fallback: 返回 API 路径
-  const result: Record<string, string> = {};
+  // Storage 未配置，所有图片返回 null
+  const result: Record<string, string | null> = {};
   for (const key of keys) {
     if (key) {
-      result[key] = `/api/common/image-url?key=${encodeURIComponent(key)}`;
+      result[key] = null;
     }
   }
   return result;

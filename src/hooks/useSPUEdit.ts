@@ -302,11 +302,13 @@ export function useSPUEdit({ spuId, casNumber, locale, t }: UseSPUEditOptions): 
           svg: data.structure2dSvg,
         });
 
-        // 更新图片 - 优先使用 COS 上传的图片，其次使用 PubChem 原始 URL
-        if (data.structureImageKey) {
-          setStructureImageUrl(`/api/common/image-url?key=${encodeURIComponent(data.structureImageKey)}`);
+        // 更新图片 - 优先使用签名后的 URL，其次使用 PubChem 原始 URL
+        if (data.structureImageUrl) {
+          setStructureImageUrl(data.structureImageUrl);
         } else if (data.structureUrl) {
           setStructureImageUrl(data.structureUrl);
+        } else {
+          setStructureImageUrl(null);
         }
 
         // 检查可翻译字段
