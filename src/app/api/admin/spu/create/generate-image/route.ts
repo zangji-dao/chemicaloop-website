@@ -14,8 +14,8 @@ const cosClient = new S3Client({
   region: STORAGE_CONFIG.region,
   endpoint: `https://${STORAGE_CONFIG.bucket}.cos.${STORAGE_CONFIG.region}.myqcloud.com`,
   credentials: {
-    accessKeyId: process.env.COS_SECRET_ID || '',
-    secretAccessKey: process.env.COS_SECRET_KEY || '',
+    accessKeyId: process.env.S3_ACCESS_KEY_ID || process.env.COS_SECRET_ID || '',
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || process.env.COS_SECRET_KEY || '',
   },
   forcePathStyle: false, // 使用虚拟样式域名
 });
