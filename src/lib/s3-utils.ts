@@ -10,6 +10,34 @@ import { STORAGE_CONFIG, getCosImageUrl, FEATURE_FLAGS } from './env';
 let storageInstance: S3Storage | null = null;
 
 /**
+ * 从带签名的 URL 中提取 key
+ * 支持格式：
+ * - https://coze-coding-project.tos.coze.site/coze_storage_xxx/path/file.svg?sign=xxx
+ * - https://tianzhi-1314611801.cos.ap-beijing.myqcloud.com/path/file.svg
+ */
+function extractKeyFromUrl(url: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    // Coze 存储桶 URL：提取路径（去掉存储桶前缀和签名参数）
+    if (urlObj.hostname.includes('coze.site') || urlObj.hostname.includes('tos.coze')) {
+      // 路径格式：/coze_storage_xxx/path/file.svg
+      const pathParts = urlObj.pathname.split('/');
+      // 去掉第一个空元素和存储桶名称
+      const key = pathParts.slice(2).join('/');
+      return key || null;
+    }
+    // 腾讯云 COS URL
+    if (urlObj.hostname.includes('cos.ap-beijing.myqcloud.com')) {
+      // 路径格式：/path/file.svg
+      return urlObj.pathname.slice(1);
+    }
+  } catch {
+    // 不是有效 URL，返回 null
+  }
+  return null;
+}
+
+/**
  * 获取 S3 存储实例（单例模式）
  */
 function getStorage(): S3Storage | null {
@@ -30,9 +58,9 @@ function getStorage(): S3Storage | null {
 
 /**
  * 生成单个图片的签名 URL
- * @param key S3 存储的文件 key 或完整 URL
+ * @param key S3 存储的文件 key 或完整 URL（支持带过期签名的 URL）
  * @param expireTime 过期时间（秒），默认 24 小时
- * @returns 签名后的 URL 或原始 URL
+ * @returns 签名后的 URL
  */
 export async function getSignedImageUrl(
   key: string,
@@ -42,12 +70,23 @@ export async function getSignedImageUrl(
     return '';
   }
 
-  // 如果已经是完整 URL，直接返回
+  // 如果已经是完整 URL，尝试提取 key 后重新生成签名
   if (key.startsWith('http://') || key.startsWith('https://')) {
+    const extractedKey = extractKeyFromUrl(key);
+    if (extractedKey) {
+      // 提取成功，使用 key 生成新的签名 URL
+      const storage = getStorage();
+      if (storage) {
+        return storage.generatePresignedUrl({ key: extractedKey, expireTime });
+      }
+      // 没有存储认证，尝试拼接 COS URL
+      return getCosImageUrl(extractedKey);
+    }
+    // 无法提取 key，直接返回原始 URL
     return key;
   }
 
-  // 如果没有配置存储认证，直接拼接 COS URL
+  // 纯 key，生成签名 URL
   const storage = getStorage();
   if (!storage) {
     return getCosImageUrl(key);
@@ -58,7 +97,7 @@ export async function getSignedImageUrl(
 
 /**
  * 批量生成图片签名 URL
- * @param keys S3 存储的文件 key 数组
+ * @param keys S3 存储的文件 key 数组（支持带过期签名的完整 URL）
  * @param expireTime 过期时间（秒），默认 24 小时
  * @returns key -> URL 的映射对象
  */
@@ -77,24 +116,33 @@ export async function getSignedImageUrls(
     return {};
   }
 
-  // 如果没有配置存储认证，直接拼接 COS URL
+  // 获取存储实例
   const storage = getStorage();
-  if (!storage) {
-    return validKeys.reduce((acc, key) => {
-      acc[key] = getCosImageUrl(key);
-      return acc;
-    }, {} as Record<string, string>);
-  }
 
-  // 有认证，生成签名 URL
+  // 处理每个 key
   const results = await Promise.all(
-    validKeys.map(async (key) => {
-      // 如果已经是完整 URL，直接返回
-      if (key.startsWith('http://') || key.startsWith('https://')) {
-        return { key, url: key };
+    validKeys.map(async (originalKey) => {
+      let actualKey = originalKey;
+      
+      // 如果是完整 URL，尝试提取 key
+      if (originalKey.startsWith('http://') || originalKey.startsWith('https://')) {
+        const extractedKey = extractKeyFromUrl(originalKey);
+        if (extractedKey) {
+          actualKey = extractedKey;
+        } else {
+          // 无法提取 key，直接返回原始 URL
+          return { key: originalKey, url: originalKey };
+        }
       }
-      const url = await storage.generatePresignedUrl({ key, expireTime });
-      return { key, url };
+      
+      // 生成签名 URL
+      if (storage) {
+        const url = await storage.generatePresignedUrl({ key: actualKey, expireTime });
+        return { key: originalKey, url };
+      } else {
+        // 没有存储认证，拼接 COS URL
+        return { key: originalKey, url: getCosImageUrl(actualKey) };
+      }
     })
   );
 
