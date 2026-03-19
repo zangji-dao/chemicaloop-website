@@ -12,7 +12,7 @@ import { STORAGE_CONFIG, COS_CREDENTIALS } from '@/lib/env';
 // 腾讯云 COS 客户端（虚拟样式域名）
 const cosClient = new S3Client({
   region: STORAGE_CONFIG.region,
-  endpoint: `https://${STORAGE_CONFIG.bucket}.cos.${STORAGE_CONFIG.region}.myqcloud.com`,
+  endpoint: `https://cos.${STORAGE_CONFIG.region}.myqcloud.com`,
   credentials: {
     accessKeyId: COS_CREDENTIALS.accessKeyId,
     secretAccessKey: COS_CREDENTIALS.secretAccessKey,
