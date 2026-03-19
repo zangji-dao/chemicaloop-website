@@ -148,32 +148,29 @@ export async function getSignedImageUrls(
 
   // 沙箱环境：使用 S3Storage 生成签名 URL
   if (storage) {
-    try {
-      const result: Record<string, string> = {};
-      for (const key of keys) {
-        if (key) {
-          if (key.startsWith('http://') || key.startsWith('https://')) {
-            result[key] = key;
-          } else {
-            result[key] = await storage.generatePresignedUrl({ key, expireTime });
-          }
+    const result: Record<string, string> = {};
+    for (const key of keys) {
+      if (key) {
+        // 已经是完整 URL，直接返回
+        if (key.startsWith('http://') || key.startsWith('https://')) {
+          result[key] = key;
+          continue;
         }
-      }
-      return result;
-    } catch (error) {
-      console.error('[S3Utils] Failed to generate signed URLs:', error);
-      // fallback: 返回 API 路径
-      const result: Record<string, string> = {};
-      for (const key of keys) {
-        if (key) {
+        
+        try {
+          result[key] = await storage.generatePresignedUrl({ key, expireTime });
+        } catch (error: any) {
+          // 404 表示文件不存在，返回 API 路径让前端通过其他方式处理
+          // 其他错误也返回 API 路径作为 fallback
+          console.warn(`[S3Utils] Failed to generate signed URL for ${key}:`, error?.message || error);
           result[key] = `/api/common/image-url?key=${encodeURIComponent(key)}`;
         }
       }
-      return result;
     }
+    return result;
   }
 
-  // fallback
+  // fallback: 返回 API 路径
   const result: Record<string, string> = {};
   for (const key of keys) {
     if (key) {
