@@ -42,19 +42,19 @@ if (!DATABASE_URL) {
 
 /**
  * 腾讯云 COS 存储配置（统一使用）
+ * 
+ * 图片存储在 tianzhi-1314611801 存储桶
+ * 已设置为公共读，无需签名即可访问
  */
 export const STORAGE_CONFIG = {
   // 存储桶名称
-  bucket: process.env.COZE_BUCKET_NAME || 'tianzhi-1314611801',
+  bucket: 'tianzhi-1314611801',
   
   // 地域
-  region: process.env.COZE_BUCKET_REGION || 'ap-beijing',
+  region: 'ap-beijing',
   
-  // 访问域名（用于拼接图片 URL）
-  cdnDomain: process.env.CDN_DOMAIN || 'tianzhi-1314611801.cos.ap-beijing.myqcloud.com',
-  
-  // 是否配置了存储认证
-  hasCredentials: !!process.env.COZE_WORKLOAD_IDENTITY_API_KEY,
+  // CDN 域名（公共访问）
+  cdnDomain: 'tianzhi-1314611801.cos.ap-beijing.myqcloud.com',
 };
 
 /**
@@ -120,14 +120,11 @@ export const hasAiCapabilities = !!COZE_API_KEY;
 // ============================================
 
 export const FEATURE_FLAGS = {
-  // 是否启用图片签名（需要 COZE_WORKLOAD_IDENTITY_API_KEY）
-  enableImageSigning: STORAGE_CONFIG.hasCredentials,
+  // 调试模式
+  debug: isDev || isSandbox,
   
   // 是否启用 AI 功能
   enableAI: hasAiCapabilities,
-  
-  // 调试模式
-  debug: isDev || isSandbox,
 };
 
 // ============================================
@@ -140,7 +137,7 @@ if (FEATURE_FLAGS.debug) {
     isProd,
     isSandbox,
     hasDatabase: !!DATABASE_URL,
-    hasStorage: STORAGE_CONFIG.hasCredentials,
+    storageBucket: STORAGE_CONFIG.bucket,
     hasAI: hasAiCapabilities,
   });
 }
