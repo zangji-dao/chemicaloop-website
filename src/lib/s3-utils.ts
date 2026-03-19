@@ -4,20 +4,16 @@
  */
 
 import { S3Storage } from 'coze-coding-dev-sdk';
+import { STORAGE_CONFIG, getCosImageUrl, FEATURE_FLAGS } from './env';
 
 // S3 存储实例（延迟初始化）
 let storageInstance: S3Storage | null = null;
-
-// 检查是否配置了存储认证
-function hasStorageCredentials(): boolean {
-  return !!process.env.COZE_WORKLOAD_IDENTITY_API_KEY;
-}
 
 /**
  * 获取 S3 存储实例（单例模式）
  */
 function getStorage(): S3Storage | null {
-  if (!hasStorageCredentials()) {
+  if (!FEATURE_FLAGS.enableImageSigning) {
     return null;
   }
   if (!storageInstance) {
@@ -25,8 +21,8 @@ function getStorage(): S3Storage | null {
       endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
       accessKey: '',
       secretKey: '',
-      bucketName: process.env.COZE_BUCKET_NAME,
-      region: 'cn-beijing',
+      bucketName: STORAGE_CONFIG.bucket,
+      region: STORAGE_CONFIG.region,
     });
   }
   return storageInstance;
@@ -34,16 +30,16 @@ function getStorage(): S3Storage | null {
 
 /**
  * 生成单个图片的签名 URL
- * @param key S3 存储的文件 key
+ * @param key S3 存储的文件 key 或完整 URL
  * @param expireTime 过期时间（秒），默认 24 小时
- * @returns 签名后的 URL
+ * @returns 签名后的 URL 或原始 URL
  */
 export async function getSignedImageUrl(
   key: string,
   expireTime: number = 86400
 ): Promise<string> {
   if (!key) {
-    throw new Error('Image key is required');
+    return '';
   }
 
   // 如果已经是完整 URL，直接返回
@@ -51,11 +47,10 @@ export async function getSignedImageUrl(
     return key;
   }
 
-  // 如果没有配置存储认证，返回原始 key（用于调试）
+  // 如果没有配置存储认证，直接拼接 COS URL
   const storage = getStorage();
   if (!storage) {
-    console.warn('S3Storage not configured, returning raw key:', key);
-    return key;
+    return getCosImageUrl(key);
   }
 
   return storage.generatePresignedUrl({ key, expireTime });
@@ -75,29 +70,29 @@ export async function getSignedImageUrls(
     return {};
   }
 
-  // 过滤掉空值和已经是完整 URL 的 key
-  const validKeys = keys.filter(k => k && !k.startsWith('http'));
+  // 过滤掉空值
+  const validKeys = keys.filter(k => k);
   
   if (validKeys.length === 0) {
-    // 如果所有 key 都已经是完整 URL，直接返回
-    return keys.reduce((acc, key) => {
-      if (key) acc[key] = key;
-      return acc;
-    }, {} as Record<string, string>);
+    return {};
   }
 
-  // 如果没有配置存储认证，返回原始 key
+  // 如果没有配置存储认证，直接拼接 COS URL
   const storage = getStorage();
   if (!storage) {
-    console.warn('S3Storage not configured, returning raw keys');
-    return keys.reduce((acc, key) => {
-      if (key) acc[key] = key;
+    return validKeys.reduce((acc, key) => {
+      acc[key] = getCosImageUrl(key);
       return acc;
     }, {} as Record<string, string>);
   }
 
+  // 有认证，生成签名 URL
   const results = await Promise.all(
     validKeys.map(async (key) => {
+      // 如果已经是完整 URL，直接返回
+      if (key.startsWith('http://') || key.startsWith('https://')) {
+        return { key, url: key };
+      }
       const url = await storage.generatePresignedUrl({ key, expireTime });
       return { key, url };
     })
@@ -136,7 +131,6 @@ export async function uploadFile(
  */
 export function getApiUrl(key: string): string {
   if (!key) return '';
-  // 如果已经是完整 URL，直接返回
   if (key.startsWith('http://') || key.startsWith('https://')) {
     return key;
   }
