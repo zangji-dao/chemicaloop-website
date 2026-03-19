@@ -65,8 +65,8 @@ if [ ! -d "node_modules" ]; then
     pnpm install --prefer-offline -s 2>/dev/null
 fi
 
-# 启动后端（tsx 比 ts-node 快 2-3 倍，使用生产环境数据库）
-(PORT=3001 NODE_NO_WARNINGS=1 PGDATABASE_URL="postgresql://chemicaloop_user:Chemicaloop2024@152.136.12.122:5432/chemicaloop?sslmode=disable" npx tsx watch src/index.ts > /app/work/logs/bypass/backend.log 2>&1 &)
+# 启动后端（tsx 比 ts-node 快 2-3 倍）
+(PORT=3001 NODE_NO_WARNINGS=1 npx tsx watch src/index.ts > /app/work/logs/bypass/backend.log 2>&1 &)
 cd "${COZE_WORKSPACE_PATH}"
 
 # 等待后端就绪（最多 5 秒，每次 0.2 秒）
@@ -79,6 +79,6 @@ for i in $(seq 1 25); do
     sleep 0.2
 done
 
-# 启动前端（使用生产环境数据库）
+# 启动前端
 echo "Starting frontend..."
-NODE_NO_WARNINGS=1 PGDATABASE_URL="postgresql://chemicaloop_user:Chemicaloop2024@152.136.12.122:5432/chemicaloop?sslmode=disable" exec npx next dev --webpack --port ${PORT}
+NODE_NO_WARNINGS=1 exec npx next dev --webpack --port ${PORT}
