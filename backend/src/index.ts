@@ -16,7 +16,7 @@ import emailSettingsRoutes from './routes/emailSettings';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 5001;
 
 // CORS 配置 - 使用函数动态处理 origin
 const allowedOrigins = [
