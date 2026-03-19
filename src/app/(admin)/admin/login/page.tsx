@@ -157,7 +157,7 @@ export default function AdminLoginPage() {
               type="button"
               onClick={() => {
                 setEmail('admin@chemicaloop.com');
-                setPassword('admin123');
+                setPassword('123456');
               }}
               className="w-full h-8 bg-amber-100 text-amber-700 text-sm font-medium rounded hover:bg-amber-200 transition-colors"
             >
