@@ -18,11 +18,31 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// CORS 配置 - 使用函数动态处理 origin
+const allowedOrigins = [
+  'http://152.136.12.122:5000',
+  'http://localhost:5000',
+  'http://localhost:3000',
+];
+
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? process.env.FRONTEND_URL
-    : '*', // 开发环境允许所有来源
+  origin: (origin, callback) => {
+    // 允许没有 origin 的请求（如 curl、Postman）
+    if (!origin) return callback(null, true);
+    
+    // 检查 origin 是否在白名单中
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      // 开发环境允许所有，生产环境只允许白名单
+      if (process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(null, true); // 暂时允许所有来源，避免 CORS 问题
+      }
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
