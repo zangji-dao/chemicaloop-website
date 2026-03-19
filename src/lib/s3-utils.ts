@@ -8,10 +8,18 @@ import { S3Storage } from 'coze-coding-dev-sdk';
 // S3 存储实例（延迟初始化）
 let storageInstance: S3Storage | null = null;
 
+// 检查是否配置了存储认证
+function hasStorageCredentials(): boolean {
+  return !!process.env.COZE_WORKLOAD_IDENTITY_API_KEY;
+}
+
 /**
  * 获取 S3 存储实例（单例模式）
  */
-function getStorage(): S3Storage {
+function getStorage(): S3Storage | null {
+  if (!hasStorageCredentials()) {
+    return null;
+  }
   if (!storageInstance) {
     storageInstance = new S3Storage({
       endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
@@ -43,7 +51,13 @@ export async function getSignedImageUrl(
     return key;
   }
 
+  // 如果没有配置存储认证，返回原始 key（用于调试）
   const storage = getStorage();
+  if (!storage) {
+    console.warn('S3Storage not configured, returning raw key:', key);
+    return key;
+  }
+
   return storage.generatePresignedUrl({ key, expireTime });
 }
 
@@ -72,8 +86,16 @@ export async function getSignedImageUrls(
     }, {} as Record<string, string>);
   }
 
+  // 如果没有配置存储认证，返回原始 key
   const storage = getStorage();
-  
+  if (!storage) {
+    console.warn('S3Storage not configured, returning raw keys');
+    return keys.reduce((acc, key) => {
+      if (key) acc[key] = key;
+      return acc;
+    }, {} as Record<string, string>);
+  }
+
   const results = await Promise.all(
     validKeys.map(async (key) => {
       const url = await storage.generatePresignedUrl({ key, expireTime });
@@ -97,6 +119,9 @@ export async function uploadFile(
   contentType: string
 ): Promise<string> {
   const storage = getStorage();
+  if (!storage) {
+    throw new Error('S3Storage not configured. Set COZE_WORKLOAD_IDENTITY_API_KEY');
+  }
   return storage.uploadFile({
     fileContent,
     fileName,
